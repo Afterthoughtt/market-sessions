@@ -1,6 +1,6 @@
 # Market Sessions implementation plan
 
-Status: approved for implementation in the next coding session.
+Status: core implementation checkpoint complete; the all-open-sessions summary and final appearance/time-zone QA remain.
 
 ## Outcome
 
@@ -13,10 +13,11 @@ The app is named **Market Sessions**. It targets macOS 26, uses Swift 6 and Xcod
 
 ## Version-one scope
 
-The menu-bar item shows an SF Symbol and a short minute countdown such as `42m`. Selecting it opens a compact SwiftUI popover containing:
+The menu-bar item shows an SF Symbol and a compact humanized countdown such as `42m`, `3h 12m`, or `2d 3h 14m`. Selecting it opens a compact SwiftUI popover containing:
 
 - A focus card for the current or next important session.
 - A linear progress bar tied to that focus state.
+- A compact summary of every session that is open now.
 - A stable, scrollable list of all tracked sessions.
 - Expandable row details, with only one row expanded at a time.
 - A visible recurring-hours disclaimer.
@@ -63,7 +64,7 @@ Selection is deterministic:
 
 For an active session, the label reads `Closes in …`; progress is the fraction of active trading time completed, excluding lunch recesses and maintenance. For an upcoming session, the label reads `Opens in …`; progress runs from that session's preceding close to its next open. Clamp all progress values to `0...1` and handle zero-duration or missing boundaries without producing `NaN`.
 
-The menu-bar countdown uses the same focus result as the popover. Refresh on minute boundaries and immediately after the app becomes active or the system time zone changes. At an exact boundary, recompute before rendering so stale `0m` states do not linger.
+The menu-bar countdown uses the same focus result as the popover. Preserve minute precision while grouping longer durations into days, hours, and minutes. Refresh on minute boundaries and immediately after the app becomes active or the system time zone changes. At an exact boundary, recompute before rendering so stale `0m` states do not linger.
 
 ## Interaction and presentation
 
@@ -71,6 +72,7 @@ The menu-bar countdown uses the same focus result as the popover. Refresh on min
 - Set `LSUIElement = YES`; the lack of Dock presence is intentional.
 - Keep the menu-bar label compact and all visible action labels under 30 characters.
 - Use semantic colors, standard macOS typography, native materials, and keyboard-accessible controls.
+- Show every active session near the top in a compact summary. Keep this separate from the full list so overlapping sessions are visible without destabilizing list order.
 - Keep the session list order stable even when focus changes.
 - A collapsed row shows name, state, and the next local transition.
 - An expanded row shows canonical zone, today's local intervals, next transition, and any approximation or schedule caveat.
@@ -102,6 +104,7 @@ MarketSessions/
     MenuBarLabel.swift
     SessionsPopover.swift
     FocusSessionCard.swift
+    OpenSessionsSummary.swift
     SessionRow.swift
     SessionDetail.swift
 MarketSessionsTests/
@@ -124,6 +127,30 @@ Core responsibilities:
 - Views receive resolved display models; they do not calculate exchange schedules.
 
 Generate candidate occurrences from canonical local date components rather than adding fixed second counts across days. Search a bounded window around `now` that includes the previous and next weekly occurrence. This keeps daylight-saving transitions correct when North American and European changeover weeks do not align.
+
+## Implementation checkpoint — 2026-08-23
+
+Implemented:
+
+- Xcode app and unit-test targets for macOS 26 with Swift 6, explicit `MarketSessions` module naming, `LSUIElement`, and the project-local build/run script.
+- All nine recurring schedules, canonical IANA time-zone resolution, inactive recess/maintenance intervals, deterministic focus priority, upcoming selection, progress, and crypto fallback.
+- Menu-bar label, focus card, stable expandable session list, recurring-hours warning, Launch at Login, and Quit.
+- Compact countdown formatting across minutes, hours, and days, including spoken accessibility output.
+- Deterministic automated coverage for schedule boundaries, DST, display time zones, focus selection, progress, login-item status mapping, and duration formatting.
+
+Verified:
+
+- The full Swift 6 app compiles with strict concurrency checking.
+- The current direct XCTest harness passes 24 tests.
+- A user-run Xcode test suite passed before the latest countdown-format test was added.
+- Manual checks passed for menu-bar launch, popover reopening, single-row expansion, Launch at Login registration, and Command-Q.
+
+Remaining before final definition of done:
+
+- Implement the compact all-open-sessions summary without reordering the full list.
+- Add the project-local `.codex/environments/environment.toml` Run action when workspace permissions permit.
+- Rerun the Xcode-hosted suite after the latest formatting change.
+- Manually verify Light/Dark appearances, larger accessibility text, and a live system time-zone change.
 
 ## Implementation sequence
 
@@ -151,6 +178,11 @@ Generate candidate occurrences from canonical local date components rather than 
    - Confirm Light/Dark mode, compact sizing, keyboard operation, and time-zone changes.
    - Run the complete verification checklist.
 
+6. **All-open-sessions summary**
+   - Add a compact summary below the focus card containing every currently active session, including list-only spot FX and the crypto day.
+   - Preserve the stable full-list order and keep schedule filtering outside row views.
+   - Verify the summary across overlapping market windows and compact-width layouts.
+
 ## Verification matrix
 
 Automated tests must cover:
@@ -170,6 +202,7 @@ Manual acceptance checks:
 
 - The app launches only in the menu bar and reopens its popover reliably.
 - Menu label and focus card agree before, at, and after a transition.
+- The top summary contains every currently active session while the full list remains in stable order.
 - The list does not reorder; only one row expands.
 - The popover remains readable in Light and Dark appearances and with larger accessibility text.
 - Changing the system time zone updates displayed times without changing the canonical schedules.
@@ -181,7 +214,7 @@ Manual acceptance checks:
 - The project builds with zero errors using `./script/build_and_run.sh --verify`.
 - All unit tests pass with workspace-local temporary and Derived Data directories.
 - No network, third-party dependency, unnecessary entitlement, Dock icon, or hidden main window is introduced.
-- The nine sessions, focus policy, countdown, progress, expansion behavior, login item, Quit action, and limitations match this plan and `AGENTS.md`.
+- The nine sessions, all-open-sessions summary, focus policy, countdown, progress, expansion behavior, login item, Quit action, and limitations match this plan and `AGENTS.md`.
 
 ## Deferred work
 

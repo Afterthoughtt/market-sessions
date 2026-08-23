@@ -1,0 +1,421 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 56;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		A00100000000000000000001 /* MarketSessionsApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = F00100000000000000000001 /* MarketSessionsApp.swift */; };
+		A00100000000000000000002 /* MarketSession.swift in Sources */ = {isa = PBXBuildFile; fileRef = F00100000000000000000002 /* MarketSession.swift */; };
+		A00100000000000000000003 /* SessionInterval.swift in Sources */ = {isa = PBXBuildFile; fileRef = F00100000000000000000003 /* SessionInterval.swift */; };
+		A00100000000000000000004 /* SessionOccurrence.swift in Sources */ = {isa = PBXBuildFile; fileRef = F00100000000000000000004 /* SessionOccurrence.swift */; };
+		A00100000000000000000005 /* SessionStatus.swift in Sources */ = {isa = PBXBuildFile; fileRef = F00100000000000000000005 /* SessionStatus.swift */; };
+		A00100000000000000000006 /* MarketScheduleCatalog.swift in Sources */ = {isa = PBXBuildFile; fileRef = F00100000000000000000006 /* MarketScheduleCatalog.swift */; };
+		A00100000000000000000007 /* SessionResolver.swift in Sources */ = {isa = PBXBuildFile; fileRef = F00100000000000000000007 /* SessionResolver.swift */; };
+		A00100000000000000000008 /* FocusSessionResolver.swift in Sources */ = {isa = PBXBuildFile; fileRef = F00100000000000000000008 /* FocusSessionResolver.swift */; };
+		A00100000000000000000009 /* LoginItemService.swift in Sources */ = {isa = PBXBuildFile; fileRef = F00100000000000000000009 /* LoginItemService.swift */; };
+		A0010000000000000000000A /* MarketSessionsModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0010000000000000000000A /* MarketSessionsModel.swift */; };
+		A0010000000000000000000B /* DateFormatting.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0010000000000000000000B /* DateFormatting.swift */; };
+		A0010000000000000000000C /* MenuBarLabel.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0010000000000000000000C /* MenuBarLabel.swift */; };
+		A0010000000000000000000D /* SessionsPopover.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0010000000000000000000D /* SessionsPopover.swift */; };
+		A0010000000000000000000E /* FocusSessionCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0010000000000000000000E /* FocusSessionCard.swift */; };
+		A0010000000000000000000F /* SessionRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0010000000000000000000F /* SessionRow.swift */; };
+		A00100000000000000000010 /* SessionDetail.swift in Sources */ = {isa = PBXBuildFile; fileRef = F00100000000000000000010 /* SessionDetail.swift */; };
+		A00200000000000000000001 /* SessionResolverTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F00200000000000000000001 /* SessionResolverTests.swift */; };
+		A00200000000000000000002 /* FocusSessionResolverTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F00200000000000000000002 /* FocusSessionResolverTests.swift */; };
+		A00200000000000000000003 /* ProgressTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F00200000000000000000003 /* ProgressTests.swift */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		C00100000000000000000001 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = P00100000000000000000001 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = T00100000000000000000001;
+			remoteInfo = MarketSessions;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXFileReference section */
+		F00100000000000000000001 /* MarketSessionsApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MarketSessionsApp.swift; sourceTree = "<group>"; };
+		F00100000000000000000002 /* MarketSession.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MarketSession.swift; sourceTree = "<group>"; };
+		F00100000000000000000003 /* SessionInterval.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionInterval.swift; sourceTree = "<group>"; };
+		F00100000000000000000004 /* SessionOccurrence.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionOccurrence.swift; sourceTree = "<group>"; };
+		F00100000000000000000005 /* SessionStatus.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionStatus.swift; sourceTree = "<group>"; };
+		F00100000000000000000006 /* MarketScheduleCatalog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MarketScheduleCatalog.swift; sourceTree = "<group>"; };
+		F00100000000000000000007 /* SessionResolver.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionResolver.swift; sourceTree = "<group>"; };
+		F00100000000000000000008 /* FocusSessionResolver.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FocusSessionResolver.swift; sourceTree = "<group>"; };
+		F00100000000000000000009 /* LoginItemService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoginItemService.swift; sourceTree = "<group>"; };
+		F0010000000000000000000A /* MarketSessionsModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MarketSessionsModel.swift; sourceTree = "<group>"; };
+		F0010000000000000000000B /* DateFormatting.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DateFormatting.swift; sourceTree = "<group>"; };
+		F0010000000000000000000C /* MenuBarLabel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MenuBarLabel.swift; sourceTree = "<group>"; };
+		F0010000000000000000000D /* SessionsPopover.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionsPopover.swift; sourceTree = "<group>"; };
+		F0010000000000000000000E /* FocusSessionCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FocusSessionCard.swift; sourceTree = "<group>"; };
+		F0010000000000000000000F /* SessionRow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionRow.swift; sourceTree = "<group>"; };
+		F00100000000000000000010 /* SessionDetail.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionDetail.swift; sourceTree = "<group>"; };
+		F00200000000000000000001 /* SessionResolverTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionResolverTests.swift; sourceTree = "<group>"; };
+		F00200000000000000000002 /* FocusSessionResolverTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FocusSessionResolverTests.swift; sourceTree = "<group>"; };
+		F00200000000000000000003 /* ProgressTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProgressTests.swift; sourceTree = "<group>"; };
+		F00300000000000000000001 /* Market Sessions.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Market Sessions.app"; sourceTree = BUILT_PRODUCTS_DIR; };
+		F00300000000000000000002 /* MarketSessionsTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = MarketSessionsTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		B00100000000000000000001 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		B00200000000000000000001 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		G00100000000000000000001 = {
+			isa = PBXGroup;
+			children = (
+				G00100000000000000000002 /* MarketSessions */,
+				G00200000000000000000001 /* MarketSessionsTests */,
+				G00300000000000000000001 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		G00100000000000000000002 /* MarketSessions */ = {
+			isa = PBXGroup;
+			children = (
+				G00100000000000000000003 /* App */,
+				G00100000000000000000004 /* Models */,
+				G00100000000000000000005 /* Services */,
+				G00100000000000000000006 /* Support */,
+				G00100000000000000000007 /* Views */,
+			);
+			path = MarketSessions;
+			sourceTree = "<group>";
+		};
+		G00100000000000000000003 /* App */ = {
+			isa = PBXGroup;
+			children = (F00100000000000000000001 /* MarketSessionsApp.swift */,);
+			path = App;
+			sourceTree = "<group>";
+		};
+		G00100000000000000000004 /* Models */ = {
+			isa = PBXGroup;
+			children = (
+				F00100000000000000000002 /* MarketSession.swift */,
+				F00100000000000000000003 /* SessionInterval.swift */,
+				F00100000000000000000004 /* SessionOccurrence.swift */,
+				F00100000000000000000005 /* SessionStatus.swift */,
+			);
+			path = Models;
+			sourceTree = "<group>";
+		};
+		G00100000000000000000005 /* Services */ = {
+			isa = PBXGroup;
+			children = (
+				F00100000000000000000006 /* MarketScheduleCatalog.swift */,
+				F00100000000000000000007 /* SessionResolver.swift */,
+				F00100000000000000000008 /* FocusSessionResolver.swift */,
+				F00100000000000000000009 /* LoginItemService.swift */,
+				F0010000000000000000000A /* MarketSessionsModel.swift */,
+			);
+			path = Services;
+			sourceTree = "<group>";
+		};
+		G00100000000000000000006 /* Support */ = {
+			isa = PBXGroup;
+			children = (F0010000000000000000000B /* DateFormatting.swift */,);
+			path = Support;
+			sourceTree = "<group>";
+		};
+		G00100000000000000000007 /* Views */ = {
+			isa = PBXGroup;
+			children = (
+				F0010000000000000000000C /* MenuBarLabel.swift */,
+				F0010000000000000000000D /* SessionsPopover.swift */,
+				F0010000000000000000000E /* FocusSessionCard.swift */,
+				F0010000000000000000000F /* SessionRow.swift */,
+				F00100000000000000000010 /* SessionDetail.swift */,
+			);
+			path = Views;
+			sourceTree = "<group>";
+		};
+		G00200000000000000000001 /* MarketSessionsTests */ = {
+			isa = PBXGroup;
+			children = (
+				F00200000000000000000001 /* SessionResolverTests.swift */,
+				F00200000000000000000002 /* FocusSessionResolverTests.swift */,
+				F00200000000000000000003 /* ProgressTests.swift */,
+			);
+			path = MarketSessionsTests;
+			sourceTree = "<group>";
+		};
+		G00300000000000000000001 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				F00300000000000000000001 /* Market Sessions.app */,
+				F00300000000000000000002 /* MarketSessionsTests.xctest */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		T00100000000000000000001 /* MarketSessions */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = L00100000000000000000001 /* Build configuration list for PBXNativeTarget "MarketSessions" */;
+			buildPhases = (
+				B00100000000000000000002 /* Sources */,
+				B00100000000000000000001 /* Frameworks */,
+				B00100000000000000000003 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = MarketSessions;
+			productName = MarketSessions;
+			productReference = F00300000000000000000001 /* Market Sessions.app */;
+			productType = "com.apple.product-type.application";
+		};
+		T00200000000000000000001 /* MarketSessionsTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = L00200000000000000000001 /* Build configuration list for PBXNativeTarget "MarketSessionsTests" */;
+			buildPhases = (
+				B00200000000000000000002 /* Sources */,
+				B00200000000000000000001 /* Frameworks */,
+				B00200000000000000000003 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				D00100000000000000000001 /* PBXTargetDependency */,
+			);
+			name = MarketSessionsTests;
+			productName = MarketSessionsTests;
+			productReference = F00300000000000000000002 /* MarketSessionsTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		P00100000000000000000001 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = 1;
+				LastSwiftUpdateCheck = 2660;
+				LastUpgradeCheck = 2660;
+				TargetAttributes = {
+					T00100000000000000000001 = { CreatedOnToolsVersion = 26.6; };
+					T00200000000000000000001 = {
+						CreatedOnToolsVersion = 26.6;
+						TestTargetID = T00100000000000000000001;
+					};
+				};
+			};
+			buildConfigurationList = L00300000000000000000001 /* Build configuration list for PBXProject "MarketSessions" */;
+			compatibilityVersion = "Xcode 14.0";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (en, Base,);
+			mainGroup = G00100000000000000000001;
+			productRefGroup = G00300000000000000000001 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				T00100000000000000000001 /* MarketSessions */,
+				T00200000000000000000001 /* MarketSessionsTests */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		B00100000000000000000003 /* Resources */ = {isa = PBXResourcesBuildPhase; buildActionMask = 2147483647; files = (); runOnlyForDeploymentPostprocessing = 0; };
+		B00200000000000000000003 /* Resources */ = {isa = PBXResourcesBuildPhase; buildActionMask = 2147483647; files = (); runOnlyForDeploymentPostprocessing = 0; };
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		B00100000000000000000002 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				A00100000000000000000001 /* MarketSessionsApp.swift in Sources */,
+				A00100000000000000000002 /* MarketSession.swift in Sources */,
+				A00100000000000000000003 /* SessionInterval.swift in Sources */,
+				A00100000000000000000004 /* SessionOccurrence.swift in Sources */,
+				A00100000000000000000005 /* SessionStatus.swift in Sources */,
+				A00100000000000000000006 /* MarketScheduleCatalog.swift in Sources */,
+				A00100000000000000000007 /* SessionResolver.swift in Sources */,
+				A00100000000000000000008 /* FocusSessionResolver.swift in Sources */,
+				A00100000000000000000009 /* LoginItemService.swift in Sources */,
+				A0010000000000000000000A /* MarketSessionsModel.swift in Sources */,
+				A0010000000000000000000B /* DateFormatting.swift in Sources */,
+				A0010000000000000000000C /* MenuBarLabel.swift in Sources */,
+				A0010000000000000000000D /* SessionsPopover.swift in Sources */,
+				A0010000000000000000000E /* FocusSessionCard.swift in Sources */,
+				A0010000000000000000000F /* SessionRow.swift in Sources */,
+				A00100000000000000000010 /* SessionDetail.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		B00200000000000000000002 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				A00200000000000000000001 /* SessionResolverTests.swift in Sources */,
+				A00200000000000000000002 /* FocusSessionResolverTests.swift in Sources */,
+				A00200000000000000000003 /* ProgressTests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		D00100000000000000000001 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = T00100000000000000000001 /* MarketSessions */;
+			targetProxy = C00100000000000000000001 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin XCBuildConfiguration section */
+		C10100000000000000000001 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				ENABLE_HARDENED_RUNTIME = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_CFBundleDisplayName = "Market Sessions";
+				INFOPLIST_KEY_LSUIElement = YES;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks";
+				MACOSX_DEPLOYMENT_TARGET = 26.0;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.afterthoughtt.MarketSessions;
+				PRODUCT_MODULE_NAME = MarketSessions;
+				PRODUCT_NAME = "Market Sessions";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_STRICT_CONCURRENCY = complete;
+				SWIFT_VERSION = 6.0;
+			};
+			name = Debug;
+		};
+		C10100000000000000000002 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				ENABLE_HARDENED_RUNTIME = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_CFBundleDisplayName = "Market Sessions";
+				INFOPLIST_KEY_LSUIElement = YES;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks";
+				MACOSX_DEPLOYMENT_TARGET = 26.0;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.afterthoughtt.MarketSessions;
+				PRODUCT_MODULE_NAME = MarketSessions;
+				PRODUCT_NAME = "Market Sessions";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_STRICT_CONCURRENCY = complete;
+				SWIFT_VERSION = 6.0;
+			};
+			name = Release;
+		};
+		C10200000000000000000001 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				GENERATE_INFOPLIST_FILE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 26.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.afterthoughtt.MarketSessionsTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_STRICT_CONCURRENCY = complete;
+				SWIFT_VERSION = 6.0;
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Market Sessions.app/Contents/MacOS/Market Sessions";
+			};
+			name = Debug;
+		};
+		C10200000000000000000002 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				GENERATE_INFOPLIST_FILE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 26.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.afterthoughtt.MarketSessionsTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_STRICT_CONCURRENCY = complete;
+				SWIFT_VERSION = 6.0;
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Market Sessions.app/Contents/MacOS/Market Sessions";
+			};
+			name = Release;
+		};
+		C10300000000000000000001 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				MACOSX_DEPLOYMENT_TARGET = 26.0;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = macosx;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+			};
+			name = Debug;
+		};
+		C10300000000000000000002 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				MACOSX_DEPLOYMENT_TARGET = 26.0;
+				SDKROOT = macosx;
+				SWIFT_COMPILATION_MODE = wholemodule;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		L00100000000000000000001 /* Build configuration list for PBXNativeTarget "MarketSessions" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (C10100000000000000000001 /* Debug */, C10100000000000000000002 /* Release */,);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		L00200000000000000000001 /* Build configuration list for PBXNativeTarget "MarketSessionsTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (C10200000000000000000001 /* Debug */, C10200000000000000000002 /* Release */,);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		L00300000000000000000001 /* Build configuration list for PBXProject "MarketSessions" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (C10300000000000000000001 /* Debug */, C10300000000000000000002 /* Release */,);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = P00100000000000000000001 /* Project object */;
+}

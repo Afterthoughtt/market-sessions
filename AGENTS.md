@@ -3,8 +3,8 @@
 ## Product contract
 
 - Build **Market Sessions**, a Swift 6 menu-bar-only app targeting macOS 26 with Xcode 26.6.
-- Use SwiftUI `MenuBarExtra` with `.menuBarExtraStyle(.window)` and `LSUIElement = YES`. The menu-bar label is an SF Symbol plus a compact minute countdown.
-- The popover contains a current/next-session focus card with linear progress, followed by a stable scrollable list. Session rows expand in place, with at most one row expanded.
+- Use SwiftUI `MenuBarExtra` with `.menuBarExtraStyle(.window)` and `LSUIElement = YES`. The menu-bar label is an SF Symbol plus a compact humanized countdown such as `42m`, `3h 12m`, or `2d 3h 14m`.
+- The popover contains a current/next-session focus card with linear progress, followed by a compact summary of every currently active session and then the stable scrollable list. The summary must not reorder or replace the full list. Session rows expand in place, with at most one row expanded.
 - Include Launch at Login and Quit actions. The app has no Dock or App Switcher presence.
 - Track these first-class sessions: CME Globex macro futures, Tokyo, Hong Kong, Shanghai, London, New York FX, NYSE/Nasdaq cash, weekly spot FX, and the UTC crypto day.
 - Focus priority is NYSE/Nasdaq, CME macro futures, London, New York FX, Tokyo, Hong Kong, then Shanghai. Spot FX is list-only; use the crypto day as the always-available fallback.
@@ -25,6 +25,7 @@
 - Add no package dependency, network service, account integration, or telemetry without explicit approval.
 - Organize production code into focused `App`, `Views`, `Models`, `Services`, and `Support` groups. Keep schedule rules out of views and avoid abstractions used only once.
 - Use semantic, system-adaptive colors and standard macOS controls. Preserve a compact menu-bar footprint and keyboard accessibility.
+- Treat the all-open-sessions summary as presentation of resolved state; do not duplicate schedule calculation in SwiftUI.
 
 ## Working agreement
 
@@ -35,7 +36,7 @@
 
 ## Verification
 
-- Unit-test session state, next transitions, progress clamping, recesses, CME maintenance, weekends, DST boundaries, focus priority, and injected display time zones.
+- Unit-test session state, next transitions, progress clamping, recesses, CME maintenance, weekends, DST boundaries, focus priority, injected display time zones, compact countdown boundaries, and all-open-session summary inputs.
 - Once the scaffold exists, use `./script/build_and_run.sh --verify` as the canonical build-and-launch check, and point the Codex Run action in `.codex/environments/environment.toml` to it.
 - Run the Xcode test suite with workspace-local temporary and Derived Data directories and code signing disabled when signing is not under test.
 - Do not report completion while relevant builds or tests fail. Final reports contain only files changed, verification performed, and material remaining risks.
