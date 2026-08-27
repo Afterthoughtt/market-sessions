@@ -31,11 +31,7 @@ struct SessionResolver: Sendable {
             let chain = activeChain(containing: current, in: activeOccurrences)
             chainStart = chain.first?.start
             chainEnd = chain.last?.end
-            let followsKind = occurrences.first(where: { $0.start == chainEnd })?.kind
-            let verb: SessionTransition.Verb = (followsKind == .recess || followsKind == .maintenance)
-                ? .breaks
-                : .closes
-            transition = SessionTransition(verb: verb, date: chainEnd ?? current.end, approximate: approximate)
+            transition = SessionTransition(verb: .closes, date: chainEnd ?? current.end, approximate: approximate)
         } else if let current {
             switch current.kind {
             case .recess:
@@ -52,6 +48,18 @@ struct SessionResolver: Sendable {
                     date: nextActiveStart ?? current.end,
                     approximate: approximate
                 )
+            case .preMarket:
+                status = .preMarket
+                transition = SessionTransition(
+                    verb: .opens,
+                    date: nextActiveStart ?? current.end,
+                    approximate: approximate
+                )
+            case .postMarket:
+                status = .postMarket
+                transition = nextActiveStart.map {
+                    SessionTransition(verb: .opens, date: $0, approximate: approximate)
+                }
             case .trading, .auction:
                 status = .closed
                 transition = nextActiveStart.map {

@@ -44,14 +44,14 @@ final class SessionResolverTests: XCTestCase {
         }
     }
 
-    func testTokyoMorningBreaksIntoLunchRecess() throws {
+    func testTokyoMorningClosesAtLunchRecess() throws {
         let now = try makeDate(
             year: 2026, month: 8, day: 24, hour: 10, minute: 0,
             timeZoneIdentifier: "Asia/Tokyo"
         )
         let result = SessionResolver().resolve(MarketScheduleCatalog.session(.tokyo), at: now)
         XCTAssertEqual(result.status, .open)
-        XCTAssertEqual(result.transition?.verb, .breaks)
+        XCTAssertEqual(result.transition?.verb, .closes)
         XCTAssertEqual(
             result.transition?.date,
             try makeDate(year: 2026, month: 8, day: 24, hour: 11, minute: 30, timeZoneIdentifier: "Asia/Tokyo")
@@ -104,14 +104,14 @@ final class SessionResolverTests: XCTestCase {
         XCTAssertEqual(result.transition?.verb, .closes)
     }
 
-    func testCMEWeekdayBreaksAndMaintenanceAndFridayClose() throws {
+    func testCMEWeekdayCloseAndMaintenance() throws {
         let zone = "America/Chicago"
         let session = MarketScheduleCatalog.session(.cmeFutures)
 
         let monday = try makeDate(year: 2026, month: 8, day: 24, hour: 12, minute: 0, timeZoneIdentifier: zone)
         let open = SessionResolver().resolve(session, at: monday)
         XCTAssertEqual(open.status, .open)
-        XCTAssertEqual(open.transition?.verb, .breaks)
+        XCTAssertEqual(open.transition?.verb, .closes)
         XCTAssertEqual(open.transition?.approximate, true)
 
         let maintenanceNow = try makeDate(year: 2026, month: 8, day: 24, hour: 16, minute: 30, timeZoneIdentifier: zone)
@@ -128,6 +128,31 @@ final class SessionResolverTests: XCTestCase {
         let fridayResolved = SessionResolver().resolve(session, at: friday)
         XCTAssertEqual(fridayResolved.status, .open)
         XCTAssertEqual(fridayResolved.transition?.verb, .closes)
+    }
+
+    func testNewYorkPreAndPostMarket() throws {
+        let zone = "America/New_York"
+        let session = MarketScheduleCatalog.session(.newYorkCash)
+
+        let preMarket = try makeDate(year: 2026, month: 8, day: 24, hour: 8, minute: 0, timeZoneIdentifier: zone)
+        let pre = SessionResolver().resolve(session, at: preMarket)
+        XCTAssertEqual(pre.status, .preMarket)
+        XCTAssertFalse(pre.status.isActive)
+        XCTAssertEqual(pre.transition?.verb, .opens)
+        XCTAssertEqual(
+            pre.transition?.date,
+            try makeDate(year: 2026, month: 8, day: 24, hour: 9, minute: 30, timeZoneIdentifier: zone)
+        )
+
+        let postMarket = try makeDate(year: 2026, month: 8, day: 24, hour: 17, minute: 0, timeZoneIdentifier: zone)
+        let post = SessionResolver().resolve(session, at: postMarket)
+        XCTAssertEqual(post.status, .postMarket)
+        XCTAssertFalse(post.status.isActive)
+        XCTAssertEqual(post.transition?.verb, .opens)
+        XCTAssertEqual(
+            post.transition?.date,
+            try makeDate(year: 2026, month: 8, day: 25, hour: 9, minute: 30, timeZoneIdentifier: zone)
+        )
     }
 
     func testSaturdayEverythingClosedWithOpensTransitions() throws {

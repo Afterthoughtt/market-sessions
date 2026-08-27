@@ -1,14 +1,13 @@
 import AppKit
 import SwiftUI
 
-/// Status-item label: ticker code + progress ring, per the Turn 7 handoff with the
-/// "2b" variant — both rings fill; how full the ring is, is how close the moment is.
-/// The left ring is the open market filling toward its close; the right ring is the
-/// next session filling toward its open, further set apart by a dotted track and
-/// reduced opacity. When nothing trades the pill degrades to the next ring and code,
-/// dimmed to 0.62.
+/// Status-item label: ticker code + progress ring. The left ring is the open market
+/// draining toward its close — full at the open, empty at the close, matching every
+/// ring in the popover. The right ring is the next session filling toward its open,
+/// set apart by a dotted track and reduced opacity. When nothing trades the label
+/// degrades to the next ring and code, dimmed to 0.62.
 ///
-/// The pill is rendered to a template NSImage so shapes and opacities survive the
+/// The label is rendered to a template NSImage so shapes and opacities survive the
 /// menu bar (SwiftUI shape views do not draw reliably in a MenuBarExtra label).
 struct MenuBarLabel: View {
     let focus: FocusSnapshot
@@ -54,7 +53,7 @@ private struct MenuBarPill: View {
     var body: some View {
         HStack(spacing: 5) {
             if let hero = focus.hero {
-                ring(fraction: hero.elapsedFraction, secondary: false)
+                ring(fraction: hero.remainingFraction, secondary: false)
                 code(hero.code, opacity: 1)
                 if let next = focus.nextToOpen {
                     Text("›")
@@ -71,8 +70,7 @@ private struct MenuBarPill: View {
             }
         }
         .padding(.vertical, 2)
-        .padding(.horizontal, 7)
-        .background(RoundedRectangle(cornerRadius: 5).fill(.black.opacity(0.32)))
+        .padding(.horizontal, 2)
         .opacity(focus.hero == nil ? 0.62 : 1)
         .fixedSize()
     }

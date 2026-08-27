@@ -63,7 +63,7 @@ struct MarketPalette {
     func statusColor(_ status: SessionStatus) -> Color {
         switch status {
         case .open: green
-        case .auction: purple
+        case .auction, .preMarket, .postMarket: purple
         case .recess, .maintenance: orange
         case .closed: sec
         }

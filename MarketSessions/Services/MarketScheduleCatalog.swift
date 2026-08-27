@@ -5,10 +5,22 @@ enum MarketScheduleCatalog {
         MarketSession(
             id: .newYorkCash,
             code: "NY",
-            name: "New York Cash",
+            name: "New York",
             canonicalTimeZoneIdentifier: "America/New_York",
             intervals: [
+                SessionInterval(
+                    weekdays: Weekday.weekdays,
+                    start: LocalTime(4),
+                    end: LocalTime(9, 30),
+                    kind: .preMarket
+                ),
                 SessionInterval(weekdays: Weekday.weekdays, start: LocalTime(9, 30), end: LocalTime(16)),
+                SessionInterval(
+                    weekdays: Weekday.weekdays,
+                    start: LocalTime(16),
+                    end: LocalTime(20),
+                    kind: .postMarket
+                ),
             ],
             focusPriority: 1,
             approximateTimes: false

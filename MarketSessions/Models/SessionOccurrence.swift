@@ -20,7 +20,6 @@ struct SessionTransition: Hashable, Sendable {
     enum Verb: String, Hashable, Sendable {
         case opens = "Opens"
         case closes = "Closes"
-        case breaks = "Breaks"
         case resumes = "Resumes"
         case reopens = "Reopens"
     }

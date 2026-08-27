@@ -5,6 +5,8 @@ enum SessionStatus: String, Hashable, Sendable {
     case auction = "Auction"
     case recess = "Recess"
     case maintenance = "Maintenance"
+    case preMarket = "Pre-market"
+    case postMarket = "Post-market"
     case closed = "Closed"
 
     /// "Can you trade" — open and auction count.

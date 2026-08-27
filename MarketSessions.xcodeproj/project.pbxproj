@@ -24,9 +24,15 @@
 		A0010000000000000000000F /* SessionRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0010000000000000000000F /* SessionRow.swift */; };
 		A00100000000000000000010 /* MarketPalette.swift in Sources */ = {isa = PBXBuildFile; fileRef = F00100000000000000000010 /* MarketPalette.swift */; };
 		A00100000000000000000011 /* ProgressRing.swift in Sources */ = {isa = PBXBuildFile; fileRef = F00100000000000000000011 /* ProgressRing.swift */; };
+		A00100000000000000000012 /* EconomicEvent.swift in Sources */ = {isa = PBXBuildFile; fileRef = F00100000000000000000012 /* EconomicEvent.swift */; };
+		A00100000000000000000013 /* EconomicEventCatalog.swift in Sources */ = {isa = PBXBuildFile; fileRef = F00100000000000000000013 /* EconomicEventCatalog.swift */; };
+		A00100000000000000000014 /* EconomicEventsSection.swift in Sources */ = {isa = PBXBuildFile; fileRef = F00100000000000000000014 /* EconomicEventsSection.swift */; };
+		A00100000000000000000015 /* tier1-events-2026.json in Resources */ = {isa = PBXBuildFile; fileRef = F00100000000000000000015 /* tier1-events-2026.json */; };
+		A00100000000000000000016 /* tier1-events-2026.json in Resources */ = {isa = PBXBuildFile; fileRef = F00100000000000000000015 /* tier1-events-2026.json */; };
 		A00200000000000000000001 /* SessionResolverTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F00200000000000000000001 /* SessionResolverTests.swift */; };
 		A00200000000000000000002 /* FocusSessionResolverTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F00200000000000000000002 /* FocusSessionResolverTests.swift */; };
 		A00200000000000000000003 /* ProgressTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F00200000000000000000003 /* ProgressTests.swift */; };
+		A00200000000000000000004 /* EconomicEventTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F00200000000000000000004 /* EconomicEventTests.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -57,9 +63,14 @@
 		F0010000000000000000000F /* SessionRow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionRow.swift; sourceTree = "<group>"; };
 		F00100000000000000000010 /* MarketPalette.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MarketPalette.swift; sourceTree = "<group>"; };
 		F00100000000000000000011 /* ProgressRing.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProgressRing.swift; sourceTree = "<group>"; };
+		F00100000000000000000012 /* EconomicEvent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EconomicEvent.swift; sourceTree = "<group>"; };
+		F00100000000000000000013 /* EconomicEventCatalog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EconomicEventCatalog.swift; sourceTree = "<group>"; };
+		F00100000000000000000014 /* EconomicEventsSection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EconomicEventsSection.swift; sourceTree = "<group>"; };
+		F00100000000000000000015 /* tier1-events-2026.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "tier1-events-2026.json"; sourceTree = "<group>"; };
 		F00200000000000000000001 /* SessionResolverTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionResolverTests.swift; sourceTree = "<group>"; };
 		F00200000000000000000002 /* FocusSessionResolverTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FocusSessionResolverTests.swift; sourceTree = "<group>"; };
 		F00200000000000000000003 /* ProgressTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProgressTests.swift; sourceTree = "<group>"; };
+		F00200000000000000000004 /* EconomicEventTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EconomicEventTests.swift; sourceTree = "<group>"; };
 		F00300000000000000000001 /* Market Sessions.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Market Sessions.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		F00300000000000000000002 /* MarketSessionsTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = MarketSessionsTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
@@ -96,6 +107,7 @@
 			children = (
 				G00100000000000000000003 /* App */,
 				G00100000000000000000004 /* Models */,
+				G00100000000000000000008 /* Resources */,
 				G00100000000000000000005 /* Services */,
 				G00100000000000000000006 /* Support */,
 				G00100000000000000000007 /* Views */,
@@ -116,6 +128,7 @@
 				F00100000000000000000003 /* SessionInterval.swift */,
 				F00100000000000000000004 /* SessionOccurrence.swift */,
 				F00100000000000000000005 /* SessionStatus.swift */,
+				F00100000000000000000012 /* EconomicEvent.swift */,
 			);
 			path = Models;
 			sourceTree = "<group>";
@@ -128,6 +141,7 @@
 				F00100000000000000000008 /* FocusSessionResolver.swift */,
 				F00100000000000000000009 /* LoginItemService.swift */,
 				F0010000000000000000000A /* MarketSessionsModel.swift */,
+				F00100000000000000000013 /* EconomicEventCatalog.swift */,
 			);
 			path = Services;
 			sourceTree = "<group>";
@@ -149,8 +163,15 @@
 				F0010000000000000000000E /* FocusSessionCard.swift */,
 				F0010000000000000000000F /* SessionRow.swift */,
 				F00100000000000000000011 /* ProgressRing.swift */,
+				F00100000000000000000014 /* EconomicEventsSection.swift */,
 			);
 			path = Views;
+			sourceTree = "<group>";
+		};
+		G00100000000000000000008 /* Resources */ = {
+			isa = PBXGroup;
+			children = (F00100000000000000000015 /* tier1-events-2026.json */,);
+			path = Resources;
 			sourceTree = "<group>";
 		};
 		G00200000000000000000001 /* MarketSessionsTests */ = {
@@ -159,6 +180,7 @@
 				F00200000000000000000001 /* SessionResolverTests.swift */,
 				F00200000000000000000002 /* FocusSessionResolverTests.swift */,
 				F00200000000000000000003 /* ProgressTests.swift */,
+				F00200000000000000000004 /* EconomicEventTests.swift */,
 			);
 			path = MarketSessionsTests;
 			sourceTree = "<group>";
@@ -244,8 +266,8 @@
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
-		B00100000000000000000003 /* Resources */ = {isa = PBXResourcesBuildPhase; buildActionMask = 2147483647; files = (); runOnlyForDeploymentPostprocessing = 0; };
-		B00200000000000000000003 /* Resources */ = {isa = PBXResourcesBuildPhase; buildActionMask = 2147483647; files = (); runOnlyForDeploymentPostprocessing = 0; };
+		B00100000000000000000003 /* Resources */ = {isa = PBXResourcesBuildPhase; buildActionMask = 2147483647; files = (A00100000000000000000015 /* tier1-events-2026.json in Resources */,); runOnlyForDeploymentPostprocessing = 0; };
+		B00200000000000000000003 /* Resources */ = {isa = PBXResourcesBuildPhase; buildActionMask = 2147483647; files = (A00100000000000000000016 /* tier1-events-2026.json in Resources */,); runOnlyForDeploymentPostprocessing = 0; };
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
@@ -270,6 +292,9 @@
 				A0010000000000000000000F /* SessionRow.swift in Sources */,
 				A00100000000000000000010 /* MarketPalette.swift in Sources */,
 				A00100000000000000000011 /* ProgressRing.swift in Sources */,
+				A00100000000000000000012 /* EconomicEvent.swift in Sources */,
+				A00100000000000000000013 /* EconomicEventCatalog.swift in Sources */,
+				A00100000000000000000014 /* EconomicEventsSection.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -280,6 +305,7 @@
 				A00200000000000000000001 /* SessionResolverTests.swift in Sources */,
 				A00200000000000000000002 /* FocusSessionResolverTests.swift in Sources */,
 				A00200000000000000000003 /* ProgressTests.swift in Sources */,
+				A00200000000000000000004 /* EconomicEventTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

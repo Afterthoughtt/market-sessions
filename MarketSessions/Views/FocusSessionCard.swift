@@ -134,7 +134,7 @@ struct OpenNowGrid: View {
                 size: 24,
                 lineWidth: 2.5,
                 track: palette.track,
-                arc: palette.green
+                arc: palette.accent
             )
             VStack(alignment: .leading, spacing: 2) {
                 Text(entry.name)

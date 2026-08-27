@@ -20,7 +20,18 @@ struct SessionsPopover: View {
 
             sessionList
 
-            Spacer(minLength: 0)
+            if !model.weeklyEvents.events.isEmpty {
+                Rectangle()
+                    .fill(palette.dividerStrong)
+                    .frame(height: 1)
+
+                EconomicEventsSection(
+                    weekly: model.weeklyEvents,
+                    now: model.now,
+                    displayTimeZone: model.displayTimeZone,
+                    palette: palette
+                )
+            }
 
             Rectangle()
                 .fill(palette.dividerStrong)
@@ -28,7 +39,7 @@ struct SessionsPopover: View {
 
             footer
         }
-        .frame(width: 390, height: 590)
+        .frame(width: 390)
         .background(palette.popover)
         .task {
             model.start()
@@ -58,7 +69,7 @@ struct SessionsPopover: View {
                             size: 13,
                             lineWidth: 2,
                             track: palette.ringTrack,
-                            arc: palette.ringSec
+                            arc: palette.accent
                         )
                         Text(
                             "\(Text("Daily Close in").foregroundColor(palette.sec)) \(Text(MarketDurationFormatting.compact(minutes: model.utcDayRemainingMinutes)).fontWeight(.medium).foregroundColor(palette.text))"

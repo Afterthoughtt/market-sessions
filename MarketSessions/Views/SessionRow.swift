@@ -23,9 +23,9 @@ struct SessionRow: View {
 
             Spacer(minLength: 6)
 
-            Text(resolved.status.label)
+            Text(statusText)
                 .font(.system(size: 11, weight: .semibold))
-                .foregroundStyle(palette.statusColor(resolved.status))
+                .foregroundStyle(statusColor)
                 .lineLimit(1)
                 .fixedSize(horizontal: true, vertical: false)
                 .frame(width: 72, alignment: .trailing)
@@ -43,6 +43,20 @@ struct SessionRow: View {
         .accessibilityLabel(accessibilityLabel)
     }
 
+    /// Closed sessions less than an hour from opening surface it: "Opens soon" in orange.
+    private var isOpeningSoon: Bool {
+        guard resolved.status == .closed, let next = resolved.nextActiveStart else { return false }
+        return next.timeIntervalSince(now) < 3_600
+    }
+
+    private var statusText: String {
+        isOpeningSoon ? "Opens soon" : resolved.status.label
+    }
+
+    private var statusColor: Color {
+        isOpeningSoon ? palette.orange : palette.statusColor(resolved.status)
+    }
+
     private var transitionText: String {
         guard let transition = resolved.transition else { return "" }
         return MarketDateFormatting.rowTransition(
@@ -53,7 +67,7 @@ struct SessionRow: View {
     }
 
     private var accessibilityLabel: String {
-        var label = "\(resolved.session.name), \(resolved.status.label.lowercased())"
+        var label = "\(resolved.session.name), \(statusText.lowercased())"
         if !transitionText.isEmpty {
             label += ", " + transitionText.lowercased().replacingOccurrences(of: "≈", with: "approximately ")
         }

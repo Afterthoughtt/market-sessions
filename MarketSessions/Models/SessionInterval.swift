@@ -29,6 +29,8 @@ enum SessionIntervalKind: Hashable, Sendable {
     case auction
     case recess
     case maintenance
+    case preMarket
+    case postMarket
 
     /// Trading and auctions count as "open" — orders can match.
     var countsAsActive: Bool {
