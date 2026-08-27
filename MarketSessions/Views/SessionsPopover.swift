@@ -20,7 +20,7 @@ struct SessionsPopover: View {
 
             sessionList
 
-            if !model.weeklyEvents.events.isEmpty {
+            if model.weeklyEvents.events.contains(where: { $0.end > model.now }) {
                 Rectangle()
                     .fill(palette.dividerStrong)
                     .frame(height: 1)

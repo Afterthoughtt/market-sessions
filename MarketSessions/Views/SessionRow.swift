@@ -57,19 +57,19 @@ struct SessionRow: View {
         isOpeningSoon ? palette.orange : palette.statusColor(resolved.status)
     }
 
+    /// Relative countdown to the next transition: "Opens in 8h 2m", "Closes in 1h 6m".
     private var transitionText: String {
         guard let transition = resolved.transition else { return "" }
-        return MarketDateFormatting.rowTransition(
-            transition,
-            relativeTo: now,
-            timeZone: displayTimeZone
-        )
+        let minutes = FocusSessionResolver.remainingMinutes(until: transition.date, from: now)
+        return "\(transition.verb.rawValue) in \(MarketDurationFormatting.compact(minutes: minutes))"
     }
 
     private var accessibilityLabel: String {
         var label = "\(resolved.session.name), \(statusText.lowercased())"
-        if !transitionText.isEmpty {
-            label += ", " + transitionText.lowercased().replacingOccurrences(of: "≈", with: "approximately ")
+        if let transition = resolved.transition {
+            let minutes = FocusSessionResolver.remainingMinutes(until: transition.date, from: now)
+            label += ", \(transition.verb.rawValue.lowercased()) in "
+                + MarketDurationFormatting.spoken(minutes: minutes)
         }
         return label
     }

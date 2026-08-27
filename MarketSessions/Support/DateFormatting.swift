@@ -45,15 +45,6 @@ enum MarketDateFormatting {
         return clock
     }
 
-    /// Row transition column: `Closes 1:00 PM`, `Reopens ≈3:00 PM`, `Opens Sun ≈3:00 PM`.
-    static func rowTransition(
-        _ transition: SessionTransition,
-        relativeTo now: Date,
-        timeZone: TimeZone
-    ) -> String {
-        "\(transition.verb.rawValue) \(transitionTime(transition.date, relativeTo: now, timeZone: timeZone, approximate: transition.approximate))"
-    }
-
     /// Hero subtitle tail: `closes Today 1:00 PM`, `opens Sun ≈3:00 PM`.
     static func subtitleTransition(
         _ transition: SessionTransition,
