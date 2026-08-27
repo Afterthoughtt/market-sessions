@@ -20,7 +20,9 @@ struct MenuBarLabel: View {
     @MainActor
     private static func render(_ focus: FocusSnapshot) -> NSImage {
         let renderer = ImageRenderer(content: MenuBarPill(focus: focus))
-        renderer.scale = NSScreen.main?.backingScaleFactor ?? 2
+        // Render at the sharpest attached display's scale — NSScreen.main can be a
+        // 1x display (or nil at startup), which leaves the label blurry on retina.
+        renderer.scale = max(NSScreen.screens.map(\.backingScaleFactor).max() ?? 2, 2)
         guard let image = renderer.nsImage else { return NSImage() }
         image.isTemplate = true
         return image
@@ -69,8 +71,10 @@ private struct MenuBarPill: View {
                 code(next.code, opacity: 1)
             }
         }
-        .padding(.vertical, 2)
         .padding(.horizontal, 2)
+        // Integral height keeps the template image from landing on a half-pixel
+        // boundary in the status bar, which blurs the text.
+        .frame(height: 18)
         .opacity(focus.hero == nil ? 0.62 : 1)
         .fixedSize()
     }

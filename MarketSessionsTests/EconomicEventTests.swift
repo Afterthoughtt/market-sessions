@@ -15,32 +15,27 @@ final class EconomicEventTests: XCTestCase {
         XCTAssertEqual(Set(events.map(\.id)).count, events.count)
     }
 
-    func testCurrentWeekFiltersMondayThroughFridayAndFindsTheNextEvent() throws {
+    func testUpcomingEventsAreNeverEmptyWhileTheCatalogHasFutureEvents() throws {
         let events = try EconomicEventCatalog.loadAll(bundle: Bundle(for: Self.self))
         let vancouver = try XCTUnwrap(TimeZone(identifier: "America/Vancouver"))
+        // Thursday after this week's only event (PCE, Aug 26) has passed.
         let now = try makeDate(
             year: 2026,
             month: 8,
-            day: 25,
+            day: 27,
             hour: 11,
             minute: 0,
             timeZone: vancouver
         )
 
-        let snapshot = WeeklyEconomicEventResolver().resolve(
-            events,
-            weekContaining: now,
-            displayTimeZone: vancouver
-        )
+        let snapshot = UpcomingEconomicEventResolver().resolve(events, at: now)
 
-        XCTAssertEqual(snapshot.events.map(\.id), ["2026-08-26-pce"])
-        XCTAssertEqual(snapshot.nextEventID, "2026-08-26-pce")
-
-        var calendar = Calendar(identifier: .gregorian)
-        calendar.timeZone = vancouver
-        let event = try XCTUnwrap(snapshot.events.first)
-        XCTAssertEqual(calendar.component(.hour, from: event.start), 5)
-        XCTAssertEqual(calendar.component(.minute, from: event.start), 30)
+        // The 14-day horizon is quiet-ish, so the resolver reaches ahead to at least four.
+        XCTAssertGreaterThanOrEqual(snapshot.events.count, 4)
+        XCTAssertEqual(snapshot.events.first?.id, "2026-09-04-employment")
+        XCTAssertTrue(snapshot.events.allSatisfy { $0.end > now })
+        let starts = snapshot.events.map(\.start)
+        XCTAssertEqual(starts, starts.sorted())
     }
 
     func testUSReleasesKeepTheirCanonicalNewYorkTime() throws {
@@ -79,22 +74,8 @@ final class EconomicEventTests: XCTestCase {
         XCTAssertNil(event.remainingMinutes(at: event.end))
     }
 
-    func testWeekResolverExcludesWeekendEvents() throws {
+    func testUpcomingResolverDropsPastEventsAndRespectsTheHorizon() throws {
         let vancouver = try XCTUnwrap(TimeZone(identifier: "America/Vancouver"))
-        let friday = try makeEvent(
-            id: "friday",
-            year: 2026,
-            month: 8,
-            day: 28,
-            timeZone: vancouver
-        )
-        let saturday = try makeEvent(
-            id: "saturday",
-            year: 2026,
-            month: 8,
-            day: 29,
-            timeZone: vancouver
-        )
         let now = try makeDate(
             year: 2026,
             month: 8,
@@ -103,14 +84,26 @@ final class EconomicEventTests: XCTestCase {
             minute: 0,
             timeZone: vancouver
         )
+        let past = try makeEvent(id: "past", year: 2026, month: 8, day: 21, timeZone: vancouver)
+        let nearby = try makeEvent(id: "nearby", year: 2026, month: 8, day: 28, timeZone: vancouver)
+        let farOut = (0..<5).map { index in
+            EconomicEvent(
+                id: "far-\(index)",
+                kind: .cpi,
+                start: now.addingTimeInterval(TimeInterval(30 + index) * 86_400),
+                end: now.addingTimeInterval(TimeInterval(30 + index) * 86_400 + 60),
+                canonicalTimeZoneIdentifier: vancouver.identifier
+            )
+        }
 
-        let snapshot = WeeklyEconomicEventResolver().resolve(
-            [friday, saturday],
-            weekContaining: now,
-            displayTimeZone: vancouver
+        let snapshot = UpcomingEconomicEventResolver().resolve(
+            [past, nearby] + farOut,
+            at: now
         )
 
-        XCTAssertEqual(snapshot.events.map(\.id), ["friday"])
+        // The past event is gone; the horizon holds one event, so the resolver
+        // reaches ahead to the four-event minimum and no further.
+        XCTAssertEqual(snapshot.events.map(\.id), ["nearby", "far-0", "far-1", "far-2"])
     }
 
     func testInvalidBundledDateIsRejected() {

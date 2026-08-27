@@ -1,11 +1,11 @@
 import SwiftUI
 
-/// "Upcoming Events" — tier-1 U.S. economic events remaining in the current
-/// Monday–Friday. Past events are dropped; each row is the event name, its local
-/// day and time, and a countdown until it goes live ("Live" while the release
-/// window is open). Capped at four rows with a disclosure for the rest.
+/// "Upcoming Events" — the next tier-1 U.S. economic events, rolling forward so
+/// the section is never empty. Each row is the event name, its local day and
+/// time, and a countdown until it goes live ("Live" while the release window is
+/// open). Capped at four rows with a disclosure for the rest.
 struct EconomicEventsSection: View {
-    let weekly: WeeklyEconomicEvents
+    let upcoming: UpcomingEconomicEvents
     let now: Date
     let displayTimeZone: TimeZone
     let palette: MarketPalette
@@ -14,13 +14,8 @@ struct EconomicEventsSection: View {
 
     private static let collapsedRowCap = 4
 
-    /// Events still ahead (or live) this week — the section hides when this is empty.
-    var upcomingEvents: [EconomicEvent] {
-        weekly.events.filter { $0.end > now }
-    }
-
     var body: some View {
-        let events = upcomingEvents
+        let events = upcoming.events
         VStack(alignment: .leading, spacing: 0) {
             HStack(alignment: .firstTextBaseline, spacing: 6) {
                 Text("Upcoming Events")
@@ -101,14 +96,27 @@ struct EconomicEventsSection: View {
         }
     }
 
-    /// "Wed · 5:30 AM" in the user's zone.
+    /// "Today · 5:30 AM", "Fri · 5:30 AM" within the week, "Fri Sep 4 · 5:30 AM" beyond.
     private func scheduleLabel(_ event: EconomicEvent) -> String {
-        let formatter = DateFormatter()
-        formatter.locale = .autoupdatingCurrent
-        formatter.timeZone = displayTimeZone
-        formatter.dateFormat = "EEE"
-        let weekday = formatter.string(from: event.start)
-        return "\(weekday) · \(MarketDateFormatting.time(event.start, timeZone: displayTimeZone))"
+        var calendar = Calendar(identifier: .gregorian)
+        calendar.timeZone = displayTimeZone
+
+        let day: String
+        if calendar.isDate(event.start, inSameDayAs: now) {
+            day = "Today"
+        } else {
+            let formatter = DateFormatter()
+            formatter.locale = .autoupdatingCurrent
+            formatter.timeZone = displayTimeZone
+            let daysAway = calendar.dateComponents(
+                [.day],
+                from: calendar.startOfDay(for: now),
+                to: calendar.startOfDay(for: event.start)
+            ).day ?? 0
+            formatter.dateFormat = daysAway < 7 ? "EEE" : "EEE MMM d"
+            day = formatter.string(from: event.start)
+        }
+        return "\(day) · \(MarketDateFormatting.time(event.start, timeZone: displayTimeZone))"
     }
 
     private func accessibilityLabel(_ event: EconomicEvent) -> String {

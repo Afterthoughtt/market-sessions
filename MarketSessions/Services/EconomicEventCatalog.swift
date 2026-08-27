@@ -108,28 +108,18 @@ enum EconomicEventCatalog {
     }
 }
 
-struct WeeklyEconomicEventResolver: Sendable {
-    private let baseCalendar: Calendar
-
-    init(calendar: Calendar = Calendar(identifier: .gregorian)) {
-        self.baseCalendar = calendar
-    }
-
+/// Rolling window: everything within the horizon, and never fewer than
+/// `minimumCount` events (reaching further ahead when the near term is quiet),
+/// so the section always has content while events remain in the catalog.
+struct UpcomingEconomicEventResolver: Sendable {
     func resolve(
         _ events: [EconomicEvent],
-        weekContaining now: Date,
-        displayTimeZone: TimeZone
-    ) -> WeeklyEconomicEvents {
-        var calendar = baseCalendar
-        calendar.timeZone = displayTimeZone
-        let today = calendar.startOfDay(for: now)
-        let weekday = calendar.component(.weekday, from: today)
-        let daysSinceMonday = (weekday + 5) % 7
-        let monday = calendar.date(byAdding: .day, value: -daysSinceMonday, to: today)!
-        let saturday = calendar.date(byAdding: .day, value: 5, to: monday)!
-
-        let weeklyEvents = events
-            .filter { monday <= $0.start && $0.start < saturday }
+        at now: Date,
+        horizon: TimeInterval = 14 * 86_400,
+        minimumCount: Int = 4
+    ) -> UpcomingEconomicEvents {
+        let upcoming = events
+            .filter { $0.end > now }
             .sorted { lhs, rhs in
                 if lhs.start != rhs.start {
                     return lhs.start < rhs.start
@@ -139,9 +129,13 @@ struct WeeklyEconomicEventResolver: Sendable {
                 }
                 return lhs.id < rhs.id
             }
-        let nextEventID = weeklyEvents.first(where: { $0.end > now })?.id
 
-        return WeeklyEconomicEvents(events: weeklyEvents, nextEventID: nextEventID)
+        let cutoff = now.addingTimeInterval(horizon)
+        var within = upcoming.filter { $0.start <= cutoff }
+        if within.count < minimumCount {
+            within = Array(upcoming.prefix(minimumCount))
+        }
+        return UpcomingEconomicEvents(events: within)
     }
 }
 

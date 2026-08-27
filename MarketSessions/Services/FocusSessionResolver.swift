@@ -9,9 +9,11 @@ struct FocusSnapshot: Hashable, Sendable {
         let name: String
         let status: SessionStatus
         let transition: SessionTransition
-        /// Fraction of the active chain remaining — the popover rings drain toward the close.
+        /// Fraction of the trading day remaining (first open → final close, spanning
+        /// recesses) — every ring is full at the day's open and drains to empty at
+        /// the final close.
         let remainingFraction: Double
-        /// Fraction of the active chain elapsed — the menu-bar ring fills toward the close.
+        /// Fraction of the trading day elapsed.
         let elapsedFraction: Double
         let remainingMinutes: Int
     }
@@ -42,11 +44,11 @@ struct FocusSessionResolver: Sendable {
 
         var entries: [FocusSnapshot.OpenEntry] = open.compactMap { resolved in
             guard let transition = resolved.transition,
-                  let chainStart = resolved.activeChainStart,
-                  let chainEnd = resolved.activeChainEnd else {
+                  let cycleStart = resolved.activeCycleStart,
+                  let cycleEnd = resolved.activeCycleEnd else {
                 return nil
             }
-            let elapsed = Self.clampedProgress(now: now, start: chainStart, end: chainEnd)
+            let elapsed = Self.clampedProgress(now: now, start: cycleStart, end: cycleEnd)
             return FocusSnapshot.OpenEntry(
                 sessionID: resolved.session.id,
                 code: resolved.session.code,

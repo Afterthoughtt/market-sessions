@@ -78,9 +78,8 @@ struct EconomicEvent: Identifiable, Hashable, Sendable {
     }
 }
 
-struct WeeklyEconomicEvents: Hashable, Sendable {
+struct UpcomingEconomicEvents: Hashable, Sendable {
     let events: [EconomicEvent]
-    let nextEventID: EconomicEvent.ID?
 
-    static let empty = WeeklyEconomicEvents(events: [], nextEventID: nil)
+    static let empty = UpcomingEconomicEvents(events: [])
 }

@@ -2,7 +2,7 @@ import XCTest
 @testable import MarketSessions
 
 final class ProgressTests: XCTestCase {
-    func testTokyoMorningRingDrainsWithinTheMorningChain() throws {
+    func testTokyoRingSpansTheWholeTradingDay() throws {
         let now = try makeDate(
             year: 2026, month: 8, day: 24, hour: 10, minute: 15,
             timeZoneIdentifier: "Asia/Tokyo"
@@ -11,12 +11,13 @@ final class ProgressTests: XCTestCase {
         let focus = FocusSessionResolver().resolve(resolved, at: now)
         let tokyo = try XCTUnwrap(focus.openEntries.first(where: { $0.sessionID == .tokyo }))
 
-        // Morning session 9:00–11:30 — 75 of 150 minutes elapsed.
-        XCTAssertEqual(tokyo.elapsedFraction, 75.0 / 150.0, accuracy: 0.000_001)
+        // Rings drain over the whole day, 9:00–15:30 (390 minutes), spanning the recess.
+        XCTAssertEqual(tokyo.elapsedFraction, 75.0 / 390.0, accuracy: 0.000_001)
+        // The countdown still tracks the next transition — the 11:30 morning close.
         XCTAssertEqual(tokyo.remainingMinutes, 75)
     }
 
-    func testShanghaiAfternoonChainIncludesClosingAuction() throws {
+    func testShanghaiRingSpansTheDayAndCountdownIncludesTheAuction() throws {
         let now = try makeDate(
             year: 2026, month: 8, day: 24, hour: 14, minute: 0,
             timeZoneIdentifier: "Asia/Shanghai"
@@ -25,8 +26,9 @@ final class ProgressTests: XCTestCase {
         let focus = FocusSessionResolver().resolve(resolved, at: now)
         let shanghai = try XCTUnwrap(focus.openEntries.first(where: { $0.sessionID == .shanghai }))
 
-        // Afternoon chain 1:00–3:00 PM (trading + auction) — halfway through.
-        XCTAssertEqual(shanghai.elapsedFraction, 0.5, accuracy: 0.000_001)
+        // Day runs 9:30–15:00 (330 minutes); 270 elapsed at 2:00 PM.
+        XCTAssertEqual(shanghai.elapsedFraction, 270.0 / 330.0, accuracy: 0.000_001)
+        // Close is the end of the chain through the 2:57–3:00 auction.
         XCTAssertEqual(shanghai.remainingMinutes, 60)
     }
 

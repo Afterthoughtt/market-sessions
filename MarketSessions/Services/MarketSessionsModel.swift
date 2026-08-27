@@ -13,13 +13,13 @@ final class MarketSessionsModel {
     /// Fraction of the UTC day remaining — the header ring drains toward 00:00 UTC.
     private(set) var utcDayRemainingFraction: Double = 0
     private(set) var utcDayRemainingMinutes = 0
-    private(set) var weeklyEvents: WeeklyEconomicEvents = .empty
+    private(set) var upcomingEvents: UpcomingEconomicEvents = .empty
     private(set) var loginItemState: LoginItemState = .disabled
     private(set) var loginItemError: String?
 
     private let catalog: [MarketSession]
     private let economicEvents: [EconomicEvent]
-    private let weeklyEventResolver = WeeklyEconomicEventResolver()
+    private let upcomingEventResolver = UpcomingEconomicEventResolver()
     private let focusResolver: FocusSessionResolver
     private let loginItemService: any LoginItemServicing
     private let nowProvider: @Sendable () -> Date
@@ -95,11 +95,7 @@ final class MarketSessionsModel {
         orderedSessions = sortedIDs.compactMap { byID[$0] }
 
         focus = focusResolver.resolve(resolved, at: snapshot)
-        weeklyEvents = weeklyEventResolver.resolve(
-            economicEvents,
-            weekContaining: snapshot,
-            displayTimeZone: timeZone
-        )
+        upcomingEvents = upcomingEventResolver.resolve(economicEvents, at: snapshot)
         updateUTCDay(at: snapshot)
         loginItemState = loginItemService.state
     }

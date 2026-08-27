@@ -20,13 +20,13 @@ struct SessionsPopover: View {
 
             sessionList
 
-            if model.weeklyEvents.events.contains(where: { $0.end > model.now }) {
+            if !model.upcomingEvents.events.isEmpty {
                 Rectangle()
                     .fill(palette.dividerStrong)
                     .frame(height: 1)
 
                 EconomicEventsSection(
-                    weekly: model.weeklyEvents,
+                    upcoming: model.upcomingEvents,
                     now: model.now,
                     displayTimeZone: model.displayTimeZone,
                     palette: palette

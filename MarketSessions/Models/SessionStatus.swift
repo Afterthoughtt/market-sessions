@@ -26,6 +26,10 @@ struct ResolvedSession: Identifiable, Hashable, Sendable {
     let activeChainStart: Date?
     /// End of the contiguous active chain containing now.
     let activeChainEnd: Date?
+    /// First open of the current trading day (the whole cycle, spanning recesses).
+    let activeCycleStart: Date?
+    /// Final close of the current trading day.
+    let activeCycleEnd: Date?
     /// End of the most recent active occurrence at or before now.
     let previousActiveEnd: Date?
     /// Start of the next active occurrence after now.
