@@ -15,66 +15,88 @@ struct SessionResolver: Sendable {
     func resolve(_ session: MarketSession, at now: Date) -> ResolvedSession {
         let occurrences = occurrences(for: session, around: now)
         let activeOccurrences = occurrences.filter(\.kind.countsAsActive)
-        let currentActive = activeOccurrences.first(where: { $0.contains(now) })
-        let currentInactive = occurrences.first(where: { !$0.kind.countsAsActive && $0.contains(now) })
-        let previousActive = activeOccurrences.last(where: { $0.end <= now })
-        let nextActive = activeOccurrences.first(where: { $0.start >= now })
+        let current = occurrences.first(where: { $0.contains(now) && $0.kind.countsAsActive })
+            ?? occurrences.first(where: { $0.contains(now) })
+        let previousActiveEnd = activeOccurrences.last(where: { $0.end <= now })?.end
+        let nextActiveStart = activeOccurrences.first(where: { $0.start > now })?.start
+        let approximate = session.approximateTimes
 
         let status: SessionStatus
-        let currentOccurrence: SessionOccurrence?
+        var chainStart: Date?
+        var chainEnd: Date?
         let transition: SessionTransition?
 
-        if let currentActive {
-            currentOccurrence = currentActive
-            if case .trading(let phase) = currentActive.kind {
-                status = .active(phase: phase)
-            } else {
-                status = .active()
-            }
-            transition = SessionTransition(kind: .closes, date: currentActive.end)
-        } else if let currentInactive {
-            currentOccurrence = currentInactive
-            switch currentInactive.kind {
-            case .recess(let label):
-                status = .recess(label)
-                transition = SessionTransition(kind: .resumes, date: nextActive?.start ?? currentInactive.end)
-            case .maintenance(let label):
-                status = .maintenance(label)
-                transition = SessionTransition(kind: .resumes, date: nextActive?.start ?? currentInactive.end)
-            case .informational(let label):
-                status = .informational(label)
-                transition = SessionTransition(kind: .phaseEnds, date: currentInactive.end)
-            case .trading:
+        if let current, current.kind.countsAsActive {
+            status = current.kind == .auction ? .auction : .open
+            let chain = activeChain(containing: current, in: activeOccurrences)
+            chainStart = chain.first?.start
+            chainEnd = chain.last?.end
+            let followsKind = occurrences.first(where: { $0.start == chainEnd })?.kind
+            let verb: SessionTransition.Verb = (followsKind == .recess || followsKind == .maintenance)
+                ? .breaks
+                : .closes
+            transition = SessionTransition(verb: verb, date: chainEnd ?? current.end, approximate: approximate)
+        } else if let current {
+            switch current.kind {
+            case .recess:
+                status = .recess
+                transition = SessionTransition(
+                    verb: .resumes,
+                    date: nextActiveStart ?? current.end,
+                    approximate: approximate
+                )
+            case .maintenance:
+                status = .maintenance
+                transition = SessionTransition(
+                    verb: .reopens,
+                    date: nextActiveStart ?? current.end,
+                    approximate: approximate
+                )
+            case .trading, .auction:
                 status = .closed
-                transition = nextActive.map { SessionTransition(kind: .opens, date: $0.start) }
+                transition = nextActiveStart.map {
+                    SessionTransition(verb: .opens, date: $0, approximate: approximate)
+                }
             }
         } else {
-            currentOccurrence = nil
             status = .closed
-            transition = nextActive.map { SessionTransition(kind: .opens, date: $0.start) }
-        }
-
-        let activeCycleOccurrences: [SessionOccurrence]
-        if let currentActive {
-            activeCycleOccurrences = activeOccurrences.filter { $0.anchorDate == currentActive.anchorDate }
-        } else {
-            activeCycleOccurrences = []
+            transition = nextActiveStart.map {
+                SessionTransition(verb: .opens, date: $0, approximate: approximate)
+            }
         }
 
         return ResolvedSession(
             session: session,
             status: status,
-            currentOccurrence: currentOccurrence,
-            previousActiveOccurrence: previousActive,
-            nextActiveOccurrence: nextActive,
-            activeCycleOccurrences: activeCycleOccurrences,
-            transition: transition,
-            todayIntervals: displayIntervals(from: occurrences, at: now)
+            currentOccurrence: current,
+            activeChainStart: chainStart,
+            activeChainEnd: chainEnd,
+            previousActiveEnd: previousActiveEnd,
+            nextActiveStart: nextActiveStart,
+            transition: transition
         )
     }
 
     func resolve(_ sessions: [MarketSession], at now: Date) -> [ResolvedSession] {
         sessions.map { resolve($0, at: now) }
+    }
+
+    /// Contiguous run of active occurrences (trading + adjacent auction) containing `occurrence`.
+    private func activeChain(
+        containing occurrence: SessionOccurrence,
+        in activeOccurrences: [SessionOccurrence]
+    ) -> [SessionOccurrence] {
+        guard let index = activeOccurrences.firstIndex(of: occurrence) else { return [occurrence] }
+        var startIndex = index
+        while startIndex > 0, activeOccurrences[startIndex - 1].end == activeOccurrences[startIndex].start {
+            startIndex -= 1
+        }
+        var endIndex = index
+        while endIndex + 1 < activeOccurrences.count,
+              activeOccurrences[endIndex + 1].start == activeOccurrences[endIndex].end {
+            endIndex += 1
+        }
+        return Array(activeOccurrences[startIndex...endIndex])
     }
 
     func occurrences(for session: MarketSession, around now: Date) -> [SessionOccurrence] {
@@ -133,25 +155,5 @@ struct SessionResolver: Sendable {
         components.hour = time.hour
         components.minute = time.minute
         return calendar.date(from: components)
-    }
-
-    private func displayIntervals(
-        from occurrences: [SessionOccurrence],
-        at now: Date
-    ) -> [SessionDisplayInterval] {
-        var calendar = baseCalendar
-        calendar.timeZone = displayTimeZone
-        let dayStart = calendar.startOfDay(for: now)
-        guard let dayEnd = calendar.date(byAdding: .day, value: 1, to: dayStart) else {
-            return []
-        }
-
-        return occurrences.compactMap { occurrence in
-            let start = max(occurrence.start, dayStart)
-            let end = min(occurrence.end, dayEnd)
-            guard end > start else { return nil }
-            return SessionDisplayInterval(kind: occurrence.kind, start: start, end: end)
-        }
-        .sorted { $0.start < $1.start }
     }
 }

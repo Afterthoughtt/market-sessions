@@ -1,44 +1,34 @@
 import Foundation
 
-enum SessionStatus: Hashable, Sendable {
-    case active(phase: String? = nil)
-    case recess(String)
-    case maintenance(String)
-    case informational(String)
-    case closed
+enum SessionStatus: String, Hashable, Sendable {
+    case open = "Open"
+    case auction = "Auction"
+    case recess = "Recess"
+    case maintenance = "Maintenance"
+    case closed = "Closed"
 
+    /// "Can you trade" — open and auction count.
     var isActive: Bool {
-        if case .active = self {
-            return true
-        }
-        return false
+        self == .open || self == .auction
     }
 
-    var label: String {
-        switch self {
-        case .active(let phase):
-            phase ?? "Open"
-        case .recess:
-            "Recess"
-        case .maintenance:
-            "Maintenance"
-        case .informational(let label):
-            label
-        case .closed:
-            "Closed"
-        }
-    }
+    var label: String { rawValue }
 }
 
 struct ResolvedSession: Identifiable, Hashable, Sendable {
     let session: MarketSession
     let status: SessionStatus
+    /// Occurrence containing now, of any kind.
     let currentOccurrence: SessionOccurrence?
-    let previousActiveOccurrence: SessionOccurrence?
-    let nextActiveOccurrence: SessionOccurrence?
-    let activeCycleOccurrences: [SessionOccurrence]
+    /// Start of the contiguous active chain containing now (trading + adjacent auction).
+    let activeChainStart: Date?
+    /// End of the contiguous active chain containing now.
+    let activeChainEnd: Date?
+    /// End of the most recent active occurrence at or before now.
+    let previousActiveEnd: Date?
+    /// Start of the next active occurrence after now.
+    let nextActiveStart: Date?
     let transition: SessionTransition?
-    let todayIntervals: [SessionDisplayInterval]
 
     var id: MarketSession.ID { session.id }
 }

@@ -1,6 +1,6 @@
 # Market Sessions implementation plan
 
-Status: core implementation checkpoint complete; the all-open-sessions summary and final appearance/time-zone QA remain.
+Status: superseded where it conflicts with `design_handoff_market_sessions/README.md` (Turn 7), which is implemented and is the current product contract — six sessions (NY, CME, LDN, TYO, HKG, SHG), no row expansion or `SessionDetail`, the crypto UTC day as a header readout rather than a session, a ring-based menu-bar label (2b variant: both rings fill), Auction as a first-class state, and a frozen list order that re-sorts only at handovers. Sections below describing the nine-session contract, row expansion, or the SF Symbol menu-bar label are historical.
 
 ## Outcome
 

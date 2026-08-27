@@ -22,7 +22,8 @@
 		A0010000000000000000000D /* SessionsPopover.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0010000000000000000000D /* SessionsPopover.swift */; };
 		A0010000000000000000000E /* FocusSessionCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0010000000000000000000E /* FocusSessionCard.swift */; };
 		A0010000000000000000000F /* SessionRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0010000000000000000000F /* SessionRow.swift */; };
-		A00100000000000000000010 /* SessionDetail.swift in Sources */ = {isa = PBXBuildFile; fileRef = F00100000000000000000010 /* SessionDetail.swift */; };
+		A00100000000000000000010 /* MarketPalette.swift in Sources */ = {isa = PBXBuildFile; fileRef = F00100000000000000000010 /* MarketPalette.swift */; };
+		A00100000000000000000011 /* ProgressRing.swift in Sources */ = {isa = PBXBuildFile; fileRef = F00100000000000000000011 /* ProgressRing.swift */; };
 		A00200000000000000000001 /* SessionResolverTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F00200000000000000000001 /* SessionResolverTests.swift */; };
 		A00200000000000000000002 /* FocusSessionResolverTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F00200000000000000000002 /* FocusSessionResolverTests.swift */; };
 		A00200000000000000000003 /* ProgressTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F00200000000000000000003 /* ProgressTests.swift */; };
@@ -54,7 +55,8 @@
 		F0010000000000000000000D /* SessionsPopover.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionsPopover.swift; sourceTree = "<group>"; };
 		F0010000000000000000000E /* FocusSessionCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FocusSessionCard.swift; sourceTree = "<group>"; };
 		F0010000000000000000000F /* SessionRow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionRow.swift; sourceTree = "<group>"; };
-		F00100000000000000000010 /* SessionDetail.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionDetail.swift; sourceTree = "<group>"; };
+		F00100000000000000000010 /* MarketPalette.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MarketPalette.swift; sourceTree = "<group>"; };
+		F00100000000000000000011 /* ProgressRing.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProgressRing.swift; sourceTree = "<group>"; };
 		F00200000000000000000001 /* SessionResolverTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionResolverTests.swift; sourceTree = "<group>"; };
 		F00200000000000000000002 /* FocusSessionResolverTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FocusSessionResolverTests.swift; sourceTree = "<group>"; };
 		F00200000000000000000003 /* ProgressTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProgressTests.swift; sourceTree = "<group>"; };
@@ -132,7 +134,10 @@
 		};
 		G00100000000000000000006 /* Support */ = {
 			isa = PBXGroup;
-			children = (F0010000000000000000000B /* DateFormatting.swift */,);
+			children = (
+				F0010000000000000000000B /* DateFormatting.swift */,
+				F00100000000000000000010 /* MarketPalette.swift */,
+			);
 			path = Support;
 			sourceTree = "<group>";
 		};
@@ -143,7 +148,7 @@
 				F0010000000000000000000D /* SessionsPopover.swift */,
 				F0010000000000000000000E /* FocusSessionCard.swift */,
 				F0010000000000000000000F /* SessionRow.swift */,
-				F00100000000000000000010 /* SessionDetail.swift */,
+				F00100000000000000000011 /* ProgressRing.swift */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -263,7 +268,8 @@
 				A0010000000000000000000D /* SessionsPopover.swift in Sources */,
 				A0010000000000000000000E /* FocusSessionCard.swift in Sources */,
 				A0010000000000000000000F /* SessionRow.swift in Sources */,
-				A00100000000000000000010 /* SessionDetail.swift in Sources */,
+				A00100000000000000000010 /* MarketPalette.swift in Sources */,
+				A00100000000000000000011 /* ProgressRing.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

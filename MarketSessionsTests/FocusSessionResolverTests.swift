@@ -2,150 +2,90 @@ import XCTest
 @testable import MarketSessions
 
 final class FocusSessionResolverTests: XCTestCase {
-    func testRealOverlapUsesNewYorkCashPriority() throws {
-        let now = try makeDate(
-            year: 2026, month: 8, day: 24, hour: 10, minute: 0,
-            timeZoneIdentifier: "America/New_York"
-        )
-        let rows = SessionResolver().resolve(MarketScheduleCatalog.sessions, at: now)
-        let focus = FocusSessionResolver().resolve(rows, at: now)
+    // The design moment: Friday 2026-08-28 7:12 AM PDT — NY, London, and CME open.
+    func testDesignMomentHeroSecondaryAndNextToOpen() throws {
+        let now = try makeDate(year: 2026, month: 8, day: 28, hour: 7, minute: 12)
+        let resolved = SessionResolver().resolve(MarketScheduleCatalog.sessions, at: now)
+        let focus = FocusSessionResolver().resolve(resolved, at: now)
 
-        XCTAssertEqual(focus?.sessionID, .newYorkCash)
-        XCTAssertEqual(focus?.mode, .active)
-    }
+        XCTAssertEqual(focus.openEntries.count, 3)
+        XCTAssertEqual(focus.hero?.sessionID, .newYorkCash)
+        // Secondary cells order by nearest close: London (8:30 AM) before CME (2:00 PM).
+        XCTAssertEqual(focus.secondary.map(\.sessionID), [.london, .cmeFutures])
 
-    func testEveryActivePriorityTieUsesTheHighestRemainingPriority() {
-        let now = Date(timeIntervalSince1970: 1_800_000_000)
-        let ordered = MarketScheduleCatalog.sessions
-            .filter { $0.focusPriority != nil }
-            .sorted { $0.focusPriority! < $1.focusPriority! }
+        let hero = try XCTUnwrap(focus.hero)
+        XCTAssertEqual(hero.remainingMinutes, 348)
+        XCTAssertEqual(hero.remainingFraction, 348.0 / 390.0, accuracy: 0.000_001)
+        XCTAssertEqual(hero.elapsedFraction, 42.0 / 390.0, accuracy: 0.000_001)
 
-        for index in ordered.indices {
-            let remaining = ordered[index...].reversed().map { activeRow(for: $0, now: now) }
-            let focus = FocusSessionResolver().resolve(remaining, at: now)
-            XCTAssertEqual(focus?.sessionID, ordered[index].id)
-        }
-    }
+        let london = try XCTUnwrap(focus.secondary.first)
+        XCTAssertEqual(london.remainingMinutes, 78)
 
-    func testEarliestUpcomingOpenWinsBeforePriority() {
-        let now = Date(timeIntervalSince1970: 1_800_000_000)
-        let highPriority = closedRow(
-            for: MarketScheduleCatalog.session(.newYorkCash),
-            now: now,
-            nextOpen: now.addingTimeInterval(3_600)
-        )
-        let lowerPriority = closedRow(
-            for: MarketScheduleCatalog.session(.tokyo),
-            now: now,
-            nextOpen: now.addingTimeInterval(1_800)
-        )
-
-        let focus = FocusSessionResolver().resolve([highPriority, lowerPriority], at: now)
-
-        XCTAssertEqual(focus?.sessionID, .tokyo)
-        XCTAssertEqual(focus?.mode, .upcoming)
-        XCTAssertEqual(focus?.remainingMinutes, 30)
-    }
-
-    func testPriorityBreaksAnUpcomingOpenTie() {
-        let now = Date(timeIntervalSince1970: 1_800_000_000)
-        let sameOpen = now.addingTimeInterval(3_600)
-        let london = closedRow(
-            for: MarketScheduleCatalog.session(.london),
-            now: now,
-            nextOpen: sameOpen
-        )
-        let cash = closedRow(
-            for: MarketScheduleCatalog.session(.newYorkCash),
-            now: now,
-            nextOpen: sameOpen
-        )
-
-        XCTAssertEqual(FocusSessionResolver().resolve([london, cash], at: now)?.sessionID, .newYorkCash)
-    }
-
-    func testSpotFXIsExcludedAndCryptoIsFallback() {
-        let now = Date(timeIntervalSince1970: 1_800_000_000)
-        let spot = activeRow(for: MarketScheduleCatalog.session(.spotFX), now: now)
-        let crypto = activeRow(for: MarketScheduleCatalog.session(.cryptoUTC), now: now)
-
-        let focus = FocusSessionResolver().resolve([spot, crypto], at: now)
-
-        XCTAssertEqual(focus?.sessionID, .cryptoUTC)
-        XCTAssertEqual(focus?.mode, .fallback)
-    }
-
-    func testExactBoundaryProducesNewFocusStateWithoutZeroMinuteStaleState() throws {
-        let boundary = try makeDate(
-            year: 2026, month: 8, day: 24, hour: 16, minute: 0,
-            timeZoneIdentifier: "America/New_York"
-        )
-        let rows = SessionResolver().resolve(MarketScheduleCatalog.sessions, at: boundary)
-        let focus = try XCTUnwrap(FocusSessionResolver().resolve(rows, at: boundary))
-
-        XCTAssertNotEqual(focus.sessionID, .newYorkCash)
-        XCTAssertGreaterThan(focus.remainingMinutes, 0)
-    }
-
-    func testCountdownFormattingUsesMinutesHoursAndDays() {
-        XCTAssertEqual(MarketDurationFormatting.compact(minutes: -1), "0m")
-        XCTAssertEqual(MarketDurationFormatting.compact(minutes: 0), "0m")
-        XCTAssertEqual(MarketDurationFormatting.compact(minutes: 59), "59m")
-        XCTAssertEqual(MarketDurationFormatting.compact(minutes: 60), "1h")
-        XCTAssertEqual(MarketDurationFormatting.compact(minutes: 61), "1h 1m")
-        XCTAssertEqual(MarketDurationFormatting.compact(minutes: 1_376), "22h 56m")
-        XCTAssertEqual(MarketDurationFormatting.compact(minutes: 1_440), "1d")
-        XCTAssertEqual(MarketDurationFormatting.compact(minutes: 3_074), "2d 3h 14m")
+        // Tokyo is the next session to open: Monday 9:00 JST = Sunday 5:00 PM PDT.
+        let next = try XCTUnwrap(focus.nextToOpen)
+        XCTAssertEqual(next.sessionID, .tokyo)
         XCTAssertEqual(
-            MarketDurationFormatting.spoken(minutes: 1_501),
-            "1 day, 1 hour, 1 minute"
+            next.opensAt,
+            try makeDate(year: 2026, month: 8, day: 30, hour: 17, minute: 0)
         )
     }
 
-    private func activeRow(for session: MarketSession, now: Date) -> ResolvedSession {
-        let occurrence = SessionOccurrence(
-            sessionID: session.id,
-            kind: .trading(),
-            start: now.addingTimeInterval(-1_800),
-            end: now.addingTimeInterval(1_800),
-            anchorDate: now.addingTimeInterval(-1_800)
+    // Saturday 2026-08-29 11:40 AM PDT — nothing trading; CME opens Sunday 3:00 PM PDT.
+    func testWeekendNothingTrading() throws {
+        let now = try makeDate(year: 2026, month: 8, day: 29, hour: 11, minute: 40)
+        let resolved = SessionResolver().resolve(MarketScheduleCatalog.sessions, at: now)
+        let focus = FocusSessionResolver().resolve(resolved, at: now)
+
+        XCTAssertTrue(focus.openEntries.isEmpty)
+        XCTAssertNil(focus.hero)
+
+        let next = try XCTUnwrap(focus.nextToOpen)
+        XCTAssertEqual(next.sessionID, .cmeFutures)
+        XCTAssertEqual(
+            next.opensAt,
+            try makeDate(year: 2026, month: 8, day: 30, hour: 15, minute: 0)
         )
-        return ResolvedSession(
-            session: session,
-            status: .active(),
-            currentOccurrence: occurrence,
-            previousActiveOccurrence: nil,
-            nextActiveOccurrence: nil,
-            activeCycleOccurrences: [occurrence],
-            transition: SessionTransition(kind: .closes, date: occurrence.end),
-            todayIntervals: []
-        )
+        // Gap runs Friday 2:00 PM PDT close → Sunday 3:00 PM PDT open (49h); 21h40m elapsed.
+        XCTAssertEqual(next.fillFraction, 1_300.0 / 2_940.0, accuracy: 0.000_001)
+        XCTAssertEqual(next.remainingMinutes, 1_640)
     }
 
-    private func closedRow(for session: MarketSession, now: Date, nextOpen: Date) -> ResolvedSession {
-        let previous = SessionOccurrence(
-            sessionID: session.id,
-            kind: .trading(),
-            start: now.addingTimeInterval(-7_200),
-            end: now.addingTimeInterval(-3_600),
-            anchorDate: now.addingTimeInterval(-7_200)
+    // Overnight: NY closed, CME and Asia open — CME (priority 2) is the hero.
+    func testHeroUsesFocusPriorityAmongOpenSessions() throws {
+        // Monday 2026-08-24 8:00 PM PDT = Tuesday 12:00 PM JST (Tokyo afternoon session).
+        let now = try makeDate(year: 2026, month: 8, day: 24, hour: 21, minute: 0)
+        let resolved = SessionResolver().resolve(MarketScheduleCatalog.sessions, at: now)
+        let focus = FocusSessionResolver().resolve(resolved, at: now)
+
+        XCTAssertEqual(focus.hero?.sessionID, .cmeFutures)
+        XCTAssertTrue(focus.openEntries.count >= 2)
+        // Everything after the hero is ordered by nearest transition.
+        let secondaryDates = focus.secondary.map(\.transition.date)
+        XCTAssertEqual(secondaryDates, secondaryDates.sorted())
+    }
+
+    func testClampedProgressBounds() {
+        let now = Date(timeIntervalSince1970: 1_800_000_000)
+        XCTAssertEqual(
+            FocusSessionResolver.clampedProgress(now: now, start: nil, end: now.addingTimeInterval(60)),
+            0
         )
-        let next = SessionOccurrence(
-            sessionID: session.id,
-            kind: .trading(),
-            start: nextOpen,
-            end: nextOpen.addingTimeInterval(3_600),
-            anchorDate: nextOpen
+        XCTAssertEqual(
+            FocusSessionResolver.clampedProgress(
+                now: now,
+                start: now.addingTimeInterval(-120),
+                end: now.addingTimeInterval(-60)
+            ),
+            1
         )
-        return ResolvedSession(
-            session: session,
-            status: .closed,
-            currentOccurrence: nil,
-            previousActiveOccurrence: previous,
-            nextActiveOccurrence: next,
-            activeCycleOccurrences: [],
-            transition: SessionTransition(kind: .opens, date: nextOpen),
-            todayIntervals: []
+        XCTAssertEqual(
+            FocusSessionResolver.clampedProgress(
+                now: now,
+                start: now.addingTimeInterval(-60),
+                end: now.addingTimeInterval(60)
+            ),
+            0.5,
+            accuracy: 0.000_001
         )
     }
 
@@ -155,16 +95,14 @@ final class FocusSessionResolverTests: XCTestCase {
         day: Int,
         hour: Int,
         minute: Int,
-        timeZoneIdentifier: String
+        timeZoneIdentifier: String = "America/Los_Angeles"
     ) throws -> Date {
         var calendar = Calendar(identifier: .gregorian)
-        calendar.timeZone = try XCTUnwrap(TimeZone(identifier: timeZoneIdentifier))
-        return try XCTUnwrap(calendar.date(from: DateComponents(
-            year: year,
-            month: month,
-            day: day,
-            hour: hour,
-            minute: minute
-        )))
+        let timeZone = try XCTUnwrap(TimeZone(identifier: timeZoneIdentifier))
+        calendar.timeZone = timeZone
+        let components = DateComponents(
+            timeZone: timeZone, year: year, month: month, day: day, hour: hour, minute: minute
+        )
+        return try XCTUnwrap(calendar.date(from: components))
     }
 }

@@ -16,20 +16,17 @@ struct SessionOccurrence: Hashable, Sendable {
     }
 }
 
-struct SessionDisplayInterval: Hashable, Sendable {
-    let kind: SessionIntervalKind
-    let start: Date
-    let end: Date
-}
-
 struct SessionTransition: Hashable, Sendable {
-    enum Kind: String, Hashable, Sendable {
+    enum Verb: String, Hashable, Sendable {
         case opens = "Opens"
         case closes = "Closes"
+        case breaks = "Breaks"
         case resumes = "Resumes"
-        case phaseEnds = "Phase ends"
+        case reopens = "Reopens"
     }
 
-    let kind: Kind
+    let verb: Verb
     let date: Date
+    /// True for CME — rendered with a `≈` prefix on the time.
+    let approximate: Bool
 }

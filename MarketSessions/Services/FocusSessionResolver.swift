@@ -1,79 +1,97 @@
 import Foundation
 
-enum FocusMode: Hashable, Sendable {
-    case active
-    case upcoming
-    case fallback
-}
-
-struct FocusSession: Hashable, Sendable {
-    let sessionID: MarketSession.ID
-    let sessionName: String
-    let iconName: String
-    let mode: FocusMode
-    let statusLabel: String
-    let actionLabel: String
-    let transitionDate: Date
-    let remainingMinutes: Int
-    let progress: Double
-
-    var countdownText: String {
-        MarketDurationFormatting.compact(minutes: remainingMinutes)
+/// Everything the open-now grid and the menu-bar label need, computed once per refresh.
+struct FocusSnapshot: Hashable, Sendable {
+    /// A currently open (or auction) session.
+    struct OpenEntry: Hashable, Sendable {
+        let sessionID: MarketSession.ID
+        let code: String
+        let name: String
+        let status: SessionStatus
+        let transition: SessionTransition
+        /// Fraction of the active chain remaining — the popover rings drain toward the close.
+        let remainingFraction: Double
+        /// Fraction of the active chain elapsed — the menu-bar ring fills toward the close.
+        let elapsedFraction: Double
+        let remainingMinutes: Int
     }
 
-    var accessibilityCountdownText: String {
-        MarketDurationFormatting.spoken(minutes: remainingMinutes)
+    /// The next session to open, among sessions not currently trading.
+    struct NextEntry: Hashable, Sendable {
+        let sessionID: MarketSession.ID
+        let code: String
+        let name: String
+        let opensAt: Date
+        let approximate: Bool
+        /// Fraction of the closed gap elapsed — fills toward the open.
+        let fillFraction: Double
+        let remainingMinutes: Int
     }
+
+    /// Hero first (lowest focus priority), then remaining open sessions by nearest transition.
+    let openEntries: [OpenEntry]
+    let nextToOpen: NextEntry?
+
+    var hero: OpenEntry? { openEntries.first }
+    var secondary: [OpenEntry] { Array(openEntries.dropFirst()) }
 }
 
 struct FocusSessionResolver: Sendable {
-    func resolve(_ sessions: [ResolvedSession], at now: Date) -> FocusSession? {
-        let eligible = sessions.filter { $0.session.focusPriority != nil }
-        let active = eligible
-            .filter(\.status.isActive)
-            .sorted(by: priorityOrder)
+    func resolve(_ sessions: [ResolvedSession], at now: Date) -> FocusSnapshot {
+        let open = sessions.filter(\.status.isActive)
 
-        if let selected = active.first,
-           let occurrence = selected.currentOccurrence {
-            return makeActiveFocus(from: selected, occurrence: occurrence, at: now, mode: .active)
-        }
-
-        let upcoming = eligible
-            .compactMap { resolved -> (ResolvedSession, SessionOccurrence)? in
-                guard let occurrence = resolved.nextActiveOccurrence else { return nil }
-                return (resolved, occurrence)
+        var entries: [FocusSnapshot.OpenEntry] = open.compactMap { resolved in
+            guard let transition = resolved.transition,
+                  let chainStart = resolved.activeChainStart,
+                  let chainEnd = resolved.activeChainEnd else {
+                return nil
             }
-            .sorted { lhs, rhs in
-                if lhs.1.start == rhs.1.start {
-                    return priorityOrder(lhs.0, rhs.0)
-                }
-                return lhs.1.start < rhs.1.start
-            }
-
-        if let (selected, occurrence) = upcoming.first {
-            let progress = Self.clampedProgress(
-                now: now,
-                start: selected.previousActiveOccurrence?.end,
-                end: occurrence.start
-            )
-            return FocusSession(
-                sessionID: selected.session.id,
-                sessionName: selected.session.shortName,
-                iconName: selected.session.iconName,
-                mode: .upcoming,
-                statusLabel: "Closed",
-                actionLabel: "Opens in",
-                transitionDate: occurrence.start,
-                remainingMinutes: remainingMinutes(until: occurrence.start, from: now),
-                progress: progress
+            let elapsed = Self.clampedProgress(now: now, start: chainStart, end: chainEnd)
+            return FocusSnapshot.OpenEntry(
+                sessionID: resolved.session.id,
+                code: resolved.session.code,
+                name: resolved.session.name,
+                status: resolved.status,
+                transition: transition,
+                remainingFraction: 1 - elapsed,
+                elapsedFraction: elapsed,
+                remainingMinutes: Self.remainingMinutes(until: transition.date, from: now)
             )
         }
 
-        guard let crypto = sessions.first(where: { $0.session.id == .cryptoUTC }),
-              let occurrence = crypto.currentOccurrence else {
-            return nil
+        entries.sort { $0.transition.date < $1.transition.date }
+        if let heroIndex = entries.indices.min(by: { lhs, rhs in
+            MarketScheduleCatalog.session(entries[lhs].sessionID).focusPriority
+                < MarketScheduleCatalog.session(entries[rhs].sessionID).focusPriority
+        }), heroIndex != 0 {
+            entries.insert(entries.remove(at: heroIndex), at: 0)
         }
-        return makeActiveFocus(from: crypto, occurrence: occurrence, at: now, mode: .fallback)
+
+        let upcoming = sessions
+            .filter { !$0.status.isActive }
+            .compactMap { resolved -> (ResolvedSession, Date)? in
+                guard let next = resolved.nextActiveStart else { return nil }
+                return (resolved, next)
+            }
+            .min { $0.1 < $1.1 }
+
+        let nextToOpen = upcoming.map { resolved, opensAt in
+            FocusSnapshot.NextEntry(
+                sessionID: resolved.session.id,
+                code: resolved.session.code,
+                name: resolved.session.name,
+                opensAt: opensAt,
+                approximate: resolved.session.approximateTimes,
+                fillFraction: Self.clampedProgress(
+                    now: now,
+                    start: resolved.previousActiveEnd,
+                    end: opensAt
+                ),
+                remainingMinutes: Self.remainingMinutes(until: opensAt, from: now)
+            )
+        }
+
+        return FocusSnapshot(openEntries: entries, nextToOpen: nextToOpen)
     }
 
     static func clampedProgress(now: Date, start: Date?, end: Date?) -> Double {
@@ -85,43 +103,7 @@ struct FocusSessionResolver: Sendable {
         return min(max(elapsed / duration, 0), 1)
     }
 
-    private func makeActiveFocus(
-        from resolved: ResolvedSession,
-        occurrence: SessionOccurrence,
-        at now: Date,
-        mode: FocusMode
-    ) -> FocusSession {
-        let cycle = resolved.activeCycleOccurrences.isEmpty
-            ? [occurrence]
-            : resolved.activeCycleOccurrences
-        let total = cycle.reduce(0) { $0 + $1.duration }
-        let completed = cycle.reduce(0) { partial, item in
-            let elapsed = min(max(now.timeIntervalSince(item.start), 0), item.duration)
-            return partial + elapsed
-        }
-        let progress = total > 0 && total.isFinite
-            ? min(max(completed / total, 0), 1)
-            : 0
-        let actionLabel = mode == .fallback ? "UTC day ends in" : "Closes in"
-
-        return FocusSession(
-            sessionID: resolved.session.id,
-            sessionName: resolved.session.shortName,
-            iconName: resolved.session.iconName,
-            mode: mode,
-            statusLabel: resolved.status.label,
-            actionLabel: actionLabel,
-            transitionDate: occurrence.end,
-            remainingMinutes: remainingMinutes(until: occurrence.end, from: now),
-            progress: progress
-        )
-    }
-
-    private func priorityOrder(_ lhs: ResolvedSession, _ rhs: ResolvedSession) -> Bool {
-        (lhs.session.focusPriority ?? .max) < (rhs.session.focusPriority ?? .max)
-    }
-
-    private func remainingMinutes(until date: Date, from now: Date) -> Int {
+    static func remainingMinutes(until date: Date, from now: Date) -> Int {
         max(0, Int(ceil(date.timeIntervalSince(now) / 60)))
     }
 }

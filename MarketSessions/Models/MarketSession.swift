@@ -2,25 +2,24 @@ import Foundation
 
 struct MarketSession: Identifiable, Hashable, Sendable {
     enum ID: String, CaseIterable, Hashable, Sendable {
-        case cmeMacroFutures
+        case newYorkCash
+        case cmeFutures
+        case london
         case tokyo
         case hongKong
         case shanghai
-        case london
-        case newYorkFX
-        case newYorkCash
-        case spotFX
-        case cryptoUTC
     }
 
     let id: ID
+    /// Ticker-style code shown in rows, rings, and the menu bar (`NY`, `CME`, …).
+    let code: String
     let name: String
-    let shortName: String
-    let iconName: String
     let canonicalTimeZoneIdentifier: String
     let intervals: [SessionInterval]
-    let focusPriority: Int?
-    let caveat: String?
+    /// Lower wins when choosing the emphasized open session.
+    let focusPriority: Int
+    /// CME settlement timing is approximate; its transition times carry a `≈` prefix.
+    let approximateTimes: Bool
 
     var canonicalTimeZone: TimeZone {
         guard let timeZone = TimeZone(identifier: canonicalTimeZoneIdentifier) else {

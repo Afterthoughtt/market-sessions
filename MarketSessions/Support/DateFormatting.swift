@@ -14,22 +14,22 @@ enum MarketDateFormatting {
         return formatter.string(from: date)
     }
 
-    static func transition(
+    /// `1:00 PM` on the same display day, `Sun 3:00 PM` otherwise; `≈` prefixes approximate times.
+    static func transitionTime(
         _ date: Date,
         relativeTo now: Date,
-        calendar baseCalendar: Calendar = Calendar(identifier: .gregorian),
         timeZone: TimeZone,
-        locale: Locale = .autoupdatingCurrent
+        approximate: Bool = false,
+        sameDayPrefix: String? = nil,
+        locale: Locale = .autoupdatingCurrent,
+        calendar baseCalendar: Calendar = Calendar(identifier: .gregorian)
     ) -> String {
         var calendar = baseCalendar
         calendar.timeZone = timeZone
 
-        let prefix: String
+        let prefix: String?
         if calendar.isDate(date, inSameDayAs: now) {
-            prefix = "Today"
-        } else if let tomorrow = calendar.date(byAdding: .day, value: 1, to: now),
-                  calendar.isDate(date, inSameDayAs: tomorrow) {
-            prefix = "Tomorrow"
+            prefix = sameDayPrefix
         } else {
             let weekday = DateFormatter()
             weekday.locale = locale
@@ -38,16 +38,37 @@ enum MarketDateFormatting {
             prefix = weekday.string(from: date)
         }
 
-        return "\(prefix) \(time(date, timeZone: timeZone, locale: locale))"
+        let clock = (approximate ? "≈" : "") + time(date, timeZone: timeZone, locale: locale)
+        if let prefix {
+            return "\(prefix) \(clock)"
+        }
+        return clock
     }
 
-    static func interval(
-        start: Date,
-        end: Date,
-        timeZone: TimeZone,
-        locale: Locale = .autoupdatingCurrent
+    /// Row transition column: `Closes 1:00 PM`, `Reopens ≈3:00 PM`, `Opens Sun ≈3:00 PM`.
+    static func rowTransition(
+        _ transition: SessionTransition,
+        relativeTo now: Date,
+        timeZone: TimeZone
     ) -> String {
-        "\(time(start, timeZone: timeZone, locale: locale))–\(time(end, timeZone: timeZone, locale: locale))"
+        "\(transition.verb.rawValue) \(transitionTime(transition.date, relativeTo: now, timeZone: timeZone, approximate: transition.approximate))"
+    }
+
+    /// Hero subtitle tail: `closes Today 1:00 PM`, `opens Sun ≈3:00 PM`.
+    static func subtitleTransition(
+        _ transition: SessionTransition,
+        relativeTo now: Date,
+        timeZone: TimeZone
+    ) -> String {
+        let verb = transition.verb.rawValue.lowercased()
+        let time = transitionTime(
+            transition.date,
+            relativeTo: now,
+            timeZone: timeZone,
+            approximate: transition.approximate,
+            sameDayPrefix: "Today"
+        )
+        return "\(verb) \(time)"
     }
 }
 
@@ -65,7 +86,7 @@ enum MarketDurationFormatting {
         if hours > 0 {
             components.append("\(hours)h")
         }
-        if remainingMinutes > 0 || components.isEmpty {
+        if (remainingMinutes > 0 && days == 0) || components.isEmpty {
             components.append("\(remainingMinutes)m")
         }
 
@@ -85,7 +106,7 @@ enum MarketDurationFormatting {
         if hours > 0 {
             components.append("\(hours) \(hours == 1 ? "hour" : "hours")")
         }
-        if remainingMinutes > 0 || components.isEmpty {
+        if (remainingMinutes > 0 && days == 0) || components.isEmpty {
             components.append(
                 "\(remainingMinutes) \(remainingMinutes == 1 ? "minute" : "minutes")"
             )
