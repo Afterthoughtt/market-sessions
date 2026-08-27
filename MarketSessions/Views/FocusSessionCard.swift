@@ -16,7 +16,7 @@ struct OpenNowGrid: View {
                 heroOpenCell(hero)
                 let secondary = Array(focus.secondary.prefix(2))
                 if secondary.count == 1 {
-                    secondaryCell(secondary[0])
+                    secondaryStrip(secondary[0])
                 } else if secondary.count == 2 {
                     HStack(spacing: 7) {
                         secondaryCell(secondary[0])
@@ -124,6 +124,46 @@ struct OpenNowGrid: View {
         .accessibilityLabel(
             "\(name), \(statusWord.lowercased()), \(actionLabel.lowercased()) "
                 + MarketDurationFormatting.spoken(minutes: remainingMinutes)
+        )
+    }
+
+    /// A lone secondary session gets a slim full-width strip instead of a card:
+    /// a stretched card leaves most of its width empty and competes with the hero.
+    /// Both ends are anchored — name leading, countdown trailing — so it reads as a
+    /// subordinate row, echoing the session list below.
+    private func secondaryStrip(_ entry: FocusSnapshot.OpenEntry) -> some View {
+        HStack(spacing: 9) {
+            ProgressRing(
+                fraction: entry.remainingFraction,
+                size: 18,
+                lineWidth: 2,
+                track: palette.track,
+                arc: palette.accent
+            )
+
+            Text(entry.name)
+                .font(.system(size: 12, weight: .medium))
+                .foregroundStyle(palette.text)
+                .lineLimit(1)
+                .truncationMode(.tail)
+
+            Spacer(minLength: 6)
+
+            Text("\(MarketDurationFormatting.compact(minutes: entry.remainingMinutes)) left")
+                .font(.system(size: 11))
+                .monospacedDigit()
+                .foregroundStyle(palette.sec)
+                .lineLimit(1)
+                .fixedSize(horizontal: true, vertical: false)
+        }
+        .padding(.vertical, 7)
+        .padding(.horizontal, 10)
+        .frame(maxWidth: .infinity)
+        .background(palette.cell, in: RoundedRectangle(cornerRadius: 8))
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel(
+            "\(entry.name), open, "
+                + MarketDurationFormatting.spoken(minutes: entry.remainingMinutes) + " left"
         )
     }
 
