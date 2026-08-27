@@ -6,6 +6,7 @@ enum EconomicEventKind: String, CaseIterable, Codable, Hashable, Sendable {
     case employment
     case pce
     case retailSales
+    case fedSpeech
 
     var title: String {
         switch self {
@@ -19,6 +20,8 @@ enum EconomicEventKind: String, CaseIterable, Codable, Hashable, Sendable {
             "U.S. PCE"
         case .retailSales:
             "U.S. retail sales"
+        case .fedSpeech:
+            "Fed Chair speech"
         }
     }
 
@@ -29,6 +32,7 @@ enum EconomicEventKind: String, CaseIterable, Codable, Hashable, Sendable {
         case .employment: 3
         case .pce: 4
         case .retailSales: 5
+        case .fedSpeech: 6
         }
     }
 }
@@ -42,9 +46,15 @@ struct EconomicEvent: Identifiable, Hashable, Sendable {
 
     let id: String
     let kind: EconomicEventKind
+    /// Optional per-event title override — e.g. "Jackson Hole keynote" for a fedSpeech.
+    let title: String?
     let start: Date
     let end: Date
     let canonicalTimeZoneIdentifier: String
+
+    var displayTitle: String {
+        title ?? kind.title
+    }
 
     var canonicalTimeZone: TimeZone {
         guard let timeZone = TimeZone(identifier: canonicalTimeZoneIdentifier) else {
@@ -80,6 +90,9 @@ struct EconomicEvent: Identifiable, Hashable, Sendable {
 
 struct UpcomingEconomicEvents: Hashable, Sendable {
     let events: [EconomicEvent]
+    /// End of the last event in the bundled catalog — surfaced when the schedule
+    /// is nearly exhausted so staleness is visible instead of the section going quiet.
+    let scheduleEnd: Date?
 
-    static let empty = UpcomingEconomicEvents(events: [])
+    static let empty = UpcomingEconomicEvents(events: [], scheduleEnd: nil)
 }

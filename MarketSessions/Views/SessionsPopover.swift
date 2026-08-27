@@ -20,7 +20,7 @@ struct SessionsPopover: View {
 
             sessionList
 
-            if !model.upcomingEvents.events.isEmpty {
+            if !model.upcomingEvents.events.isEmpty || model.upcomingEvents.scheduleEnd != nil {
                 Rectangle()
                     .fill(palette.dividerStrong)
                     .frame(height: 1)

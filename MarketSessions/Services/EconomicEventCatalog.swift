@@ -17,6 +17,7 @@ enum EconomicEventCatalog {
     private struct BundledEvent: Decodable {
         let id: String
         let kind: EconomicEventKind
+        let title: String?
         let date: String
         let time: String
         let durationMinutes: Int
@@ -75,6 +76,7 @@ enum EconomicEventCatalog {
         return EconomicEvent(
             id: bundled.id,
             kind: bundled.kind,
+            title: bundled.title,
             start: start,
             end: start.addingTimeInterval(TimeInterval(bundled.durationMinutes * 60)),
             canonicalTimeZoneIdentifier: bundled.timeZone
@@ -135,7 +137,10 @@ struct UpcomingEconomicEventResolver: Sendable {
         if within.count < minimumCount {
             within = Array(upcoming.prefix(minimumCount))
         }
-        return UpcomingEconomicEvents(events: within)
+        return UpcomingEconomicEvents(
+            events: within,
+            scheduleEnd: events.map(\.end).max()
+        )
     }
 }
 

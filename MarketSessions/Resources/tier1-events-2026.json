@@ -6,9 +6,12 @@
     "https://www.bls.gov/schedule/news_release/cpi.htm",
     "https://www.bls.gov/schedule/news_release/empsit.htm",
     "https://www.bea.gov/news/schedule/full",
-    "https://www.census.gov/retail/release_schedule.html"
+    "https://www.census.gov/retail/release_schedule.html",
+    "https://www.federalreserve.gov/newsevents/2026-august.htm"
   ],
   "events": [
+    { "id": "2026-08-28-fedspeech-jackson-hole", "kind": "fedSpeech", "title": "Jackson Hole keynote — Fed Chair", "date": "2026-08-28", "time": "10:00", "durationMinutes": 60, "timeZone": "America/New_York" },
+
     { "id": "2026-01-28-fomc", "kind": "fomc", "date": "2026-01-28", "time": "14:00", "durationMinutes": 90, "timeZone": "America/New_York" },
     { "id": "2026-03-18-fomc", "kind": "fomc", "date": "2026-03-18", "time": "14:00", "durationMinutes": 90, "timeZone": "America/New_York" },
     { "id": "2026-04-29-fomc", "kind": "fomc", "date": "2026-04-29", "time": "14:00", "durationMinutes": 90, "timeZone": "America/New_York" },

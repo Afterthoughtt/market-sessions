@@ -54,15 +54,34 @@ struct EconomicEventsSection: View {
                         .frame(height: 1)
                 }
             }
+
+            if let notice = stalenessNotice {
+                Text(notice)
+                    .font(.system(size: 10))
+                    .foregroundStyle(palette.faint)
+                    .padding(.top, events.isEmpty ? 2 : 6)
+                    .padding(.bottom, 4)
+            }
         }
         .padding(.horizontal, 14)
         .padding(.bottom, 4)
     }
 
+    /// Shown once the resolver can no longer fill its minimum from the bundled
+    /// catalog — the schedule running out should be visible, not silent.
+    private var stalenessNotice: String? {
+        guard upcoming.events.count < 4, let scheduleEnd = upcoming.scheduleEnd else { return nil }
+        let formatter = DateFormatter()
+        formatter.locale = .autoupdatingCurrent
+        formatter.timeZone = displayTimeZone
+        formatter.dateFormat = "MMM d, yyyy"
+        return "Bundled schedule ends \(formatter.string(from: scheduleEnd))"
+    }
+
     private func eventRow(_ event: EconomicEvent) -> some View {
         HStack(alignment: .center, spacing: 9) {
             VStack(alignment: .leading, spacing: 2) {
-                Text(event.kind.title)
+                Text(event.displayTitle)
                     .font(.system(size: 12, weight: .medium))
                     .foregroundStyle(palette.text)
                     .lineLimit(1)
@@ -120,7 +139,7 @@ struct EconomicEventsSection: View {
     }
 
     private func accessibilityLabel(_ event: EconomicEvent) -> String {
-        var label = "\(event.kind.title), \(scheduleLabel(event))"
+        var label = "\(event.displayTitle), \(scheduleLabel(event))"
         if event.phase(at: now) == .live {
             label += ", live now"
         } else if let minutes = event.remainingMinutes(at: now) {

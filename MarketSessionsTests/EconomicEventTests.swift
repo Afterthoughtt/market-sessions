@@ -2,17 +2,43 @@ import XCTest
 @testable import MarketSessions
 
 final class EconomicEventTests: XCTestCase {
-    func testBundledCatalogContainsOnlyTheFiveTierOneKinds() throws {
+    func testBundledCatalogContainsTheTierOneKinds() throws {
         let events = try EconomicEventCatalog.loadAll(bundle: Bundle(for: Self.self))
 
-        XCTAssertEqual(events.count, 58)
+        XCTAssertEqual(events.count, 59)
         XCTAssertEqual(Set(events.map(\.kind)), Set(EconomicEventKind.allCases))
         XCTAssertEqual(events.filter { $0.kind == .fomc }.count, 8)
         XCTAssertEqual(events.filter { $0.kind == .cpi }.count, 12)
         XCTAssertEqual(events.filter { $0.kind == .employment }.count, 12)
         XCTAssertEqual(events.filter { $0.kind == .pce }.count, 13)
         XCTAssertEqual(events.filter { $0.kind == .retailSales }.count, 13)
+        XCTAssertEqual(events.filter { $0.kind == .fedSpeech }.count, 1)
         XCTAssertEqual(Set(events.map(\.id)).count, events.count)
+    }
+
+    func testJacksonHoleKeynoteIsBundledWithItsOwnTitle() throws {
+        let events = try EconomicEventCatalog.loadAll(bundle: Bundle(for: Self.self))
+        let keynote = try XCTUnwrap(events.first { $0.kind == .fedSpeech })
+        let newYork = try XCTUnwrap(TimeZone(identifier: "America/New_York"))
+        var calendar = Calendar(identifier: .gregorian)
+        calendar.timeZone = newYork
+
+        XCTAssertEqual(keynote.displayTitle, "Jackson Hole keynote — Fed Chair")
+        XCTAssertEqual(calendar.dateComponents([.year, .month, .day, .hour, .minute], from: keynote.start),
+                       DateComponents(year: 2026, month: 8, day: 28, hour: 10, minute: 0))
+    }
+
+    func testScheduleEndSurfacesWhenTheCatalogIsNearlyExhausted() throws {
+        let events = try EconomicEventCatalog.loadAll(bundle: Bundle(for: Self.self))
+        let newYork = try XCTUnwrap(TimeZone(identifier: "America/New_York"))
+        // Mid-December: fewer than four events remain in the 2026 catalog.
+        let now = try makeDate(year: 2026, month: 12, day: 17, hour: 12, minute: 0, timeZone: newYork)
+
+        let snapshot = UpcomingEconomicEventResolver().resolve(events, at: now)
+
+        XCTAssertLessThan(snapshot.events.count, 4)
+        let scheduleEnd = try XCTUnwrap(snapshot.scheduleEnd)
+        XCTAssertEqual(scheduleEnd, events.map(\.end).max())
     }
 
     func testUpcomingEventsAreNeverEmptyWhileTheCatalogHasFutureEvents() throws {
@@ -32,7 +58,7 @@ final class EconomicEventTests: XCTestCase {
 
         // The 14-day horizon is quiet-ish, so the resolver reaches ahead to at least four.
         XCTAssertGreaterThanOrEqual(snapshot.events.count, 4)
-        XCTAssertEqual(snapshot.events.first?.id, "2026-09-04-employment")
+        XCTAssertEqual(snapshot.events.first?.id, "2026-08-28-fedspeech-jackson-hole")
         XCTAssertTrue(snapshot.events.allSatisfy { $0.end > now })
         let starts = snapshot.events.map(\.start)
         XCTAssertEqual(starts, starts.sorted())
@@ -90,6 +116,7 @@ final class EconomicEventTests: XCTestCase {
             EconomicEvent(
                 id: "far-\(index)",
                 kind: .cpi,
+                title: nil,
                 start: now.addingTimeInterval(TimeInterval(30 + index) * 86_400),
                 end: now.addingTimeInterval(TimeInterval(30 + index) * 86_400 + 60),
                 canonicalTimeZoneIdentifier: vancouver.identifier
@@ -136,6 +163,7 @@ final class EconomicEventTests: XCTestCase {
         return EconomicEvent(
             id: id,
             kind: .cpi,
+            title: nil,
             start: start,
             end: start.addingTimeInterval(60),
             canonicalTimeZoneIdentifier: timeZone.identifier
