@@ -2,14 +2,17 @@ import Foundation
 
 struct SessionResolver: Sendable {
     private let baseCalendar: Calendar
+    private let exceptions: MarketExceptionIndex
     let displayTimeZone: TimeZone
 
     init(
         calendar: Calendar = Calendar(identifier: .gregorian),
-        displayTimeZone: TimeZone = .autoupdatingCurrent
+        displayTimeZone: TimeZone = .autoupdatingCurrent,
+        exceptions: MarketExceptionIndex = .empty
     ) {
         self.baseCalendar = calendar
         self.displayTimeZone = displayTimeZone
+        self.exceptions = exceptions
     }
 
     func resolve(_ session: MarketSession, at now: Date) -> ResolvedSession {
@@ -136,15 +139,16 @@ struct SessionResolver: Sendable {
                     continue
                 }
 
-                result.append(
-                    SessionOccurrence(
-                        sessionID: session.id,
-                        kind: interval.kind,
-                        start: start,
-                        end: end,
-                        anchorDate: anchorDate
-                    )
+                let occurrence = SessionOccurrence(
+                    sessionID: session.id,
+                    kind: interval.kind,
+                    start: start,
+                    end: end,
+                    anchorDate: anchorDate
                 )
+                if let adjusted = applyingExceptions(to: occurrence, calendar: calendar) {
+                    result.append(adjusted)
+                }
             }
         }
 
@@ -154,6 +158,49 @@ struct SessionResolver: Sendable {
             }
             return $0.start < $1.start
         }
+    }
+
+    /// Holiday: the occurrence vanishes if either its start or end falls on the
+    /// holiday date. Early close: an occurrence straddling the close is clamped;
+    /// one starting at/after the close and ending the same day (an afternoon
+    /// session, an auction, maintenance) is dropped — but a re-open that runs into
+    /// the next day (CME's evening session after a holiday early close) survives.
+    private func applyingExceptions(
+        to occurrence: SessionOccurrence,
+        calendar: Calendar
+    ) -> SessionOccurrence? {
+        let startException = exceptions.exception(for: occurrence.sessionID, on: occurrence.start, calendar: calendar)
+        let endException = exceptions.exception(for: occurrence.sessionID, on: occurrence.end, calendar: calendar)
+
+        if startException?.kind == .holiday || endException?.kind == .holiday {
+            return nil
+        }
+
+        for exception in [startException, endException] {
+            guard let exception, exception.kind == .earlyClose, let close = exception.close else { continue }
+            var closeComponents = DateComponents()
+            closeComponents.year = exception.year
+            closeComponents.month = exception.month
+            closeComponents.day = exception.day
+            closeComponents.hour = close.hour
+            closeComponents.minute = close.minute
+            guard let closeDate = calendar.date(from: closeComponents) else { continue }
+
+            if occurrence.start < closeDate, occurrence.end > closeDate {
+                return SessionOccurrence(
+                    sessionID: occurrence.sessionID,
+                    kind: occurrence.kind,
+                    start: occurrence.start,
+                    end: closeDate,
+                    anchorDate: occurrence.anchorDate
+                )
+            }
+            if occurrence.start >= closeDate,
+               MarketExceptionIndex.key(for: occurrence.end, calendar: calendar) == exception.dateKey {
+                return nil
+            }
+        }
+        return occurrence
     }
 
     private func date(on day: Date, at time: LocalTime, calendar: Calendar) -> Date? {

@@ -27,8 +27,12 @@
 		A00100000000000000000012 /* EconomicEvent.swift in Sources */ = {isa = PBXBuildFile; fileRef = F00100000000000000000012 /* EconomicEvent.swift */; };
 		A00100000000000000000013 /* EconomicEventCatalog.swift in Sources */ = {isa = PBXBuildFile; fileRef = F00100000000000000000013 /* EconomicEventCatalog.swift */; };
 		A00100000000000000000014 /* EconomicEventsSection.swift in Sources */ = {isa = PBXBuildFile; fileRef = F00100000000000000000014 /* EconomicEventsSection.swift */; };
-		A00100000000000000000015 /* tier1-events-2026.json in Resources */ = {isa = PBXBuildFile; fileRef = F00100000000000000000015 /* tier1-events-2026.json */; };
-		A00100000000000000000016 /* tier1-events-2026.json in Resources */ = {isa = PBXBuildFile; fileRef = F00100000000000000000015 /* tier1-events-2026.json */; };
+		A00100000000000000000015 /* events-2026.json in Resources */ = {isa = PBXBuildFile; fileRef = F00100000000000000000015 /* events-2026.json */; };
+		A00100000000000000000016 /* events-2026.json in Resources */ = {isa = PBXBuildFile; fileRef = F00100000000000000000015 /* events-2026.json */; };
+		A00100000000000000000017 /* MarketException.swift in Sources */ = {isa = PBXBuildFile; fileRef = F00100000000000000000016 /* MarketException.swift */; };
+		A00100000000000000000018 /* MarketExceptionCatalog.swift in Sources */ = {isa = PBXBuildFile; fileRef = F00100000000000000000017 /* MarketExceptionCatalog.swift */; };
+		A00100000000000000000019 /* market-exceptions-2026.json in Resources */ = {isa = PBXBuildFile; fileRef = F00100000000000000000018 /* market-exceptions-2026.json */; };
+		A0010000000000000000001A /* market-exceptions-2026.json in Resources */ = {isa = PBXBuildFile; fileRef = F00100000000000000000018 /* market-exceptions-2026.json */; };
 		A00200000000000000000001 /* SessionResolverTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F00200000000000000000001 /* SessionResolverTests.swift */; };
 		A00200000000000000000002 /* FocusSessionResolverTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F00200000000000000000002 /* FocusSessionResolverTests.swift */; };
 		A00200000000000000000003 /* ProgressTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F00200000000000000000003 /* ProgressTests.swift */; };
@@ -66,7 +70,10 @@
 		F00100000000000000000012 /* EconomicEvent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EconomicEvent.swift; sourceTree = "<group>"; };
 		F00100000000000000000013 /* EconomicEventCatalog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EconomicEventCatalog.swift; sourceTree = "<group>"; };
 		F00100000000000000000014 /* EconomicEventsSection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EconomicEventsSection.swift; sourceTree = "<group>"; };
-		F00100000000000000000015 /* tier1-events-2026.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "tier1-events-2026.json"; sourceTree = "<group>"; };
+		F00100000000000000000015 /* events-2026.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "events-2026.json"; sourceTree = "<group>"; };
+		F00100000000000000000016 /* MarketException.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MarketException.swift; sourceTree = "<group>"; };
+		F00100000000000000000017 /* MarketExceptionCatalog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MarketExceptionCatalog.swift; sourceTree = "<group>"; };
+		F00100000000000000000018 /* market-exceptions-2026.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "market-exceptions-2026.json"; sourceTree = "<group>"; };
 		F00200000000000000000001 /* SessionResolverTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionResolverTests.swift; sourceTree = "<group>"; };
 		F00200000000000000000002 /* FocusSessionResolverTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FocusSessionResolverTests.swift; sourceTree = "<group>"; };
 		F00200000000000000000003 /* ProgressTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProgressTests.swift; sourceTree = "<group>"; };
@@ -129,6 +136,7 @@
 				F00100000000000000000004 /* SessionOccurrence.swift */,
 				F00100000000000000000005 /* SessionStatus.swift */,
 				F00100000000000000000012 /* EconomicEvent.swift */,
+				F00100000000000000000016 /* MarketException.swift */,
 			);
 			path = Models;
 			sourceTree = "<group>";
@@ -142,6 +150,7 @@
 				F00100000000000000000009 /* LoginItemService.swift */,
 				F0010000000000000000000A /* MarketSessionsModel.swift */,
 				F00100000000000000000013 /* EconomicEventCatalog.swift */,
+				F00100000000000000000017 /* MarketExceptionCatalog.swift */,
 			);
 			path = Services;
 			sourceTree = "<group>";
@@ -170,7 +179,10 @@
 		};
 		G00100000000000000000008 /* Resources */ = {
 			isa = PBXGroup;
-			children = (F00100000000000000000015 /* tier1-events-2026.json */,);
+			children = (
+				F00100000000000000000015 /* events-2026.json */,
+				F00100000000000000000018 /* market-exceptions-2026.json */,
+			);
 			path = Resources;
 			sourceTree = "<group>";
 		};
@@ -266,8 +278,14 @@
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
-		B00100000000000000000003 /* Resources */ = {isa = PBXResourcesBuildPhase; buildActionMask = 2147483647; files = (A00100000000000000000015 /* tier1-events-2026.json in Resources */,); runOnlyForDeploymentPostprocessing = 0; };
-		B00200000000000000000003 /* Resources */ = {isa = PBXResourcesBuildPhase; buildActionMask = 2147483647; files = (A00100000000000000000016 /* tier1-events-2026.json in Resources */,); runOnlyForDeploymentPostprocessing = 0; };
+		B00100000000000000000003 /* Resources */ = {isa = PBXResourcesBuildPhase; buildActionMask = 2147483647; files = (
+				A00100000000000000000015 /* events-2026.json in Resources */,
+				A00100000000000000000019 /* market-exceptions-2026.json in Resources */,
+			); runOnlyForDeploymentPostprocessing = 0; };
+		B00200000000000000000003 /* Resources */ = {isa = PBXResourcesBuildPhase; buildActionMask = 2147483647; files = (
+				A00100000000000000000016 /* events-2026.json in Resources */,
+				A0010000000000000000001A /* market-exceptions-2026.json in Resources */,
+			); runOnlyForDeploymentPostprocessing = 0; };
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
@@ -295,6 +313,8 @@
 				A00100000000000000000012 /* EconomicEvent.swift in Sources */,
 				A00100000000000000000013 /* EconomicEventCatalog.swift in Sources */,
 				A00100000000000000000014 /* EconomicEventsSection.swift in Sources */,
+				A00100000000000000000017 /* MarketException.swift in Sources */,
+				A00100000000000000000018 /* MarketExceptionCatalog.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

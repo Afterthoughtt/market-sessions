@@ -165,9 +165,11 @@ struct SessionsPopover: View {
     private var footer: some View {
         HStack(spacing: 10) {
             HStack(spacing: 5) {
-                Image(systemName: "exclamationmark.triangle")
-                    .font(.system(size: 9, weight: .medium))
-                Text("Recurring hours only")
+                if hoursDisclaimer.isWarning {
+                    Image(systemName: "exclamationmark.triangle")
+                        .font(.system(size: 9, weight: .medium))
+                }
+                Text(hoursDisclaimer.text)
                     .font(.system(size: 10))
             }
             .foregroundStyle(palette.sec)
@@ -195,6 +197,22 @@ struct SessionsPopover: View {
         }
         .padding(.vertical, 9)
         .padding(.horizontal, 14)
+    }
+
+    /// With bundled exception data in coverage, hours include holidays and early
+    /// closes; past coverage (or without data) the blanket disclaimer returns.
+    private var hoursDisclaimer: (text: String, isWarning: Bool) {
+        guard let coverage = model.exceptionCoverageEnd else {
+            return ("Recurring hours only", true)
+        }
+        let formatter = DateFormatter()
+        formatter.locale = .autoupdatingCurrent
+        formatter.timeZone = model.displayTimeZone
+        formatter.dateFormat = "MMM yyyy"
+        if model.now > coverage {
+            return ("Holiday data ended \(formatter.string(from: coverage))", true)
+        }
+        return ("Includes holidays & early closes through \(formatter.string(from: coverage))", false)
     }
 
     private var timeZoneAbbreviation: String {

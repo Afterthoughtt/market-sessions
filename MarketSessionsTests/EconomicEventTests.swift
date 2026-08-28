@@ -134,8 +134,8 @@ final class EconomicEventTests: XCTestCase {
         )
 
         // The past event is gone; the horizon holds one event, so the resolver
-        // reaches ahead to the four-event minimum and no further.
-        XCTAssertEqual(snapshot.events.map(\.id), ["nearby", "far-0", "far-1", "far-2"])
+        // reaches ahead to the five-event minimum and no further.
+        XCTAssertEqual(snapshot.events.map(\.id), ["nearby", "far-0", "far-1", "far-2", "far-3"])
     }
 
     func testInvalidBundledDateIsRejected() {

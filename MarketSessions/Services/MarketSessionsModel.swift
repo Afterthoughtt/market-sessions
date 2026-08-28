@@ -15,8 +15,11 @@ final class MarketSessionsModel {
     private(set) var utcDayRemainingMinutes = 0
     private(set) var upcomingEvents: UpcomingEconomicEvents = .empty
     private(set) var loginItemState: LoginItemState = .disabled
+    /// Last date the bundled holiday/early-close data covers; nil when absent.
+    var exceptionCoverageEnd: Date? { marketExceptions.coverageEnd }
 
     private let catalog: [MarketSession]
+    private let marketExceptions: MarketExceptionIndex
     private let economicEvents: [EconomicEvent]
     private let upcomingEventResolver = UpcomingEconomicEventResolver()
     private let focusResolver: FocusSessionResolver
@@ -30,6 +33,7 @@ final class MarketSessionsModel {
 
     init(
         catalog: [MarketSession] = MarketScheduleCatalog.sessions,
+        marketExceptions: MarketExceptionIndex? = nil,
         economicEvents: [EconomicEvent]? = nil,
         focusResolver: FocusSessionResolver = FocusSessionResolver(),
         loginItemService: any LoginItemServicing = LoginItemService(),
@@ -37,6 +41,8 @@ final class MarketSessionsModel {
         displayTimeZoneProvider: @escaping @Sendable () -> TimeZone = { .autoupdatingCurrent }
     ) {
         self.catalog = catalog
+        self.marketExceptions = marketExceptions
+            ?? ((try? MarketExceptionCatalog.loadIndex()) ?? .empty)
         self.economicEvents = economicEvents ?? ((try? EconomicEventCatalog.loadAll()) ?? [])
         self.focusResolver = focusResolver
         self.loginItemService = loginItemService
@@ -71,7 +77,7 @@ final class MarketSessionsModel {
     func refresh() {
         let snapshot = nowProvider()
         let timeZone = displayTimeZoneProvider()
-        let resolver = SessionResolver(displayTimeZone: timeZone)
+        let resolver = SessionResolver(displayTimeZone: timeZone, exceptions: marketExceptions)
         now = snapshot
         displayTimeZone = timeZone
 

@@ -40,6 +40,15 @@ enum EconomicEventKind: String, CaseIterable, Codable, Hashable, Sendable {
         }
     }
 
+    /// The default high-impact set shown in the popover. The rest stay bundled
+    /// but hidden until a setting exposes them.
+    var isDefault: Bool {
+        switch self {
+        case .fomc, .cpi, .employment, .fedSpeech, .pce: true
+        case .retailSales, .fomcMinutes, .gdp, .ecb, .boj, .ppi: false
+        }
+    }
+
     var rank: Int {
         switch self {
         case .fomc: 1

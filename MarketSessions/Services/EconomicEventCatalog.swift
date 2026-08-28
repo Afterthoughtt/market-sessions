@@ -27,7 +27,7 @@ enum EconomicEventCatalog {
     static func loadAll(bundle: Bundle = .main) throws -> [EconomicEvent] {
         let urls = bundle.urls(forResourcesWithExtension: "json", subdirectory: nil) ?? []
         let eventURLs = urls
-            .filter { $0.lastPathComponent.hasPrefix("tier1-events-") }
+            .filter { $0.lastPathComponent.hasPrefix("events-") }
             .sorted { $0.lastPathComponent < $1.lastPathComponent }
 
         guard !eventURLs.isEmpty else {
@@ -118,10 +118,10 @@ struct UpcomingEconomicEventResolver: Sendable {
         _ events: [EconomicEvent],
         at now: Date,
         horizon: TimeInterval = 14 * 86_400,
-        minimumCount: Int = 4
+        minimumCount: Int = 5
     ) -> UpcomingEconomicEvents {
         let upcoming = events
-            .filter { $0.end > now }
+            .filter { $0.kind.isDefault && $0.end > now }
             .sorted { lhs, rhs in
                 if lhs.start != rhs.start {
                     return lhs.start < rhs.start

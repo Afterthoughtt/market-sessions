@@ -174,6 +174,101 @@ final class SessionResolverTests: XCTestCase {
         )
     }
 
+    func testHolidayRemovesTheWholeTradingDay() throws {
+        // Synthetic: NY holiday on Monday 2026-08-24.
+        let exceptions = MarketExceptionIndex(
+            exceptions: [
+                MarketException(market: .newYorkCash, year: 2026, month: 8, day: 24, kind: .holiday, close: nil, note: nil)
+            ],
+            coverageEnd: nil
+        )
+        let resolver = SessionResolver(exceptions: exceptions)
+        let now = try makeDate(year: 2026, month: 8, day: 24, hour: 12, minute: 0, timeZoneIdentifier: "America/New_York")
+        let result = resolver.resolve(MarketScheduleCatalog.session(.newYorkCash), at: now)
+
+        XCTAssertEqual(result.status, .closed)
+        // Next open is Tuesday, not later today.
+        XCTAssertEqual(
+            result.nextActiveStart,
+            try makeDate(year: 2026, month: 8, day: 25, hour: 9, minute: 30, timeZoneIdentifier: "America/New_York")
+        )
+    }
+
+    func testEarlyCloseClampsTheSessionAndDropsTheAfternoon() throws {
+        let zone = "America/New_York"
+        // Synthetic: NY early close 13:00 on Friday 2026-08-28 (like Nov 27 / Dec 24).
+        let exceptions = MarketExceptionIndex(
+            exceptions: [
+                MarketException(market: .newYorkCash, year: 2026, month: 8, day: 28, kind: .earlyClose, close: LocalTime(13), note: nil)
+            ],
+            coverageEnd: nil
+        )
+        let resolver = SessionResolver(exceptions: exceptions)
+
+        let morning = try makeDate(year: 2026, month: 8, day: 28, hour: 12, minute: 0, timeZoneIdentifier: zone)
+        let open = resolver.resolve(MarketScheduleCatalog.session(.newYorkCash), at: morning)
+        XCTAssertEqual(open.status, .open)
+        XCTAssertEqual(
+            open.transition?.date,
+            try makeDate(year: 2026, month: 8, day: 28, hour: 13, minute: 0, timeZoneIdentifier: zone)
+        )
+
+        // After the early close the session is closed — the shortened post-market is dropped.
+        let afternoon = try makeDate(year: 2026, month: 8, day: 28, hour: 14, minute: 0, timeZoneIdentifier: zone)
+        let closed = resolver.resolve(MarketScheduleCatalog.session(.newYorkCash), at: afternoon)
+        XCTAssertEqual(closed.status, .closed)
+    }
+
+    func testCMEHolidayEarlyCloseKeepsTheEveningReopen() throws {
+        let zone = "America/Chicago"
+        // Synthetic Labor-Day-style: CME halts 12:00 CT Monday 2026-08-24, reopens 17:00.
+        let exceptions = MarketExceptionIndex(
+            exceptions: [
+                MarketException(market: .cmeFutures, year: 2026, month: 8, day: 24, kind: .earlyClose, close: LocalTime(12), note: nil)
+            ],
+            coverageEnd: nil
+        )
+        let resolver = SessionResolver(exceptions: exceptions)
+
+        let morning = try makeDate(year: 2026, month: 8, day: 24, hour: 10, minute: 0, timeZoneIdentifier: zone)
+        let open = resolver.resolve(MarketScheduleCatalog.session(.cmeFutures), at: morning)
+        XCTAssertEqual(open.status, .open)
+        XCTAssertEqual(
+            open.transition?.date,
+            try makeDate(year: 2026, month: 8, day: 24, hour: 12, minute: 0, timeZoneIdentifier: zone)
+        )
+
+        // The Monday-evening session into Tuesday still opens at 17:00.
+        let halted = try makeDate(year: 2026, month: 8, day: 24, hour: 14, minute: 0, timeZoneIdentifier: zone)
+        let closed = resolver.resolve(MarketScheduleCatalog.session(.cmeFutures), at: halted)
+        XCTAssertEqual(closed.status, .closed)
+        XCTAssertEqual(
+            closed.nextActiveStart,
+            try makeDate(year: 2026, month: 8, day: 24, hour: 17, minute: 0, timeZoneIdentifier: zone)
+        )
+    }
+
+    func testHalfDayDropsTheAfternoonSessionAndAuction() throws {
+        let zone = "Asia/Hong_Kong"
+        // Synthetic Christmas-Eve-style: HKG morning only, closes 12:00.
+        let exceptions = MarketExceptionIndex(
+            exceptions: [
+                MarketException(market: .hongKong, year: 2026, month: 8, day: 24, kind: .earlyClose, close: LocalTime(12), note: nil)
+            ],
+            coverageEnd: nil
+        )
+        let resolver = SessionResolver(exceptions: exceptions)
+
+        let afternoon = try makeDate(year: 2026, month: 8, day: 24, hour: 14, minute: 0, timeZoneIdentifier: zone)
+        let result = resolver.resolve(MarketScheduleCatalog.session(.hongKong), at: afternoon)
+        XCTAssertEqual(result.status, .closed)
+        // Next open is Tuesday morning — no afternoon session, no closing auction today.
+        XCTAssertEqual(
+            result.nextActiveStart,
+            try makeDate(year: 2026, month: 8, day: 25, hour: 9, minute: 30, timeZoneIdentifier: zone)
+        )
+    }
+
     private func makeDate(
         year: Int,
         month: Int,

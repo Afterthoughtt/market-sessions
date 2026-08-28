@@ -17,7 +17,9 @@ The visual baseline is `design_handoff_market_sessions/README.md` (Turn 7), amen
 | `HKG` | Hong Kong | `Asia/Hong_Kong` | 9:30–12:00, 13:00–16:00; recess; closing auction 16:00–16:10 (outer bound) |
 | `SHG` | Shanghai | `Asia/Shanghai` | 9:30–11:30, 13:00–14:57; recess; closing auction 14:57–15:00 |
 
-Schedules are defined in canonical IANA zones and rendered in `TimeZone.autoupdatingCurrent`. Never hardcode UTC offsets or local clock times. Recurring hours only — holidays and early closes are intentionally not adjusted (the footer says so).
+Schedules are defined in canonical IANA zones and rendered in `TimeZone.autoupdatingCurrent`. Never hardcode UTC offsets or local clock times.
+
+**Holidays and early closes** are applied from a bundled `MarketSessions/Resources/market-exceptions-<year>.json` (per-market `holiday` / `earlyClose` rows, dated and timed in the market's canonical zone, keyed by session code). `SessionResolver` drops holiday occurrences, clamps sessions that straddle an early close, drops same-day remnants (afternoon sessions, auctions, maintenance) after it, and keeps overnight re-opens (CME's evening session after a holiday halt). The footer states the coverage window; past coverage it reverts to a "Recurring hours only" warning — regenerate the file yearly alongside the events file.
 
 ### States and colors
 
@@ -41,7 +43,7 @@ Ticker code + 14pt ring, rendered via `ImageRenderer` to a template `NSImage` (S
 
 ### Upcoming Events
 
-Tier-1 macro events from a bundled per-year JSON (`MarketSessions/Resources/tier1-events-<year>.json`): FOMC (decision + presser as one 90-minute window), FOMC minutes, CPI, PPI, jobs report, PCE, retail sales, GDP advance estimate, ECB and BOJ rate decisions, and major Fed Chair speeches (`fedSpeech`, optional per-event `title`). Selection bar: "you should know this is happening before entering a leveraged crypto trade" — deliberately excluded as below that bar: jobless claims, ISM, JOLTS, consumer confidence, options expiries. Rolling window: everything within 14 days, reaching ahead to at least 4 events. Rows show local day/time and a countdown; "Live" during the release window. Collapsed at 4 rows with a disclosure.
+Macro events from a bundled per-year JSON (`MarketSessions/Resources/events-<year>.json`). The **default displayed set** (`EconomicEventKind.isDefault`) is five kinds: FOMC (decision + presser as one 90-minute window), CPI, jobs report, major Fed Chair events (`fedSpeech`, optional per-event `title` — Jackson Hole, testimony, major policy speeches), and PCE. Also bundled but hidden pending a setting: FOMC minutes, PPI, retail sales, GDP advance, ECB and BOJ decisions. Selection bar: "you should know this is happening before entering a leveraged crypto trade" — deliberately excluded entirely: jobless claims, ISM, JOLTS, consumer confidence, options expiries. Rolling window: everything within 14 days, reaching ahead to at least 4 events. Rows show local day/time and a countdown; "Live" during the release window. Collapsed at 4 rows with a disclosure.
 
 **Data rules:** never generate dates from recurrence formulas — store the published dates from official sources (Fed FOMC calendar, BLS, BEA, Census, ECB and BOJ meeting calendars, Fed monthly newsevents calendar for Chair speeches; URLs are in the JSON's `sources`). BOJ decisions have no fixed announcement time; 12:00 JST on the meeting's second day is the stored approximation. Regenerate once a year in the fall; hand-add Jackson Hole (last week of August, Chair keynote Friday morning) and the Feb/Jul congressional testimony when announced. When the catalog can't fill 4 rows the section shows "Bundled schedule ends <date>" — that's the signal to regenerate.
 
