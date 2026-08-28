@@ -5,7 +5,7 @@ final class EconomicEventTests: XCTestCase {
     func testBundledCatalogContainsTheTierOneKinds() throws {
         let events = try EconomicEventCatalog.loadAll(bundle: Bundle(for: Self.self))
 
-        XCTAssertEqual(events.count, 59)
+        XCTAssertEqual(events.count, 73)
         XCTAssertEqual(Set(events.map(\.kind)), Set(EconomicEventKind.allCases))
         XCTAssertEqual(events.filter { $0.kind == .fomc }.count, 8)
         XCTAssertEqual(events.filter { $0.kind == .cpi }.count, 12)
@@ -13,6 +13,11 @@ final class EconomicEventTests: XCTestCase {
         XCTAssertEqual(events.filter { $0.kind == .pce }.count, 13)
         XCTAssertEqual(events.filter { $0.kind == .retailSales }.count, 13)
         XCTAssertEqual(events.filter { $0.kind == .fedSpeech }.count, 1)
+        XCTAssertEqual(events.filter { $0.kind == .fomcMinutes }.count, 3)
+        XCTAssertEqual(events.filter { $0.kind == .gdp }.count, 1)
+        XCTAssertEqual(events.filter { $0.kind == .ecb }.count, 3)
+        XCTAssertEqual(events.filter { $0.kind == .boj }.count, 3)
+        XCTAssertEqual(events.filter { $0.kind == .ppi }.count, 4)
         XCTAssertEqual(Set(events.map(\.id)).count, events.count)
     }
 

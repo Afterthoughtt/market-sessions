@@ -7,6 +7,11 @@ enum EconomicEventKind: String, CaseIterable, Codable, Hashable, Sendable {
     case pce
     case retailSales
     case fedSpeech
+    case fomcMinutes
+    case gdp
+    case ecb
+    case boj
+    case ppi
 
     var title: String {
         switch self {
@@ -22,6 +27,16 @@ enum EconomicEventKind: String, CaseIterable, Codable, Hashable, Sendable {
             "U.S. retail sales"
         case .fedSpeech:
             "Fed Chair speech"
+        case .fomcMinutes:
+            "FOMC minutes"
+        case .gdp:
+            "U.S. GDP (advance)"
+        case .ecb:
+            "ECB rate decision"
+        case .boj:
+            "BOJ rate decision"
+        case .ppi:
+            "U.S. PPI"
         }
     }
 
@@ -33,6 +48,11 @@ enum EconomicEventKind: String, CaseIterable, Codable, Hashable, Sendable {
         case .pce: 4
         case .retailSales: 5
         case .fedSpeech: 6
+        case .fomcMinutes: 7
+        case .gdp: 8
+        case .ecb: 9
+        case .boj: 10
+        case .ppi: 11
         }
     }
 }
