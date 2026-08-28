@@ -115,7 +115,7 @@ struct EconomicEventsSection: View {
         }
     }
 
-    /// "Today · 5:30 AM", "Fri · 5:30 AM" within the week, "Fri Sep 4 · 5:30 AM" beyond.
+    /// "Today · 5:30 AM PDT", "Fri · 5:30 AM PDT" within the week, "Fri Sep 4 · 5:30 AM PST" beyond.
     private func scheduleLabel(_ event: EconomicEvent) -> String {
         var calendar = Calendar(identifier: .gregorian)
         calendar.timeZone = displayTimeZone
@@ -135,7 +135,8 @@ struct EconomicEventsSection: View {
             formatter.dateFormat = daysAway < 7 ? "EEE" : "EEE MMM d"
             day = formatter.string(from: event.start)
         }
-        return "\(day) · \(MarketDateFormatting.time(event.start, timeZone: displayTimeZone))"
+        let zone = displayTimeZone.abbreviation(for: event.start) ?? displayTimeZone.identifier
+        return "\(day) · \(MarketDateFormatting.time(event.start, timeZone: displayTimeZone)) \(zone)"
     }
 
     private func accessibilityLabel(_ event: EconomicEvent) -> String {
