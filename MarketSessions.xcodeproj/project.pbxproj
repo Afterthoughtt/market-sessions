@@ -37,6 +37,7 @@
 		A00200000000000000000002 /* FocusSessionResolverTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F00200000000000000000002 /* FocusSessionResolverTests.swift */; };
 		A00200000000000000000003 /* ProgressTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F00200000000000000000003 /* ProgressTests.swift */; };
 		A00200000000000000000004 /* EconomicEventTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F00200000000000000000004 /* EconomicEventTests.swift */; };
+		A00200000000000000000005 /* MarketExceptionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F00200000000000000000005 /* MarketExceptionTests.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -78,6 +79,7 @@
 		F00200000000000000000002 /* FocusSessionResolverTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FocusSessionResolverTests.swift; sourceTree = "<group>"; };
 		F00200000000000000000003 /* ProgressTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProgressTests.swift; sourceTree = "<group>"; };
 		F00200000000000000000004 /* EconomicEventTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EconomicEventTests.swift; sourceTree = "<group>"; };
+		F00200000000000000000005 /* MarketExceptionTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MarketExceptionTests.swift; sourceTree = "<group>"; };
 		F00300000000000000000001 /* Market Sessions.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Market Sessions.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		F00300000000000000000002 /* MarketSessionsTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = MarketSessionsTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
@@ -193,6 +195,7 @@
 				F00200000000000000000002 /* FocusSessionResolverTests.swift */,
 				F00200000000000000000003 /* ProgressTests.swift */,
 				F00200000000000000000004 /* EconomicEventTests.swift */,
+				F00200000000000000000005 /* MarketExceptionTests.swift */,
 			);
 			path = MarketSessionsTests;
 			sourceTree = "<group>";
@@ -326,6 +329,7 @@
 				A00200000000000000000002 /* FocusSessionResolverTests.swift in Sources */,
 				A00200000000000000000003 /* ProgressTests.swift in Sources */,
 				A00200000000000000000004 /* EconomicEventTests.swift in Sources */,
+				A00200000000000000000005 /* MarketExceptionTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

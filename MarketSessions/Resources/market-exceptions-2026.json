@@ -1,3 +1,231 @@
 {
-  "exceptions": []
+  "year": 2026,
+  "coverage": "2026-09-01 through 2026-12-31 (plus LDN Aug 31); weekday rows only",
+  "coverageEnd": "2026-12-31",
+  "updated": "2026-08-27",
+  "notes": [
+    "CME rows are Equity Index (ES) hours; Energy/Metals/FX/Grains differ on Nov 27 and Dec 24.",
+    "CME Sep 7 and Nov 26 are halts with a same-evening 17:00 CT reopen, not final closes.",
+    "HKG half days: closing auction actually ends randomly 12:08-12:10; 12:00 is the continuous-trading close.",
+    "LSE 12:30 is when the closing process commences.",
+    "TYO rows are cash equities; OSE derivatives holiday trading differs."
+  ],
+  "sources": [
+    "https://www.nyse.com/markets/hours-calendars",
+    "https://www.cmegroup.com/trading-hours.html",
+    "https://www.londonstockexchange.com/equities-trading/business-days",
+    "https://www.jpx.co.jp/english/corporate/about-jpx/calendar/",
+    "https://www.hkex.com.hk/Services/Trading-hours-and-Severe-Weather-Arrangements/Trading-Hours/Securities-Market?sc_lang=en",
+    "https://www.sse.com.cn/disclosure/announcement/general/c/c_20251222_10802507.shtml"
+  ],
+  "exceptions": [
+    {
+      "market": "NY",
+      "date": "2026-09-07",
+      "type": "holiday",
+      "note": "Labor Day"
+    },
+    {
+      "market": "NY",
+      "date": "2026-11-26",
+      "type": "holiday",
+      "note": "Thanksgiving Day"
+    },
+    {
+      "market": "NY",
+      "date": "2026-11-27",
+      "type": "earlyClose",
+      "close": "13:00",
+      "note": "Day after Thanksgiving"
+    },
+    {
+      "market": "NY",
+      "date": "2026-12-24",
+      "type": "earlyClose",
+      "close": "13:00",
+      "note": "Christmas Eve"
+    },
+    {
+      "market": "NY",
+      "date": "2026-12-25",
+      "type": "holiday",
+      "note": "Christmas Day"
+    },
+    {
+      "market": "CME",
+      "date": "2026-09-07",
+      "type": "earlyClose",
+      "close": "12:00",
+      "note": "Labor Day \u2014 ES halts 12:00 CT, reopens 17:00 CT"
+    },
+    {
+      "market": "CME",
+      "date": "2026-11-26",
+      "type": "earlyClose",
+      "close": "12:00",
+      "note": "Thanksgiving \u2014 ES halts 12:00 CT, reopens 17:00 CT"
+    },
+    {
+      "market": "CME",
+      "date": "2026-11-27",
+      "type": "earlyClose",
+      "close": "12:15",
+      "note": "Day after Thanksgiving \u2014 final close, no evening reopen"
+    },
+    {
+      "market": "CME",
+      "date": "2026-12-24",
+      "type": "earlyClose",
+      "close": "12:15",
+      "note": "Christmas Eve \u2014 final close, no evening reopen"
+    },
+    {
+      "market": "CME",
+      "date": "2026-12-25",
+      "type": "holiday",
+      "note": "Christmas Day \u2014 next open Sun Dec 27 17:00 CT"
+    },
+    {
+      "market": "LDN",
+      "date": "2026-08-31",
+      "type": "holiday",
+      "note": "Summer Bank Holiday"
+    },
+    {
+      "market": "LDN",
+      "date": "2026-12-24",
+      "type": "earlyClose",
+      "close": "12:30",
+      "note": "Christmas Eve half day"
+    },
+    {
+      "market": "LDN",
+      "date": "2026-12-25",
+      "type": "holiday",
+      "note": "Christmas Day"
+    },
+    {
+      "market": "LDN",
+      "date": "2026-12-28",
+      "type": "holiday",
+      "note": "Boxing Day (substitute)"
+    },
+    {
+      "market": "LDN",
+      "date": "2026-12-31",
+      "type": "earlyClose",
+      "close": "12:30",
+      "note": "New Year's Eve half day"
+    },
+    {
+      "market": "TYO",
+      "date": "2026-09-21",
+      "type": "holiday",
+      "note": "Respect for the Aged Day"
+    },
+    {
+      "market": "TYO",
+      "date": "2026-09-22",
+      "type": "holiday",
+      "note": "Citizens' Holiday (bridge day)"
+    },
+    {
+      "market": "TYO",
+      "date": "2026-09-23",
+      "type": "holiday",
+      "note": "Autumnal Equinox Day"
+    },
+    {
+      "market": "TYO",
+      "date": "2026-10-12",
+      "type": "holiday",
+      "note": "Sports Day"
+    },
+    {
+      "market": "TYO",
+      "date": "2026-11-03",
+      "type": "holiday",
+      "note": "Culture Day"
+    },
+    {
+      "market": "TYO",
+      "date": "2026-11-23",
+      "type": "holiday",
+      "note": "Labor Thanksgiving Day"
+    },
+    {
+      "market": "TYO",
+      "date": "2026-12-31",
+      "type": "holiday",
+      "note": "Year-end holiday (last 2026 trading day Dec 30)"
+    },
+    {
+      "market": "HKG",
+      "date": "2026-10-01",
+      "type": "holiday",
+      "note": "National Day"
+    },
+    {
+      "market": "HKG",
+      "date": "2026-10-19",
+      "type": "holiday",
+      "note": "Day following Chung Yeung Festival"
+    },
+    {
+      "market": "HKG",
+      "date": "2026-12-24",
+      "type": "earlyClose",
+      "close": "12:00",
+      "note": "Christmas Eve half day \u2014 morning session only"
+    },
+    {
+      "market": "HKG",
+      "date": "2026-12-25",
+      "type": "holiday",
+      "note": "Christmas Day"
+    },
+    {
+      "market": "HKG",
+      "date": "2026-12-31",
+      "type": "earlyClose",
+      "close": "12:00",
+      "note": "New Year's Eve half day \u2014 morning session only"
+    },
+    {
+      "market": "SHG",
+      "date": "2026-09-25",
+      "type": "holiday",
+      "note": "Mid-Autumn Festival"
+    },
+    {
+      "market": "SHG",
+      "date": "2026-10-01",
+      "type": "holiday",
+      "note": "National Day Golden Week"
+    },
+    {
+      "market": "SHG",
+      "date": "2026-10-02",
+      "type": "holiday",
+      "note": "National Day Golden Week"
+    },
+    {
+      "market": "SHG",
+      "date": "2026-10-05",
+      "type": "holiday",
+      "note": "National Day Golden Week"
+    },
+    {
+      "market": "SHG",
+      "date": "2026-10-06",
+      "type": "holiday",
+      "note": "National Day Golden Week"
+    },
+    {
+      "market": "SHG",
+      "date": "2026-10-07",
+      "type": "holiday",
+      "note": "National Day Golden Week (reopens Oct 8)"
+    }
+  ]
 }
