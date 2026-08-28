@@ -22,10 +22,6 @@ struct ResolvedSession: Identifiable, Hashable, Sendable {
     let status: SessionStatus
     /// Occurrence containing now, of any kind.
     let currentOccurrence: SessionOccurrence?
-    /// Start of the contiguous active chain containing now (trading + adjacent auction).
-    let activeChainStart: Date?
-    /// End of the contiguous active chain containing now.
-    let activeChainEnd: Date?
     /// First open of the current trading day (the whole cycle, spanning recesses).
     let activeCycleStart: Date?
     /// Final close of the current trading day.

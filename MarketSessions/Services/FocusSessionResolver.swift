@@ -13,8 +13,6 @@ struct FocusSnapshot: Hashable, Sendable {
         /// recesses) — every ring is full at the day's open and drains to empty at
         /// the final close.
         let remainingFraction: Double
-        /// Fraction of the trading day elapsed.
-        let elapsedFraction: Double
         let remainingMinutes: Int
     }
 
@@ -56,7 +54,6 @@ struct FocusSessionResolver: Sendable {
                 status: resolved.status,
                 transition: transition,
                 remainingFraction: 1 - elapsed,
-                elapsedFraction: elapsed,
                 remainingMinutes: Self.remainingMinutes(until: transition.date, from: now)
             )
         }

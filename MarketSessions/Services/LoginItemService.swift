@@ -8,24 +8,12 @@ enum LoginItemState: Hashable, Sendable {
     case unavailable
 
     var isEnabled: Bool { self == .enabled }
-
-    var detail: String? {
-        switch self {
-        case .enabled, .disabled:
-            nil
-        case .requiresApproval:
-            "Approval is required in Login Items."
-        case .unavailable:
-            "Launch at Login is unavailable."
-        }
-    }
 }
 
 @MainActor
 protocol LoginItemServicing {
     var state: LoginItemState { get }
     func setEnabled(_ enabled: Bool) throws
-    func openSystemSettings()
 }
 
 @MainActor
@@ -64,7 +52,7 @@ final class LoginItemService: LoginItemServicing {
         }
     }
 
-    func openSystemSettings() {
+    private func openSystemSettings() {
         SMAppService.openSystemSettingsLoginItems()
     }
 

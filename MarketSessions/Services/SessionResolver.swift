@@ -22,8 +22,6 @@ struct SessionResolver: Sendable {
         let approximate = session.approximateTimes
 
         let status: SessionStatus
-        var chainStart: Date?
-        var chainEnd: Date?
         var cycleStart: Date?
         var cycleEnd: Date?
         let transition: SessionTransition?
@@ -31,12 +29,14 @@ struct SessionResolver: Sendable {
         if let current, current.kind.countsAsActive {
             status = current.kind == .auction ? .auction : .open
             let chain = activeChain(containing: current, in: activeOccurrences)
-            chainStart = chain.first?.start
-            chainEnd = chain.last?.end
             let cycle = activeOccurrences.filter { $0.anchorDate == current.anchorDate }
             cycleStart = cycle.first?.start
             cycleEnd = cycle.last?.end
-            transition = SessionTransition(verb: .closes, date: chainEnd ?? current.end, approximate: approximate)
+            transition = SessionTransition(
+                verb: .closes,
+                date: chain.last?.end ?? current.end,
+                approximate: approximate
+            )
         } else if let current {
             switch current.kind {
             case .recess:
@@ -82,8 +82,6 @@ struct SessionResolver: Sendable {
             session: session,
             status: status,
             currentOccurrence: current,
-            activeChainStart: chainStart,
-            activeChainEnd: chainEnd,
             activeCycleStart: cycleStart,
             activeCycleEnd: cycleEnd,
             previousActiveEnd: previousActiveEnd,

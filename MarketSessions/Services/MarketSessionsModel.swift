@@ -15,7 +15,6 @@ final class MarketSessionsModel {
     private(set) var utcDayRemainingMinutes = 0
     private(set) var upcomingEvents: UpcomingEconomicEvents = .empty
     private(set) var loginItemState: LoginItemState = .disabled
-    private(set) var loginItemError: String?
 
     private let catalog: [MarketSession]
     private let economicEvents: [EconomicEvent]
@@ -101,17 +100,8 @@ final class MarketSessionsModel {
     }
 
     func setLaunchAtLogin(_ enabled: Bool) {
-        loginItemError = nil
-        do {
-            try loginItemService.setEnabled(enabled)
-        } catch {
-            loginItemError = error.localizedDescription
-        }
+        try? loginItemService.setEnabled(enabled)
         loginItemState = loginItemService.state
-    }
-
-    func openLoginItemSettings() {
-        loginItemService.openSystemSettings()
     }
 
     private func updateUTCDay(at date: Date) {

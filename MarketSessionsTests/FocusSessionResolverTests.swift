@@ -16,7 +16,6 @@ final class FocusSessionResolverTests: XCTestCase {
         let hero = try XCTUnwrap(focus.hero)
         XCTAssertEqual(hero.remainingMinutes, 348)
         XCTAssertEqual(hero.remainingFraction, 348.0 / 390.0, accuracy: 0.000_001)
-        XCTAssertEqual(hero.elapsedFraction, 42.0 / 390.0, accuracy: 0.000_001)
 
         let london = try XCTUnwrap(focus.secondary.first)
         XCTAssertEqual(london.remainingMinutes, 78)

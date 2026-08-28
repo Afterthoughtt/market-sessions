@@ -12,7 +12,7 @@ final class ProgressTests: XCTestCase {
         let tokyo = try XCTUnwrap(focus.openEntries.first(where: { $0.sessionID == .tokyo }))
 
         // Rings drain over the whole day, 9:00–15:30 (390 minutes), spanning the recess.
-        XCTAssertEqual(tokyo.elapsedFraction, 75.0 / 390.0, accuracy: 0.000_001)
+        XCTAssertEqual(tokyo.remainingFraction, 315.0 / 390.0, accuracy: 0.000_001)
         // The countdown still tracks the next transition — the 11:30 morning close.
         XCTAssertEqual(tokyo.remainingMinutes, 75)
     }
@@ -26,8 +26,8 @@ final class ProgressTests: XCTestCase {
         let focus = FocusSessionResolver().resolve(resolved, at: now)
         let shanghai = try XCTUnwrap(focus.openEntries.first(where: { $0.sessionID == .shanghai }))
 
-        // Day runs 9:30–15:00 (330 minutes); 270 elapsed at 2:00 PM.
-        XCTAssertEqual(shanghai.elapsedFraction, 270.0 / 330.0, accuracy: 0.000_001)
+        // Day runs 9:30–15:00 (330 minutes); 60 of 330 remain at 2:00 PM.
+        XCTAssertEqual(shanghai.remainingFraction, 60.0 / 330.0, accuracy: 0.000_001)
         // Close is the end of the chain through the 2:57–3:00 auction.
         XCTAssertEqual(shanghai.remainingMinutes, 60)
     }
@@ -136,6 +136,4 @@ private final class StubLoginItemService: LoginItemServicing {
     func setEnabled(_ enabled: Bool) throws {
         state = enabled ? .enabled : .disabled
     }
-
-    func openSystemSettings() {}
 }
