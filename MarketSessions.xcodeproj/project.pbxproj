@@ -7,6 +7,10 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		A0010000000000000000001B /* MarketPreferences.swift in Sources */ = {isa = PBXBuildFile; fileRef = F00100000000000000000019 /* MarketPreferences.swift */; };
+		A0010000000000000000001C /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0010000000000000000001A /* SettingsView.swift */; };
+		A0010000000000000000001D /* TimeZonePicker.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0010000000000000000001B /* TimeZonePicker.swift */; };
+		A00200000000000000000006 /* SettingsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F00200000000000000000006 /* SettingsTests.swift */; };
 		A00100000000000000000001 /* MarketSessionsApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = F00100000000000000000001 /* MarketSessionsApp.swift */; };
 		A00100000000000000000002 /* MarketSession.swift in Sources */ = {isa = PBXBuildFile; fileRef = F00100000000000000000002 /* MarketSession.swift */; };
 		A00100000000000000000003 /* SessionInterval.swift in Sources */ = {isa = PBXBuildFile; fileRef = F00100000000000000000003 /* SessionInterval.swift */; };
@@ -51,6 +55,10 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		F00100000000000000000019 /* MarketPreferences.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MarketPreferences.swift; sourceTree = "<group>"; };
+		F0010000000000000000001A /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
+		F0010000000000000000001B /* TimeZonePicker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TimeZonePicker.swift; sourceTree = "<group>"; };
+		F00200000000000000000006 /* SettingsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsTests.swift; sourceTree = "<group>"; };
 		F00100000000000000000001 /* MarketSessionsApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MarketSessionsApp.swift; sourceTree = "<group>"; };
 		F00100000000000000000002 /* MarketSession.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MarketSession.swift; sourceTree = "<group>"; };
 		F00100000000000000000003 /* SessionInterval.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionInterval.swift; sourceTree = "<group>"; };
@@ -139,6 +147,7 @@
 				F00100000000000000000005 /* SessionStatus.swift */,
 				F00100000000000000000012 /* EconomicEvent.swift */,
 				F00100000000000000000016 /* MarketException.swift */,
+				F00100000000000000000019 /* MarketPreferences.swift */,
 			);
 			path = Models;
 			sourceTree = "<group>";
@@ -175,6 +184,8 @@
 				F0010000000000000000000F /* SessionRow.swift */,
 				F00100000000000000000011 /* ProgressRing.swift */,
 				F00100000000000000000014 /* EconomicEventsSection.swift */,
+				F0010000000000000000001A /* SettingsView.swift */,
+				F0010000000000000000001B /* TimeZonePicker.swift */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -196,6 +207,7 @@
 				F00200000000000000000003 /* ProgressTests.swift */,
 				F00200000000000000000004 /* EconomicEventTests.swift */,
 				F00200000000000000000005 /* MarketExceptionTests.swift */,
+				F00200000000000000000006 /* SettingsTests.swift */,
 			);
 			path = MarketSessionsTests;
 			sourceTree = "<group>";
@@ -318,6 +330,9 @@
 				A00100000000000000000014 /* EconomicEventsSection.swift in Sources */,
 				A00100000000000000000017 /* MarketException.swift in Sources */,
 				A00100000000000000000018 /* MarketExceptionCatalog.swift in Sources */,
+				A0010000000000000000001B /* MarketPreferences.swift in Sources */,
+				A0010000000000000000001C /* SettingsView.swift in Sources */,
+				A0010000000000000000001D /* TimeZonePicker.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -330,6 +345,7 @@
 				A00200000000000000000003 /* ProgressTests.swift in Sources */,
 				A00200000000000000000004 /* EconomicEventTests.swift in Sources */,
 				A00200000000000000000005 /* MarketExceptionTests.swift in Sources */,
+				A00200000000000000000006 /* SettingsTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

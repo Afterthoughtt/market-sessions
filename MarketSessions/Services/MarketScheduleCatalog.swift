@@ -22,8 +22,7 @@ enum MarketScheduleCatalog {
                     kind: .postMarket
                 ),
             ],
-            focusPriority: 1,
-            approximateTimes: false
+            focusPriority: 1
         ),
         MarketSession(
             id: .cmeFutures,
@@ -44,8 +43,7 @@ enum MarketScheduleCatalog {
                     kind: .maintenance
                 ),
             ],
-            focusPriority: 2,
-            approximateTimes: true
+            focusPriority: 2
         ),
         MarketSession(
             id: .london,
@@ -55,8 +53,7 @@ enum MarketScheduleCatalog {
             intervals: [
                 SessionInterval(weekdays: Weekday.weekdays, start: LocalTime(8), end: LocalTime(16, 30)),
             ],
-            focusPriority: 3,
-            approximateTimes: false
+            focusPriority: 3
         ),
         MarketSession(
             id: .tokyo,
@@ -73,8 +70,7 @@ enum MarketScheduleCatalog {
                 ),
                 SessionInterval(weekdays: Weekday.weekdays, start: LocalTime(12, 30), end: LocalTime(15, 30)),
             ],
-            focusPriority: 4,
-            approximateTimes: false
+            focusPriority: 4
         ),
         MarketSession(
             id: .hongKong,
@@ -98,8 +94,7 @@ enum MarketScheduleCatalog {
                     kind: .auction
                 ),
             ],
-            focusPriority: 5,
-            approximateTimes: false
+            focusPriority: 5
         ),
         MarketSession(
             id: .shanghai,
@@ -122,8 +117,7 @@ enum MarketScheduleCatalog {
                     kind: .auction
                 ),
             ],
-            focusPriority: 6,
-            approximateTimes: false
+            focusPriority: 6
         ),
     ]
 

@@ -1,99 +1,79 @@
 import AppKit
 import SwiftUI
 
-/// Status-item label: ticker code + progress ring. The left ring is the open market
-/// draining toward its close — full at the open, empty at the close, matching every
-/// ring in the popover. The right ring is the next session filling toward its open,
-/// set apart by a dotted track and reduced opacity. When nothing trades the label
-/// degrades to the next ring and code, dimmed to 0.62.
-///
-/// The label is rendered to a template NSImage so shapes and opacities survive the
-/// menu bar (SwiftUI shape views do not draw reliably in a MenuBarExtra label).
+/// One monochrome ring: drains to the next close, or fills toward the next open.
 struct MenuBarLabel: View {
-    let focus: FocusSnapshot
+    let resolved: ResolvedSession?
+    let now: Date
+    let displayTimeZone: TimeZone
 
     var body: some View {
-        Image(nsImage: Self.render(focus))
-            .accessibilityLabel(accessibilityLabel)
+        Image(nsImage: Self.render(resolved: resolved, now: now))
+            .accessibilityLabel(tooltip)
+            .help(tooltip)
     }
 
     @MainActor
-    private static func render(_ focus: FocusSnapshot) -> NSImage {
-        let renderer = ImageRenderer(content: MenuBarPill(focus: focus))
-        // Render at the sharpest attached display's scale — NSScreen.main can be a
-        // 1x display (or nil at startup), which leaves the label blurry on retina.
+    private static func render(resolved: ResolvedSession?, now: Date) -> NSImage {
+        let renderer = ImageRenderer(content: MenuBarPill(resolved: resolved, now: now))
         renderer.scale = max(NSScreen.screens.map(\.backingScaleFactor).max() ?? 2, 2)
         guard let image = renderer.nsImage else { return NSImage() }
         image.isTemplate = true
         return image
     }
 
-    private var accessibilityLabel: String {
-        if let hero = focus.hero {
-            var label = "\(hero.name), \(hero.status.label.lowercased()), "
-            label += "\(hero.transition.verb.rawValue.lowercased()) in "
-            label += MarketDurationFormatting.spoken(minutes: hero.remainingMinutes) + "."
-            if let next = focus.nextToOpen {
-                label += " \(next.name) opens in "
-                label += MarketDurationFormatting.spoken(minutes: next.remainingMinutes) + "."
-            }
-            return label
+    private var tooltip: String {
+        guard let resolved, let transition = resolved.transition else {
+            return "Market Sessions — choose markets in Settings"
         }
-        if let next = focus.nextToOpen {
-            return "No markets open. \(next.name) opens in "
-                + MarketDurationFormatting.spoken(minutes: next.remainingMinutes) + "."
-        }
-        return "Market Sessions, schedule unavailable"
+        let time = MarketDateFormatting.transitionTime(
+            transition.date,
+            relativeTo: now,
+            timeZone: displayTimeZone
+        )
+        return "\(resolved.session.name) · \(resolved.status.label) · \(transition.verb.rawValue) \(time)"
     }
 }
 
-/// Drawn all in black; the template rendering keeps only the alpha channel, so the
-/// menu bar tints it correctly in light, dark, and inactive states.
+/// Drawn in black so the template image follows the active menu-bar tint.
 private struct MenuBarPill: View {
-    let focus: FocusSnapshot
+    let resolved: ResolvedSession?
+    let now: Date
 
     var body: some View {
         HStack(spacing: 5) {
-            if let hero = focus.hero {
-                ring(fraction: hero.remainingFraction, secondary: false)
-                code(hero.code, opacity: 1)
-                if let next = focus.nextToOpen {
-                    Text("›")
-                        .font(.system(size: 12, weight: .medium))
-                        .opacity(0.55)
-                        .padding(.horizontal, 1)
-                    ring(fraction: next.fillFraction, secondary: true)
-                        .opacity(0.8)
-                    code(next.code, opacity: 0.8)
-                }
-            } else if let next = focus.nextToOpen {
-                ring(fraction: next.fillFraction, secondary: true)
-                code(next.code, opacity: 1)
+            if let resolved {
+                ProgressRing(
+                    fraction: progressFraction(for: resolved),
+                    size: 14,
+                    lineWidth: 3.5,
+                    track: .black.opacity(0.22),
+                    arc: .black
+                )
+                Text(resolved.session.code)
+                    .font(.system(size: 12, weight: .medium))
+                    .foregroundStyle(.black)
+            } else {
+                // Keep Settings reachable even when the user hides every market.
+                Image(systemName: "clock")
+                    .font(.system(size: 14))
+                    .foregroundStyle(.black)
             }
         }
         .padding(.horizontal, 2)
-        // Integral height keeps the template image from landing on a half-pixel
-        // boundary in the status bar, which blurs the text.
         .frame(height: 18)
-        .opacity(focus.hero == nil ? 0.62 : 1)
         .fixedSize()
     }
 
-    private func ring(fraction: Double, secondary: Bool) -> some View {
-        ProgressRing(
-            fraction: fraction,
-            size: 14,
-            lineWidth: 2,
-            track: .black.opacity(0.34),
-            arc: .black.opacity(secondary ? 0.95 : 1),
-            dashedTrack: secondary
-        )
-    }
+    private func progressFraction(for resolved: ResolvedSession) -> Double {
+        if resolved.status.isActive {
+            return resolved.remainingTradingFraction(at: now)
+        }
 
-    private func code(_ text: String, opacity: Double) -> some View {
-        Text(text)
-            .font(.system(size: 12, weight: .medium))
-            .foregroundStyle(.black)
-            .opacity(opacity)
+        return FocusSessionResolver.clampedProgress(
+            now: now,
+            start: resolved.previousActiveEnd,
+            end: resolved.transition?.date
+        )
     }
 }

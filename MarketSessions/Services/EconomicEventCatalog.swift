@@ -118,10 +118,12 @@ struct UpcomingEconomicEventResolver: Sendable {
         _ events: [EconomicEvent],
         at now: Date,
         horizon: TimeInterval = 14 * 86_400,
-        minimumCount: Int = 5
+        minimumCount: Int = 5,
+        enabledKinds: Set<EconomicEventKind> = Set(EconomicEventKind.allCases.filter(\.isDefault))
     ) -> UpcomingEconomicEvents {
-        let upcoming = events
-            .filter { $0.kind.isDefault && $0.end > now }
+        let selected = events.filter { enabledKinds.contains($0.kind) }
+        let upcoming = selected
+            .filter { $0.end > now }
             .sorted { lhs, rhs in
                 if lhs.start != rhs.start {
                     return lhs.start < rhs.start

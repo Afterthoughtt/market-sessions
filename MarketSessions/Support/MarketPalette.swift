@@ -1,8 +1,7 @@
 import SwiftUI
 
-/// Design tokens from the Turn 7 handoff. Light status colors are custom accessible
-/// variants (system green/orange/purple fail contrast on the light popover); dark uses
-/// the standard system values, which pass.
+/// Shared colors. The final popover uses only the neutral text, separator, and
+/// scrubber values; legacy status colors remain available to non-popover views.
 struct MarketPalette {
     let text: Color
     let sec: Color
@@ -22,14 +21,14 @@ struct MarketPalette {
 
     static let light = MarketPalette(
         text: Color.black.opacity(0.85),
-        sec: Color.black.opacity(0.62),
+        sec: Color.black.opacity(0.55),
         faint: Color.black.opacity(0.55),
-        divider: Color.black.opacity(0.08),
-        dividerStrong: Color.black.opacity(0.1),
+        divider: Color.black.opacity(0.07),
+        dividerStrong: Color.black.opacity(0.08),
         cell: Color.white.opacity(0.72),
-        track: Color.black.opacity(0.09),
+        track: Color.black.opacity(0.08),
         ringTrack: Color.black.opacity(0.12),
-        ringSec: Color.black.opacity(0.42),
+        ringSec: Color.black.opacity(0.5),
         accent: Color(red: 0, green: 122 / 255, blue: 1),
         accentRing: Color(red: 0, green: 122 / 255, blue: 1).opacity(0.28),
         green: Color(red: 0x1E / 255, green: 0x7A / 255, blue: 0x34 / 255),
@@ -40,14 +39,14 @@ struct MarketPalette {
 
     static let dark = MarketPalette(
         text: Color.white.opacity(0.92),
-        sec: Color.white.opacity(0.55),
-        faint: Color.white.opacity(0.52),
-        divider: Color.white.opacity(0.1),
-        dividerStrong: Color.white.opacity(0.1),
+        sec: Color.white.opacity(0.5),
+        faint: Color.white.opacity(0.5),
+        divider: Color.white.opacity(0.09),
+        dividerStrong: Color.white.opacity(0.09),
         cell: Color.white.opacity(0.07),
-        track: Color.white.opacity(0.16),
+        track: Color.white.opacity(0.09),
         ringTrack: Color.white.opacity(0.18),
-        ringSec: Color.white.opacity(0.55),
+        ringSec: Color.white.opacity(0.5),
         accent: Color(red: 0x0A / 255, green: 0x84 / 255, blue: 0xFF / 255),
         accentRing: Color(red: 0x0A / 255, green: 0x84 / 255, blue: 0xFF / 255).opacity(0.55),
         green: Color(red: 0x32 / 255, green: 0xD7 / 255, blue: 0x4B / 255),
@@ -63,8 +62,7 @@ struct MarketPalette {
     func statusColor(_ status: SessionStatus) -> Color {
         switch status {
         case .open: green
-        case .auction, .preMarket, .postMarket: purple
-        case .recess, .maintenance: orange
+        case .onBreak: orange
         case .closed: sec
         }
     }

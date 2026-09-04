@@ -40,8 +40,24 @@ enum EconomicEventKind: String, CaseIterable, Codable, Hashable, Sendable {
         }
     }
 
-    /// The default high-impact set shown in the popover. The rest stay bundled
-    /// but hidden until a setting exposes them.
+    /// Short labels for compact rows; title retains the complete description.
+    var compactTitle: String {
+        switch self {
+        case .fomc: "FOMC Decision"
+        case .cpi: "U.S. CPI"
+        case .employment: "U.S. Jobs Report"
+        case .pce: "U.S. PCE"
+        case .retailSales: "U.S. Retail Sales"
+        case .fedSpeech: "Fed Chair Speech"
+        case .fomcMinutes: "FOMC Minutes"
+        case .gdp: "U.S. GDP (Advance)"
+        case .ecb: "ECB Decision"
+        case .boj: "BOJ Decision"
+        case .ppi: "U.S. PPI"
+        }
+    }
+
+    /// The initial high-impact selection, before the user customizes Settings.
     var isDefault: Bool {
         switch self {
         case .fomc, .cpi, .employment, .fedSpeech, .pce: true
@@ -83,6 +99,11 @@ struct EconomicEvent: Identifiable, Hashable, Sendable {
 
     var displayTitle: String {
         title ?? kind.title
+    }
+
+    var compactTitle: String {
+        // Preserve specific speech names instead of reducing them to a generic category.
+        title ?? kind.compactTitle
     }
 
     var canonicalTimeZone: TimeZone {

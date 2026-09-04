@@ -20,12 +20,8 @@ struct SessionTransition: Hashable, Sendable {
     enum Verb: String, Hashable, Sendable {
         case opens = "Opens"
         case closes = "Closes"
-        case resumes = "Resumes"
-        case reopens = "Reopens"
     }
 
     let verb: Verb
     let date: Date
-    /// True for CME — rendered with a `≈` prefix on the time.
-    let approximate: Bool
 }

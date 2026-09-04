@@ -1,7 +1,6 @@
-import AppKit
 import SwiftUI
 
-/// The 390×590 popover — five fixed regions: header, divider, list label, list, footer.
+/// The compact menu-bar popover from the final design handoff.
 struct SessionsPopover: View {
     let model: MarketSessionsModel
     @Environment(\.colorScheme) private var colorScheme
@@ -12,19 +11,56 @@ struct SessionsPopover: View {
         VStack(spacing: 0) {
             header
 
-            Rectangle()
-                .fill(palette.dividerStrong)
-                .frame(height: 1)
+            if model.orderedSessions.isEmpty {
+                Text("Choose markets in Settings.")
+                    .font(.system(size: 11))
+                    .foregroundStyle(palette.sec)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding(.vertical, 16)
+            } else {
+                sectionHeader("Open")
+                if openSessions.isEmpty {
+                    Text("No markets open")
+                        .font(.system(size: 11))
+                        .foregroundStyle(palette.sec)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .padding(.vertical, 8)
+                }
+                sessionRows(openSessions) { resolved in
+                    OpenSessionRow(
+                        resolved: resolved,
+                        now: model.now,
+                        displayTimeZone: model.displayTimeZone,
+                        palette: palette
+                    )
+                }
 
-            listLabel
+                if !breakSessions.isEmpty {
+                    sectionHeader("Break")
+                    sessionRows(breakSessions) { resolved in
+                        ClosedSessionRow(
+                            resolved: resolved,
+                            now: model.now,
+                            displayTimeZone: model.displayTimeZone,
+                            palette: palette
+                        )
+                    }
+                }
 
-            sessionList
+                if !closedSessions.isEmpty {
+                    sectionHeader("Closed")
+                    sessionRows(closedSessions) { resolved in
+                        ClosedSessionRow(
+                            resolved: resolved,
+                            now: model.now,
+                            displayTimeZone: model.displayTimeZone,
+                            palette: palette
+                        )
+                    }
+                }
+            }
 
-            if !model.upcomingEvents.events.isEmpty || model.upcomingEvents.scheduleEnd != nil {
-                Rectangle()
-                    .fill(palette.dividerStrong)
-                    .frame(height: 1)
-
+            if !model.preferences.eventKinds.isEmpty {
                 EconomicEventsSection(
                     upcoming: model.upcomingEvents,
                     now: model.now,
@@ -33,190 +69,149 @@ struct SessionsPopover: View {
                 )
             }
 
+            if let hoursWarning {
+                Text(hoursWarning)
+                    .font(.system(size: 11))
+                    .foregroundStyle(palette.sec)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding(.vertical, 8)
+            }
+
             Rectangle()
                 .fill(palette.dividerStrong)
                 .frame(height: 1)
+                .padding(.horizontal, -14)
 
-            footer
+            SettingsLink {
+                Text("Settings…")
+                    .font(.system(size: 13))
+                    .foregroundStyle(palette.text)
+                    .frame(maxWidth: .infinity, minHeight: 32, alignment: .leading)
+                    .contentShape(Rectangle())
+            }
+            .buttonStyle(.plain)
+            .keyboardShortcut(",")
         }
-        .frame(width: 390)
-        .background(palette.popover)
+        .padding(.top, 14)
+        .padding(.horizontal, 14)
+        .padding(.bottom, 4)
+        .frame(width: 340)
         .task {
             model.start()
         }
     }
 
-    // MARK: Region A — header
-
     private var header: some View {
-        VStack(alignment: .leading, spacing: 9) {
-            HStack(alignment: .top, spacing: 8) {
+        HStack(alignment: .top, spacing: 8) {
+            VStack(alignment: .leading, spacing: 3) {
                 Text("Market Sessions")
                     .font(.system(size: 15, weight: .semibold))
                     .tracking(-0.15)
                     .foregroundStyle(palette.text)
 
-                Spacer(minLength: 0)
-
-                VStack(alignment: .trailing, spacing: 3) {
-                    Text("Your time · \(timeZoneAbbreviation)")
-                        .font(.system(size: 10))
-                        .foregroundStyle(palette.sec)
-
-                    HStack(spacing: 5) {
-                        ProgressRing(
-                            fraction: model.utcDayRemainingFraction,
-                            size: 13,
-                            lineWidth: 2,
-                            track: palette.ringTrack,
-                            arc: palette.accent
-                        )
-                        Text(
-                            "\(Text("Daily Close in").foregroundColor(palette.sec)) \(Text(MarketDurationFormatting.compact(minutes: model.utcDayRemainingMinutes)).fontWeight(.medium).foregroundColor(palette.text))"
-                        )
-                        .font(.system(size: 10))
-                        .monospacedDigit()
-                    }
-                    .accessibilityElement(children: .ignore)
-                    .accessibilityLabel(
-                        "UTC daily close in "
-                            + MarketDurationFormatting.spoken(minutes: model.utcDayRemainingMinutes)
-                    )
-                }
+                Text(weekday)
+                    .font(.system(size: 11))
+                    .foregroundStyle(palette.sec)
             }
 
-            sectionLabel
-
-            OpenNowGrid(
-                focus: model.focus,
-                now: model.now,
-                displayTimeZone: model.displayTimeZone,
-                palette: palette
-            )
-        }
-        .padding(.top, 14)
-        .padding(.horizontal, 14)
-        .padding(.bottom, 10)
-    }
-
-    private var sectionLabel: some View {
-        HStack(alignment: .firstTextBaseline, spacing: 6) {
-            if model.focus.hero != nil {
-                Text("Open now")
-                    .font(.system(size: 10, weight: .semibold))
-                    .foregroundStyle(palette.sec)
-                Text("\(model.focus.openEntries.count)")
-                    .font(.system(size: 10))
-                    .foregroundStyle(palette.faint)
-            } else {
-                Text("Next open")
-                    .font(.system(size: 10, weight: .semibold))
-                    .foregroundStyle(palette.sec)
-                Text("nothing trading")
-                    .font(.system(size: 10))
-                    .foregroundStyle(palette.faint)
-            }
-        }
-    }
-
-    // MARK: Region C — list label
-
-    private var listLabel: some View {
-        HStack(alignment: .firstTextBaseline, spacing: 6) {
-            Text("All sessions")
-                .font(.system(size: 10, weight: .semibold))
-                .foregroundStyle(palette.sec)
-            Text("re-sorts at each open or close")
-                .font(.system(size: 10))
-                .foregroundStyle(palette.faint)
             Spacer(minLength: 0)
+
+            VStack(alignment: .trailing, spacing: 3) {
+                Text("\(model.preferences.timeZoneIdentifier == nil ? "Your time" : "Time") · \(timeZoneAbbreviation)")
+                    .font(.system(size: 10))
+                    .foregroundStyle(palette.sec)
+
+                Text(
+                    "Daily Close in \(Text(MarketDurationFormatting.compact(minutes: model.utcDayRemainingMinutes)).fontWeight(.semibold).foregroundColor(palette.text))"
+                )
+                .font(.system(size: 10))
+                .monospacedDigit()
+                .foregroundStyle(palette.sec)
+                .accessibilityLabel(
+                    "UTC daily close in "
+                        + MarketDurationFormatting.spoken(minutes: model.utcDayRemainingMinutes)
+                )
+            }
         }
-        .padding(.top, 8)
-        .padding(.horizontal, 14)
-        .padding(.bottom, 4)
     }
 
-    // MARK: Region D — session list
+    private func sectionHeader(_ title: String) -> some View {
+        Text(title)
+            .font(.system(size: 11, weight: .semibold))
+            .foregroundStyle(palette.sec)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .padding(.top, 16)
+            .padding(.bottom, 2)
+    }
 
-    private var sessionList: some View {
+    private func sessionRows<Row: View>(
+        _ sessions: [ResolvedSession],
+        @ViewBuilder row: @escaping (ResolvedSession) -> Row
+    ) -> some View {
         VStack(spacing: 0) {
-            ForEach(model.orderedSessions) { resolved in
-                SessionRow(
-                    resolved: resolved,
-                    now: model.now,
-                    displayTimeZone: model.displayTimeZone,
-                    palette: palette
-                )
+            ForEach(sessions) { resolved in
+                row(resolved)
 
-                if resolved.id != model.orderedSessions.last?.id {
+                if resolved.id != sessions.last?.id {
                     Rectangle()
                         .fill(palette.divider)
                         .frame(height: 1)
-                        .padding(.leading, 34)
                 }
             }
         }
-        .padding(.horizontal, 14)
-        .padding(.bottom, 4)
     }
 
-    // MARK: Region E — footer
-
-    private var footer: some View {
-        HStack(spacing: 10) {
-            HStack(spacing: 5) {
-                if hoursDisclaimer.isWarning {
-                    Image(systemName: "exclamationmark.triangle")
-                        .font(.system(size: 9, weight: .medium))
-                }
-                Text(hoursDisclaimer.text)
-                    .font(.system(size: 10))
-            }
-            .foregroundStyle(palette.sec)
-            .accessibilityElement(children: .combine)
-
-            Spacer(minLength: 0)
-
-            Toggle(
-                "Launch at Login",
-                isOn: Binding(
-                    get: { model.loginItemState.isEnabled },
-                    set: { model.setLaunchAtLogin($0) }
-                )
-            )
-            .toggleStyle(.checkbox)
-            .font(.system(size: 11))
-            .foregroundStyle(palette.text)
-
-            Button("Quit") {
-                NSApplication.shared.terminate(nil)
-            }
-            .keyboardShortcut("q")
-            .controlSize(.small)
-            .font(.system(size: 11))
-        }
-        .padding(.vertical, 9)
-        .padding(.horizontal, 14)
+    private var openSessions: [ResolvedSession] {
+        model.orderedSessions
+            .filter { $0.status.isActive }
+            .sorted(by: transitionComesFirst)
     }
 
-    /// With bundled exception data in coverage, hours include holidays and early
-    /// closes; past coverage (or without data) the blanket disclaimer returns.
-    private var hoursDisclaimer: (text: String, isWarning: Bool) {
-        guard let coverage = model.exceptionCoverageEnd else {
-            return ("Recurring hours only", true)
+    private var closedSessions: [ResolvedSession] {
+        model.orderedSessions
+            .filter { $0.status == .closed }
+            .sorted(by: transitionComesFirst)
+    }
+
+    private var breakSessions: [ResolvedSession] {
+        model.orderedSessions
+            .filter { $0.status == .onBreak }
+            .sorted(by: transitionComesFirst)
+    }
+
+    private func transitionComesFirst(_ lhs: ResolvedSession, _ rhs: ResolvedSession) -> Bool {
+        let lhsDate = lhs.transition?.date ?? .distantFuture
+        let rhsDate = rhs.transition?.date ?? .distantFuture
+        if lhsDate == rhsDate {
+            return lhs.session.focusPriority < rhs.session.focusPriority
         }
+        return lhsDate < rhsDate
+    }
+
+    private var weekday: String {
         let formatter = DateFormatter()
         formatter.locale = .autoupdatingCurrent
         formatter.timeZone = model.displayTimeZone
-        formatter.dateFormat = "MMM yyyy"
-        if model.now > coverage {
-            return ("Holiday data ended \(formatter.string(from: coverage))", true)
-        }
-        return ("Includes holidays & early closes through \(formatter.string(from: coverage))", false)
+        formatter.dateFormat = "EEEE"
+        return formatter.string(from: model.now)
     }
 
     private var timeZoneAbbreviation: String {
         model.displayTimeZone.abbreviation(for: model.now)
             ?? model.displayTimeZone.identifier
+    }
+
+    /// The streamlined popover only surfaces holiday coverage once it needs attention.
+    private var hoursWarning: String? {
+        guard let coverage = model.exceptionCoverageEnd else {
+            return "Recurring hours only"
+        }
+        guard model.now > coverage else { return nil }
+
+        let formatter = DateFormatter()
+        formatter.locale = .autoupdatingCurrent
+        formatter.timeZone = model.displayTimeZone
+        formatter.dateFormat = "MMM yyyy"
+        return "Holiday data ended \(formatter.string(from: coverage))"
     }
 }

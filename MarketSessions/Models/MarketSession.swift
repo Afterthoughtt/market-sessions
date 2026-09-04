@@ -18,8 +18,6 @@ struct MarketSession: Identifiable, Hashable, Sendable {
     let intervals: [SessionInterval]
     /// Lower wins when choosing the emphasized open session.
     let focusPriority: Int
-    /// CME settlement timing is approximate; its transition times carry a `≈` prefix.
-    let approximateTimes: Bool
 
     var canonicalTimeZone: TimeZone {
         guard let timeZone = TimeZone(identifier: canonicalTimeZoneIdentifier) else {

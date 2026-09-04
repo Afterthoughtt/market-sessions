@@ -1,151 +1,117 @@
 import SwiftUI
 
-/// "Upcoming Events" — the next tier-1 U.S. economic events, rolling forward so
-/// the section is never empty. Each row is the event name, its local day and
-/// time, and a countdown until it goes live ("Live" while the release window is
-/// open). Capped at four rows with a disclosure for the rest.
+/// The next four configured economic events, presented as a plain macOS list.
 struct EconomicEventsSection: View {
     let upcoming: UpcomingEconomicEvents
     let now: Date
     let displayTimeZone: TimeZone
     let palette: MarketPalette
 
-    @State private var isExpanded = false
+    private static let rowCap = 4
 
-    private static let collapsedRowCap = 4
+    private var displayedEvents: [EconomicEvent] {
+        Array(upcoming.events.prefix(Self.rowCap))
+    }
 
     var body: some View {
-        let events = upcoming.events
         VStack(alignment: .leading, spacing: 0) {
-            HStack(alignment: .firstTextBaseline, spacing: 6) {
-                Text("Upcoming Events")
-                    .font(.system(size: 10, weight: .semibold))
-                    .foregroundStyle(palette.sec)
-                Text("\(events.count)")
-                    .font(.system(size: 10))
-                    .foregroundStyle(palette.faint)
-                Spacer(minLength: 0)
-                if events.count > Self.collapsedRowCap {
-                    Button {
-                        isExpanded.toggle()
-                    } label: {
-                        HStack(spacing: 3) {
-                            if !isExpanded {
-                                Text("+\(events.count - Self.collapsedRowCap) more")
-                            }
-                            Image(systemName: isExpanded ? "chevron.up" : "chevron.down")
-                        }
-                        .font(.system(size: 9, weight: .medium))
-                        .foregroundStyle(palette.faint)
-                    }
-                    .buttonStyle(.plain)
-                    .accessibilityLabel(isExpanded ? "Show fewer events" : "Show all events")
-                }
-            }
-            .padding(.top, 8)
-            .padding(.bottom, 2)
+            Text("Upcoming events")
+                .font(.system(size: 11, weight: .semibold))
+                .foregroundStyle(palette.sec)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .padding(.top, 16)
+                .padding(.bottom, 2)
 
-            let displayed = isExpanded ? events : Array(events.prefix(Self.collapsedRowCap))
-            ForEach(displayed) { event in
+            ForEach(displayedEvents) { event in
                 eventRow(event)
-                if event.id != displayed.last?.id {
+
+                if event.id != displayedEvents.last?.id {
                     Rectangle()
                         .fill(palette.divider)
                         .frame(height: 1)
                 }
             }
 
-            if let notice = stalenessNotice {
-                Text(notice)
-                    .font(.system(size: 10))
-                    .foregroundStyle(palette.faint)
-                    .padding(.top, events.isEmpty ? 2 : 6)
-                    .padding(.bottom, 4)
+            if displayedEvents.isEmpty {
+                Text("No upcoming events in the bundled schedule.")
+                    .font(.system(size: 11))
+                    .foregroundStyle(palette.sec)
+                    .padding(.vertical, 8)
             }
         }
-        .padding(.horizontal, 14)
-        .padding(.bottom, 4)
-    }
-
-    /// Shown once the resolver can no longer fill its minimum from the bundled
-    /// catalog — the schedule running out should be visible, not silent.
-    private var stalenessNotice: String? {
-        guard upcoming.events.count < 4, let scheduleEnd = upcoming.scheduleEnd else { return nil }
-        let formatter = DateFormatter()
-        formatter.locale = .autoupdatingCurrent
-        formatter.timeZone = displayTimeZone
-        formatter.dateFormat = "MMM d, yyyy"
-        return "Bundled schedule ends \(formatter.string(from: scheduleEnd))"
     }
 
     private func eventRow(_ event: EconomicEvent) -> some View {
-        HStack(alignment: .center, spacing: 9) {
-            VStack(alignment: .leading, spacing: 2) {
-                Text(event.displayTitle)
-                    .font(.system(size: 12, weight: .medium))
-                    .foregroundStyle(palette.text)
-                    .lineLimit(1)
-                Text(scheduleLabel(event))
-                    .font(.system(size: 10))
-                    .monospacedDigit()
-                    .foregroundStyle(palette.sec)
-                    .lineLimit(1)
-            }
+        HStack(spacing: 10) {
+            Text(event.compactTitle)
+                .font(.system(size: 13))
+                .foregroundStyle(palette.text)
+                .lineLimit(1)
+                .truncationMode(.tail)
 
             Spacer(minLength: 6)
 
-            countdownLabel(event)
-        }
-        .padding(.vertical, 7)
-        .accessibilityElement(children: .ignore)
-        .accessibilityLabel(accessibilityLabel(event))
-    }
-
-    @ViewBuilder
-    private func countdownLabel(_ event: EconomicEvent) -> some View {
-        if event.phase(at: now) == .live {
-            Text("Live")
-                .font(.system(size: 11, weight: .semibold))
-                .foregroundStyle(palette.green)
-        } else if let minutes = event.remainingMinutes(at: now) {
-            Text("in \(MarketDurationFormatting.compact(minutes: minutes))")
-                .font(.system(size: 11, weight: .medium))
+            Text(eventLabel(event))
+                .font(.system(size: 11, weight: isImminent(event) ? .semibold : .regular))
                 .monospacedDigit()
-                .foregroundStyle(palette.accent)
+                .foregroundStyle(isImminent(event) ? palette.text : palette.sec)
+                .lineLimit(1)
+                .fixedSize(horizontal: true, vertical: false)
         }
+        .frame(height: 32)
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel(eventDetails(event).replacingOccurrences(of: "≈", with: "approximately "))
+        .help(eventDetails(event))
     }
 
-    /// "Today · 5:30 AM PDT", "Fri · 5:30 AM PDT" within the week, "Fri Sep 4 · 5:30 AM PST" beyond.
-    private func scheduleLabel(_ event: EconomicEvent) -> String {
-        var calendar = Calendar(identifier: .gregorian)
-        calendar.timeZone = displayTimeZone
-
-        let day: String
-        if calendar.isDate(event.start, inSameDayAs: now) {
-            day = "Today"
-        } else {
-            let formatter = DateFormatter()
-            formatter.locale = .autoupdatingCurrent
-            formatter.timeZone = displayTimeZone
-            let daysAway = calendar.dateComponents(
-                [.day],
-                from: calendar.startOfDay(for: now),
-                to: calendar.startOfDay(for: event.start)
-            ).day ?? 0
-            formatter.dateFormat = daysAway < 7 ? "EEE" : "EEE MMM d"
-            day = formatter.string(from: event.start)
-        }
-        let zone = displayTimeZone.abbreviation(for: event.start) ?? displayTimeZone.identifier
-        return "\(day) · \(MarketDateFormatting.time(event.start, timeZone: displayTimeZone)) \(zone)"
+    private func isImminent(_ event: EconomicEvent) -> Bool {
+        if event.phase(at: now) == .live { return true }
+        let interval = event.start.timeIntervalSince(now)
+        return interval >= 0 && interval < 24 * 60 * 60
     }
 
-    private func accessibilityLabel(_ event: EconomicEvent) -> String {
-        var label = "\(event.displayTitle), \(scheduleLabel(event))"
+    private func eventLabel(_ event: EconomicEvent) -> String {
         if event.phase(at: now) == .live {
-            label += ", live now"
-        } else if let minutes = event.remainingMinutes(at: now) {
-            label += ", in " + MarketDurationFormatting.spoken(minutes: minutes)
+            return "Live"
         }
-        return label
+
+        if isImminent(event) {
+            var calendar = Calendar(identifier: .gregorian)
+            calendar.timeZone = displayTimeZone
+
+            let day: String
+            if calendar.isDate(event.start, inSameDayAs: now) {
+                day = "Today"
+            } else if let tomorrow = calendar.date(byAdding: .day, value: 1, to: now),
+                      calendar.isDate(event.start, inSameDayAs: tomorrow) {
+                day = "Tomorrow"
+            } else {
+                let formatter = DateFormatter()
+                formatter.locale = .autoupdatingCurrent
+                formatter.timeZone = displayTimeZone
+                formatter.dateFormat = "EEE"
+                day = formatter.string(from: event.start)
+            }
+            let approximation = event.kind == .boj ? "≈" : ""
+            return "\(day) \(approximation)\(MarketDateFormatting.time(event.start, timeZone: displayTimeZone))"
+        }
+
+        let formatter = DateFormatter()
+        formatter.locale = .autoupdatingCurrent
+        formatter.timeZone = displayTimeZone
+        formatter.dateFormat = "EEE, MMM d"
+        return formatter.string(from: event.start)
+    }
+
+    private func eventDetails(_ event: EconomicEvent) -> String {
+        let formatter = DateFormatter()
+        formatter.locale = .autoupdatingCurrent
+        formatter.timeZone = displayTimeZone
+        formatter.dateStyle = .full
+        formatter.timeStyle = .short
+        let zone = displayTimeZone.abbreviation(for: event.start) ?? displayTimeZone.identifier
+        let approximation = event.kind == .boj ? " (approximate announcement time)" : ""
+        let live = event.phase(at: now) == .live ? " · Live" : ""
+        return "\(event.displayTitle) · \(formatter.string(from: event.start)) \(zone)\(approximation)\(live)"
     }
 }

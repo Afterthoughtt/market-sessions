@@ -2,6 +2,30 @@ import XCTest
 @testable import MarketSessions
 
 final class SessionResolverTests: XCTestCase {
+    func testThereAreOnlyThreeMarketStates() {
+        XCTAssertEqual(Set(SessionStatus.allCases.map(\.label)), ["Open", "Break", "Closed"])
+    }
+
+    func testCMEUsesScheduledBoundaryWithoutEstimateMarker() throws {
+        let now = try makeDate(
+            year: 2026, month: 8, day: 24, hour: 12, minute: 0,
+            timeZoneIdentifier: "America/Chicago"
+        )
+        let cme = SessionResolver().resolve(MarketScheduleCatalog.session(.cmeFutures), at: now)
+        let close = try XCTUnwrap(cme.transition?.date)
+        XCTAssertEqual(close, try makeDate(
+            year: 2026, month: 8, day: 24, hour: 16, minute: 0,
+            timeZoneIdentifier: "America/Chicago"
+        ))
+        let text = MarketDateFormatting.transitionTime(
+            close, relativeTo: now,
+            timeZone: try XCTUnwrap(TimeZone(identifier: "America/Vancouver")),
+            locale: Locale(identifier: "en_US_POSIX")
+        )
+        XCTAssertFalse(text.contains("≈"))
+        XCTAssertEqual(text.replacingOccurrences(of: "\u{202F}", with: " "), "2:00 PM")
+    }
+
     // Monday 2026-08-24; CME's week opens Sunday 2026-08-23 17:00 CT.
     func testEverySessionIsActiveAtItsRecurringOpen() throws {
         let cases: [(MarketSession.ID, String, Int, Int, Int, Int, Int)] = [
@@ -64,8 +88,8 @@ final class SessionResolverTests: XCTestCase {
             timeZoneIdentifier: "Asia/Tokyo"
         )
         let result = SessionResolver().resolve(MarketScheduleCatalog.session(.tokyo), at: now)
-        XCTAssertEqual(result.status, .recess)
-        XCTAssertEqual(result.transition?.verb, .resumes)
+        XCTAssertEqual(result.status, .onBreak)
+        XCTAssertEqual(result.transition?.verb, .opens)
         XCTAssertEqual(
             result.transition?.date,
             try makeDate(year: 2026, month: 8, day: 24, hour: 12, minute: 30, timeZoneIdentifier: "Asia/Tokyo")
@@ -76,7 +100,8 @@ final class SessionResolverTests: XCTestCase {
         let zone = "Asia/Shanghai"
         let auctionNow = try makeDate(year: 2026, month: 8, day: 24, hour: 14, minute: 58, timeZoneIdentifier: zone)
         let auction = SessionResolver().resolve(MarketScheduleCatalog.session(.shanghai), at: auctionNow)
-        XCTAssertEqual(auction.status, .auction)
+        XCTAssertEqual(auction.status, .open)
+        XCTAssertEqual(auction.currentOccurrence?.kind, .auction)
         XCTAssertEqual(auction.transition?.verb, .closes)
         XCTAssertEqual(
             auction.transition?.date,
@@ -100,7 +125,8 @@ final class SessionResolverTests: XCTestCase {
             timeZoneIdentifier: "Asia/Hong_Kong"
         )
         let result = SessionResolver().resolve(MarketScheduleCatalog.session(.hongKong), at: now)
-        XCTAssertEqual(result.status, .auction)
+        XCTAssertEqual(result.status, .open)
+        XCTAssertEqual(result.currentOccurrence?.kind, .auction)
         XCTAssertEqual(result.transition?.verb, .closes)
     }
 
@@ -112,12 +138,11 @@ final class SessionResolverTests: XCTestCase {
         let open = SessionResolver().resolve(session, at: monday)
         XCTAssertEqual(open.status, .open)
         XCTAssertEqual(open.transition?.verb, .closes)
-        XCTAssertEqual(open.transition?.approximate, true)
 
         let maintenanceNow = try makeDate(year: 2026, month: 8, day: 24, hour: 16, minute: 30, timeZoneIdentifier: zone)
         let maintenance = SessionResolver().resolve(session, at: maintenanceNow)
-        XCTAssertEqual(maintenance.status, .maintenance)
-        XCTAssertEqual(maintenance.transition?.verb, .reopens)
+        XCTAssertEqual(maintenance.status, .onBreak)
+        XCTAssertEqual(maintenance.transition?.verb, .opens)
         XCTAssertEqual(
             maintenance.transition?.date,
             try makeDate(year: 2026, month: 8, day: 24, hour: 17, minute: 0, timeZoneIdentifier: zone)
@@ -136,7 +161,8 @@ final class SessionResolverTests: XCTestCase {
 
         let preMarket = try makeDate(year: 2026, month: 8, day: 24, hour: 8, minute: 0, timeZoneIdentifier: zone)
         let pre = SessionResolver().resolve(session, at: preMarket)
-        XCTAssertEqual(pre.status, .preMarket)
+        XCTAssertEqual(pre.status, .closed)
+        XCTAssertEqual(pre.currentOccurrence?.kind, .preMarket)
         XCTAssertFalse(pre.status.isActive)
         XCTAssertEqual(pre.transition?.verb, .opens)
         XCTAssertEqual(
@@ -146,7 +172,8 @@ final class SessionResolverTests: XCTestCase {
 
         let postMarket = try makeDate(year: 2026, month: 8, day: 24, hour: 17, minute: 0, timeZoneIdentifier: zone)
         let post = SessionResolver().resolve(session, at: postMarket)
-        XCTAssertEqual(post.status, .postMarket)
+        XCTAssertEqual(post.status, .closed)
+        XCTAssertEqual(post.currentOccurrence?.kind, .postMarket)
         XCTAssertFalse(post.status.isActive)
         XCTAssertEqual(post.transition?.verb, .opens)
         XCTAssertEqual(

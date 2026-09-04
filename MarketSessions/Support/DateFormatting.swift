@@ -14,12 +14,11 @@ enum MarketDateFormatting {
         return formatter.string(from: date)
     }
 
-    /// `1:00 PM` on the same display day, `Sun 3:00 PM` otherwise; `≈` prefixes approximate times.
+    /// `1:00 PM` on the same display day, `Sun 3:00 PM` otherwise.
     static func transitionTime(
         _ date: Date,
         relativeTo now: Date,
         timeZone: TimeZone,
-        approximate: Bool = false,
         sameDayPrefix: String? = nil,
         locale: Locale = .autoupdatingCurrent,
         calendar baseCalendar: Calendar = Calendar(identifier: .gregorian)
@@ -38,14 +37,14 @@ enum MarketDateFormatting {
             prefix = weekday.string(from: date)
         }
 
-        let clock = (approximate ? "≈" : "") + time(date, timeZone: timeZone, locale: locale)
+        let clock = time(date, timeZone: timeZone, locale: locale)
         if let prefix {
             return "\(prefix) \(clock)"
         }
         return clock
     }
 
-    /// Hero subtitle tail: `closes Today 1:00 PM`, `opens Sun ≈3:00 PM`.
+    /// Hero subtitle tail: `closes Today 1:00 PM`, `opens Sun 3:00 PM`.
     static func subtitleTransition(
         _ transition: SessionTransition,
         relativeTo now: Date,
@@ -56,7 +55,6 @@ enum MarketDateFormatting {
             transition.date,
             relativeTo: now,
             timeZone: timeZone,
-            approximate: transition.approximate,
             sameDayPrefix: "Today"
         )
         return "\(verb) \(time)"

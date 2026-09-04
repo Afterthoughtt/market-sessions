@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html><head><meta charset="utf-8"><title>Market Sessions — popover reference</title>
+<style>body{margin:0;padding:48px;background:radial-gradient(120% 90% at 20% 0%,#CFE3FF 0%,#9EB8F0 38%,#7A8FD8 62%,#B7A4D6 100%);min-height:100vh;font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text",system-ui,sans-serif;-webkit-font-smoothing:antialiased;display:flex;flex-direction:column;gap:24px;align-items:flex-start}</style>
+</head><body>
+<!-- Menu bar label (10a): ring = next session to change, code names it -->
+<div style="display:flex; align-items:center; gap:5px; height:18px; padding:0 6px; border-radius:5px; background:rgba(0,0,0,0.10); font-size:12px; font-weight:500; color:#1C1C1E"><svg width="14" height="14" viewBox="0 0 26 26" style="transform:rotate(-90deg)"><circle cx="13" cy="13" r="10" fill="none" stroke="rgba(0,0,0,0.22)" stroke-width="3.5"></circle><circle cx="13" cy="13" r="10" fill="none" stroke="#1C1C1E" stroke-width="3.5" stroke-linecap="round" stroke-dasharray="33.9 28.9"></circle></svg><span>TYO</span></div>
+<!-- Popover (7a reference build), 340pt -->
+<div style="box-sizing:border-box; width:340px; margin:0; border-radius:14px; background:rgba(246,246,248,0.78); backdrop-filter:blur(48px) saturate(1.8); -webkit-backdrop-filter:blur(48px) saturate(1.8); box-shadow:0 0 0 0.5px rgba(0,0,0,0.16), inset 0 0.5px 0 rgba(255,255,255,0.85), 0 22px 60px rgba(20,30,70,0.30), 0 2px 8px rgba(0,0,0,0.10); display:flex; flex-direction:column; padding:14px 14px 4px">
+
+          <div style="display:flex; align-items:flex-start; gap:8px">
+            <div style="display:flex; flex-direction:column; gap:3px">
+              <div style="font-size:15px; font-weight:600; letter-spacing:-0.15px; color:rgba(0,0,0,0.85)">Market Sessions</div>
+              <div style="font-size:11px; color:rgba(0,0,0,0.55)">Thursday</div>
+            </div>
+            <div style="flex:1"></div>
+            <div style="display:flex; flex-direction:column; align-items:flex-end; gap:3px">
+              <span style="font-size:10px; color:rgba(0,0,0,0.55)">Your time · PDT</span>
+              <div style="display:flex; align-items:center; gap:5px"><span style="font-size:10px; color:rgba(0,0,0,0.55); white-space:nowrap">Daily Close in <span style="font-weight:600; font-variant-numeric:tabular-nums; color:rgba(0,0,0,0.85)">22h 51m</span></span></div>
+            </div>
+          </div>
+
+          <div style="display:flex; align-items:center; margin-top:16px; padding:0 0 2px"><span style="font-size:11px; font-weight:600; color:rgba(0,0,0,0.55)">Open</span></div>
+          <div style="display:flex; flex-direction:column">
+            <div style="display:flex; flex-direction:column; gap:7px; padding:8px 0 10px">
+              <div style="display:flex; align-items:baseline; gap:10px"><div style="font-size:13px; color:rgba(0,0,0,0.85); white-space:nowrap">Tokyo</div></div>
+              <div style="display:flex; align-items:center; gap:8px"><div style="flex:1; height:3px; border-radius:1.5px; background:rgba(0,0,0,0.08); overflow:hidden"><div style="height:100%; width:54%; border-radius:1.5px; background:rgba(0,0,0,0.5)"></div></div><div style="text-align:right; font-size:11px; font-variant-numeric:tabular-nums; white-space:nowrap; color:rgba(0,0,0,0.55)">Closes 7:30 PM</div></div>
+            </div><div style="height:1px; background:rgba(0,0,0,0.07)"></div><div style="display:flex; flex-direction:column; gap:7px; padding:8px 0 10px">
+              <div style="display:flex; align-items:baseline; gap:10px"><div style="font-size:13px; color:rgba(0,0,0,0.85); white-space:nowrap">CME Futures</div></div>
+              <div style="display:flex; align-items:center; gap:8px"><div style="flex:1; height:3px; border-radius:1.5px; background:rgba(0,0,0,0.08); overflow:hidden"><div style="height:100%; width:86%; border-radius:1.5px; background:rgba(0,0,0,0.5)"></div></div><div style="text-align:right; font-size:11px; font-variant-numeric:tabular-nums; white-space:nowrap; color:rgba(0,0,0,0.55)">Closes 2:00 PM</div></div>
+            </div>
+          </div>
+
+          <div style="display:flex; align-items:center; margin-top:16px; padding:0 0 2px">
+            <span style="font-size:11px; font-weight:600; color:rgba(0,0,0,0.55)">Closed</span>
+          </div>
+          <div style="display:flex; flex-direction:column">
+            <div style="display:flex; align-items:center; gap:10px; height:32px"><div style="font-size:13px; color:rgba(0,0,0,0.85); white-space:nowrap">Hong Kong</div><div style="flex:1; min-width:6px"></div><div style="width:114px; flex:none; text-align:right; font-size:11px; font-variant-numeric:tabular-nums; white-space:nowrap; color:rgba(0,0,0,0.55)">Opens 6:30 PM</div></div>
+            <div style="height:1px; background:rgba(0,0,0,0.07)"></div>
+            <div style="display:flex; align-items:center; gap:10px; height:32px"><div style="font-size:13px; color:rgba(0,0,0,0.85); white-space:nowrap">Shanghai</div><div style="flex:1; min-width:6px"></div><div style="width:114px; flex:none; text-align:right; font-size:11px; font-variant-numeric:tabular-nums; white-space:nowrap; color:rgba(0,0,0,0.55)">Opens 6:30 PM</div></div>
+            <div style="height:1px; background:rgba(0,0,0,0.07)"></div>
+            
+            <div style="display:flex; align-items:center; gap:10px; height:32px"><div style="font-size:13px; color:rgba(0,0,0,0.85); white-space:nowrap">London</div><div style="flex:1; min-width:6px"></div><div style="width:114px; flex:none; text-align:right; font-size:11px; font-variant-numeric:tabular-nums; white-space:nowrap; color:rgba(0,0,0,0.55)">Opens 12:00 AM</div></div>
+            <div style="height:1px; background:rgba(0,0,0,0.07)"></div>
+            <div style="display:flex; align-items:center; gap:10px; height:32px"><div style="font-size:13px; color:rgba(0,0,0,0.85); white-space:nowrap">New York</div><div style="flex:1; min-width:6px"></div><div style="width:114px; flex:none; text-align:right; font-size:11px; font-variant-numeric:tabular-nums; white-space:nowrap; color:rgba(0,0,0,0.55)">Opens 6:30 AM</div></div>
+          </div>
+
+                    <div style="display:flex; align-items:center; margin-top:16px; padding:0 0 2px">
+            <span style="font-size:11px; font-weight:600; color:rgba(0,0,0,0.55)">Upcoming events</span>
+          </div>
+          <div style="display:flex; flex-direction:column">
+            <div style="display:flex; align-items:center; gap:10px; height:32px"><div style="font-size:13px; color:rgba(0,0,0,0.85); white-space:nowrap; overflow:hidden; text-overflow:ellipsis">Jackson Hole — Fed Chair</div><div style="flex:1"></div><div style="font-size:11px; font-variant-numeric:tabular-nums; white-space:nowrap; color:rgba(0,0,0,0.85); font-weight:600">Tomorrow 7:00 AM</div></div>
+            <div style="height:1px; background:rgba(0,0,0,0.07)"></div>
+            <div style="display:flex; align-items:center; gap:10px; height:32px"><div style="font-size:13px; color:rgba(0,0,0,0.85); white-space:nowrap; overflow:hidden; text-overflow:ellipsis">Nonfarm Payrolls</div><div style="flex:1"></div><div style="font-size:11px; font-variant-numeric:tabular-nums; white-space:nowrap; color:rgba(0,0,0,0.55)">Fri, Sep 4</div></div>
+            <div style="height:1px; background:rgba(0,0,0,0.07)"></div>
+            <div style="display:flex; align-items:center; gap:10px; height:32px"><div style="font-size:13px; color:rgba(0,0,0,0.85); white-space:nowrap; overflow:hidden; text-overflow:ellipsis">CPI</div><div style="flex:1"></div><div style="font-size:11px; font-variant-numeric:tabular-nums; white-space:nowrap; color:rgba(0,0,0,0.55)">Fri, Sep 11</div></div>
+            <div style="height:1px; background:rgba(0,0,0,0.07)"></div>
+            <div style="display:flex; align-items:center; gap:10px; height:32px"><div style="font-size:13px; color:rgba(0,0,0,0.85); white-space:nowrap; overflow:hidden; text-overflow:ellipsis">FOMC Decision</div><div style="flex:1"></div><div style="font-size:11px; font-variant-numeric:tabular-nums; white-space:nowrap; color:rgba(0,0,0,0.55)">Wed, Sep 16</div></div>
+          </div>
+        
+          <div style="height:1px; margin:0 -14px; background:rgba(0,0,0,0.08)"></div>
+          <div style="display:flex; align-items:center; height:32px; font-size:13px; color:rgba(0,0,0,0.85)">Settings…</div>
+</div>
+</body></html>

@@ -7,16 +7,21 @@ import Observation
 final class MarketSessionsModel {
     private(set) var now = Date()
     private(set) var displayTimeZone = TimeZone.autoupdatingCurrent
+    private(set) var systemTimeZone = TimeZone.autoupdatingCurrent
+    private(set) var preferences: MarketPreferences
     /// Frozen list order — re-sorted only when some session's state changes (a handover).
     private(set) var orderedSessions: [ResolvedSession] = []
     private(set) var focus = FocusSnapshot(openEntries: [], nextToOpen: nil)
-    /// Fraction of the UTC day remaining — the header ring drains toward 00:00 UTC.
+    /// UTC-day metrics for the header readout, independent of the display zone.
     private(set) var utcDayRemainingFraction: Double = 0
     private(set) var utcDayRemainingMinutes = 0
     private(set) var upcomingEvents: UpcomingEconomicEvents = .empty
     private(set) var loginItemState: LoginItemState = .disabled
     /// Last date the bundled holiday/early-close data covers; nil when absent.
     var exceptionCoverageEnd: Date? { marketExceptions.coverageEnd }
+    /// The status item follows the session whose next transition happens first.
+    var nextTransitionSession: ResolvedSession? { orderedSessions.first }
+    var availableMarkets: [MarketSession] { catalog }
 
     private let catalog: [MarketSession]
     private let marketExceptions: MarketExceptionIndex
@@ -26,6 +31,7 @@ final class MarketSessionsModel {
     private let loginItemService: any LoginItemServicing
     private let nowProvider: @Sendable () -> Date
     private let displayTimeZoneProvider: @Sendable () -> TimeZone
+    private let preferencesStore: UserDefaults?
     private var clockTask: Task<Void, Never>?
     private var notificationObservers: [NSObjectProtocol] = []
     private var sortedIDs: [MarketSession.ID] = []
@@ -38,7 +44,8 @@ final class MarketSessionsModel {
         focusResolver: FocusSessionResolver = FocusSessionResolver(),
         loginItemService: any LoginItemServicing = LoginItemService(),
         nowProvider: @escaping @Sendable () -> Date = Date.init,
-        displayTimeZoneProvider: @escaping @Sendable () -> TimeZone = { .autoupdatingCurrent }
+        displayTimeZoneProvider: @escaping @Sendable () -> TimeZone = { .autoupdatingCurrent },
+        preferencesStore: UserDefaults? = nil
     ) {
         self.catalog = catalog
         self.marketExceptions = marketExceptions
@@ -48,6 +55,8 @@ final class MarketSessionsModel {
         self.loginItemService = loginItemService
         self.nowProvider = nowProvider
         self.displayTimeZoneProvider = displayTimeZoneProvider
+        self.preferencesStore = preferencesStore
+        self.preferences = preferencesStore.map(MarketPreferences.init(defaults:)) ?? MarketPreferences()
         refresh()
     }
 
@@ -76,12 +85,14 @@ final class MarketSessionsModel {
 
     func refresh() {
         let snapshot = nowProvider()
-        let timeZone = displayTimeZoneProvider()
+        systemTimeZone = displayTimeZoneProvider()
+        let timeZone = preferences.displayTimeZone(system: systemTimeZone)
         let resolver = SessionResolver(displayTimeZone: timeZone, exceptions: marketExceptions)
         now = snapshot
         displayTimeZone = timeZone
 
-        let resolved = resolver.resolve(catalog, at: snapshot)
+        let visibleCatalog = catalog.filter { preferences.visibleMarkets.contains($0.id) }
+        let resolved = resolver.resolve(visibleCatalog, at: snapshot)
         let signature = Dictionary(uniqueKeysWithValues: resolved.map { ($0.id, $0.status) })
         if signature != handoverSignature || sortedIDs.count != resolved.count {
             handoverSignature = signature
@@ -100,7 +111,9 @@ final class MarketSessionsModel {
         orderedSessions = sortedIDs.compactMap { byID[$0] }
 
         focus = focusResolver.resolve(resolved, at: snapshot)
-        upcomingEvents = upcomingEventResolver.resolve(economicEvents, at: snapshot)
+        upcomingEvents = upcomingEventResolver.resolve(
+            economicEvents, at: snapshot, enabledKinds: preferences.eventKinds
+        )
         updateUTCDay(at: snapshot)
         loginItemState = loginItemService.state
     }
@@ -108,6 +121,37 @@ final class MarketSessionsModel {
     func setLaunchAtLogin(_ enabled: Bool) {
         try? loginItemService.setEnabled(enabled)
         loginItemState = loginItemService.state
+    }
+
+    func setMarket(_ id: MarketSession.ID, visible: Bool) {
+        if visible {
+            preferences.visibleMarkets.insert(id)
+        } else {
+            preferences.visibleMarkets.remove(id)
+        }
+        savePreferences()
+    }
+
+    func setEventKind(_ kind: EconomicEventKind, visible: Bool) {
+        if visible {
+            preferences.eventKinds.insert(kind)
+        } else {
+            preferences.eventKinds.remove(kind)
+        }
+        savePreferences()
+    }
+
+    func setDisplayTimeZone(_ identifier: String?) {
+        guard identifier == nil || identifier.flatMap(TimeZone.init(identifier:)) != nil else { return }
+        preferences.timeZoneIdentifier = identifier
+        savePreferences()
+    }
+
+    private func savePreferences() {
+        if let preferencesStore {
+            preferences.save(to: preferencesStore)
+        }
+        refresh()
     }
 
     private func updateUTCDay(at date: Date) {

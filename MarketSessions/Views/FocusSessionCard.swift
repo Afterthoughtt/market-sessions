@@ -48,7 +48,7 @@ struct OpenNowGrid: View {
     }
 
     private func heroNextCell(_ next: FocusSnapshot.NextEntry) -> some View {
-        let transition = SessionTransition(verb: .opens, date: next.opensAt, approximate: next.approximate)
+        let transition = SessionTransition(verb: .opens, date: next.opensAt)
         let subtitle = MarketDateFormatting.subtitleTransition(
             transition,
             relativeTo: now,

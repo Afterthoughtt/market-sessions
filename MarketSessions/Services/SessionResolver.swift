@@ -22,62 +22,42 @@ struct SessionResolver: Sendable {
             ?? occurrences.first(where: { $0.contains(now) })
         let previousActiveEnd = activeOccurrences.last(where: { $0.end <= now })?.end
         let nextActiveStart = activeOccurrences.first(where: { $0.start > now })?.start
-        let approximate = session.approximateTimes
 
         let status: SessionStatus
+        var periodStart: Date?
         var cycleStart: Date?
         var cycleEnd: Date?
         let transition: SessionTransition?
 
         if let current, current.kind.countsAsActive {
-            status = current.kind == .auction ? .auction : .open
+            status = .open
             let chain = activeChain(containing: current, in: activeOccurrences)
+            periodStart = chain.first?.start
             let cycle = activeOccurrences.filter { $0.anchorDate == current.anchorDate }
             cycleStart = cycle.first?.start
             cycleEnd = cycle.last?.end
             transition = SessionTransition(
                 verb: .closes,
-                date: chain.last?.end ?? current.end,
-                approximate: approximate
+                date: chain.last?.end ?? current.end
             )
         } else if let current {
             switch current.kind {
-            case .recess:
-                status = .recess
-                transition = SessionTransition(
-                    verb: .resumes,
-                    date: nextActiveStart ?? current.end,
-                    approximate: approximate
-                )
-            case .maintenance:
-                status = .maintenance
-                transition = SessionTransition(
-                    verb: .reopens,
-                    date: nextActiveStart ?? current.end,
-                    approximate: approximate
-                )
-            case .preMarket:
-                status = .preMarket
+            case .recess, .maintenance:
+                status = .onBreak
                 transition = SessionTransition(
                     verb: .opens,
-                    date: nextActiveStart ?? current.end,
-                    approximate: approximate
+                    date: nextActiveStart ?? current.end
                 )
-            case .postMarket:
-                status = .postMarket
-                transition = nextActiveStart.map {
-                    SessionTransition(verb: .opens, date: $0, approximate: approximate)
-                }
-            case .trading, .auction:
+            case .preMarket, .postMarket, .trading, .auction:
                 status = .closed
                 transition = nextActiveStart.map {
-                    SessionTransition(verb: .opens, date: $0, approximate: approximate)
+                    SessionTransition(verb: .opens, date: $0)
                 }
             }
         } else {
             status = .closed
             transition = nextActiveStart.map {
-                SessionTransition(verb: .opens, date: $0, approximate: approximate)
+                SessionTransition(verb: .opens, date: $0)
             }
         }
 
@@ -85,6 +65,7 @@ struct SessionResolver: Sendable {
             session: session,
             status: status,
             currentOccurrence: current,
+            activePeriodStart: periodStart,
             activeCycleStart: cycleStart,
             activeCycleEnd: cycleEnd,
             previousActiveEnd: previousActiveEnd,

@@ -2,6 +2,23 @@ import XCTest
 @testable import MarketSessions
 
 final class EconomicEventTests: XCTestCase {
+    func testCompactEventLabelsPreserveFullDescriptions() {
+        XCTAssertEqual(EconomicEventKind.employment.compactTitle, "U.S. Jobs Report")
+        XCTAssertEqual(EconomicEventKind.fomc.compactTitle, "FOMC Decision")
+        XCTAssertEqual(EconomicEventKind.fomc.title, "FOMC decision + press conference")
+        XCTAssertEqual(EconomicEventKind.gdp.compactTitle, "U.S. GDP (Advance)")
+        XCTAssertTrue(EconomicEventKind.allCases.allSatisfy { $0.compactTitle.count <= 30 })
+    }
+
+    func testCompactSpeechLabelPreservesTheSpecificEventName() {
+        let now = Date(timeIntervalSince1970: 1_800_000_000)
+        let speech = EconomicEvent(
+            id: "speech", kind: .fedSpeech, title: "Congressional testimony",
+            start: now, end: now.addingTimeInterval(60), canonicalTimeZoneIdentifier: "UTC"
+        )
+        XCTAssertEqual(speech.compactTitle, "Congressional testimony")
+    }
+
     func testBundledCatalogContainsTheTierOneKinds() throws {
         let events = try EconomicEventCatalog.loadAll(bundle: Bundle(for: Self.self))
 

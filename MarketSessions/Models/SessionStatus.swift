@@ -1,18 +1,11 @@
 import Foundation
 
-enum SessionStatus: String, Hashable, Sendable {
+enum SessionStatus: String, CaseIterable, Hashable, Sendable {
     case open = "Open"
-    case auction = "Auction"
-    case recess = "Recess"
-    case maintenance = "Maintenance"
-    case preMarket = "Pre-market"
-    case postMarket = "Post-market"
+    case onBreak = "Break"
     case closed = "Closed"
 
-    /// "Can you trade" — open and auction count.
-    var isActive: Bool {
-        self == .open || self == .auction
-    }
+    var isActive: Bool { self == .open }
 
     var label: String { rawValue }
 }
@@ -22,6 +15,8 @@ struct ResolvedSession: Identifiable, Hashable, Sendable {
     let status: SessionStatus
     /// Occurrence containing now, of any kind.
     let currentOccurrence: SessionOccurrence?
+    /// Start of the uninterrupted trading period ending at the displayed close.
+    let activePeriodStart: Date?
     /// First open of the current trading day (the whole cycle, spanning recesses).
     let activeCycleStart: Date?
     /// Final close of the current trading day.
@@ -33,4 +28,12 @@ struct ResolvedSession: Identifiable, Hashable, Sendable {
     let transition: SessionTransition?
 
     var id: MarketSession.ID { session.id }
+
+    /// Full at open, empty at the next close. Adjacent auctions remain in the
+    /// same period; a lunch recess or maintenance break starts a new period.
+    func remainingTradingFraction(at now: Date) -> Double {
+        guard status.isActive, let start = activePeriodStart,
+              let end = transition?.date, end > start else { return 0 }
+        return 1 - FocusSessionResolver.clampedProgress(now: now, start: start, end: end)
+    }
 }

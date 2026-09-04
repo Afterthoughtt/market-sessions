@@ -22,7 +22,6 @@ struct FocusSnapshot: Hashable, Sendable {
         let code: String
         let name: String
         let opensAt: Date
-        let approximate: Bool
         /// Fraction of the closed gap elapsed — fills toward the open.
         let fillFraction: Double
         let remainingMinutes: Int
@@ -80,7 +79,6 @@ struct FocusSessionResolver: Sendable {
                 code: resolved.session.code,
                 name: resolved.session.name,
                 opensAt: opensAt,
-                approximate: resolved.session.approximateTimes,
                 fillFraction: Self.clampedProgress(
                     now: now,
                     start: resolved.previousActiveEnd,
