@@ -24,3 +24,46 @@ Primary text rgba(0,0,0,0.85); secondary rgba(0,0,0,0.55); hairline rgba(0,0,0,0
 
 ## Menu-bar label (10a)
 One 14pt ring (3.5 stroke, track 22% black, fill primary label colour, fraction = elapsed of the next-to-change session) + its 3-letter code, 13pt semibold (kit menu bar item). Template image so it inverts with the bar. Tooltip: full name + "Closes 7:30 PM".
+
+## Owner decisions (amend the sections above; these win on conflict)
+
+### Sessions (six available, all shown by default)
+
+| Code | Name | Canonical zone | Notes |
+| --- | --- | --- | --- |
+| `NY` | New York | `America/New_York` | 9:30–16:00 weekdays; pre-market 4:00–9:30, post-market 16:00–20:00 |
+| `CME` | CME Futures | `America/Chicago` | Equity-index session: Sun–Fri 17:00–16:00 next day; Mon–Thu 16:00–17:00 break; no estimate marker |
+| `LDN` | London | `Europe/London` | 8:00–16:30 weekdays |
+| `TYO` | Tokyo | `Asia/Tokyo` | 9:00–11:30, 12:30–15:30; lunch recess |
+| `HKG` | Hong Kong | `Asia/Hong_Kong` | 9:30–12:00, 13:00–16:00; recess; closing auction 16:00–16:10 (outer bound) |
+| `SHG` | Shanghai | `Asia/Shanghai` | 9:30–11:30, 13:00–14:57; recess; closing auction 14:57–15:00 |
+
+Schedules are defined in canonical IANA zones. Display time defaults to the system zone; Settings can override it. Display-zone changes never move schedule instants or the UTC daily close. Holidays and early closes come from the bundled exceptions file (see `MarketSessions/Resources/README.md`): holiday occurrences are dropped, sessions straddling an early close are clamped, same-day remnants after it are dropped, and overnight re-opens (CME's evening session after a holiday halt) are kept.
+
+### States and appearance
+
+Exactly three market states: **Open, Break, Closed**. Trading and contiguous auctions resolve to Open; recess and maintenance to Break; pre-/post-market and overnight/weekend closures to Closed. Interval kinds stay internal to schedule math. Transition readouts say Opens/Closes with the scheduled boundary and no estimate marker. The popover is monochrome on the system material; neutral values follow the macOS 26 kit tokens. No cards, accent colors, or status badges.
+
+### Progress
+
+Bars and the open-market menu ring **drain to the close shown**: full at the start of the uninterrupted trading period (`activePeriodStart`), empty at the next close (`transition.date`). Restart after lunch or maintenance, not at a contiguous auction. Bars have equal full-row track widths below the name/time line. A closed-market menu ring fills across the closed gap toward its next open.
+
+### Popover (340 wide, height fits content)
+
+1. Header — title and local weekday; `Your time · <zone>` (or `Time · <zone>` for an override); UTC "Daily Close in Xh Ym".
+2. Open — active markets ordered by nearest close, with local close time and a draining bar.
+3. Break, then Closed — ordered by nearest open, with local Opens time. Omit empty sections. Each selected market appears once. Rows are non-interactive.
+4. Upcoming Events — the next four of the selected kinds, no disclosure. Compact names (U.S. Jobs Report, FOMC Decision); full description and exact local date/time in tooltips and accessibility labels. Preserve per-event titles (Jackson Hole keynote). Inside 24 hours emphasize Today/Tomorrow + local time; while live show Live. BOJ times carry the approximation marker. When nothing selected remains, say the bundled schedule has none.
+5. Footer — holiday-data warning only when unavailable or expired, then a full-width Settings row (⌘,) with the kit's menu-item hover.
+
+### Menu bar label
+
+Rendered via `ImageRenderer` to a template `NSImage` at the sharpest display's scale and integral height. With no markets selected, keep a clock glyph so Settings stays reachable.
+
+### Settings
+
+Native Settings scene, three tabs sized per tab. Rows follow the kit form pattern: 13pt Medium title, 11pt Medium secondary subtitle, trailing control or detail label; explanatory text lives in subtitles and section footers, not loose rows. General: Time Zone pop-up (North American zones plus UTC, stored as IANA identifiers, System by default, live zone name and offset in the subtitle), Holiday Coverage detail row, then Launch at Login and Quit. Markets: one toggle per session. Events: U.S. Releases and Central Banks groups, each row's subtitle showing its next bundled date, footer stating the coverage per group. Selections apply immediately and persist in `MarketPreferences`. Turning off every market is allowed; turning off every event kind hides the section.
+
+### Non-features
+
+No network entitlement or code, no dependencies, no telemetry, no accounts. If live fetching is ever added it is a separate phase: sandboxed XPC helper, `federalreserve.gov` only, weekly, off by default. Excluded event kinds: jobless claims, ISM, JOLTS, consumer confidence, options expiries.
