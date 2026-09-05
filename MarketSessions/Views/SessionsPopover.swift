@@ -1,9 +1,11 @@
+import AppKit
 import SwiftUI
 
 /// The compact menu-bar popover from the final design handoff.
 struct SessionsPopover: View {
     let model: MarketSessionsModel
     @Environment(\.colorScheme) private var colorScheme
+    @Environment(\.openSettings) private var openSettings
 
     private var palette: MarketPalette { .palette(for: colorScheme) }
 
@@ -81,7 +83,12 @@ struct SessionsPopover: View {
                 .frame(height: 1)
                 .padding(.horizontal, -14)
 
-            SettingsLink {
+            // Agent apps are not active while the popover is up, so a bare
+            // SettingsLink opens the window behind everything or not at all.
+            Button {
+                NSApp.activate()
+                openSettings()
+            } label: {
                 Text("Settings…")
                     .font(.system(size: 13, weight: .medium))
                     .foregroundStyle(palette.text)
