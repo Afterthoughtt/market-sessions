@@ -33,6 +33,8 @@
 		A00100000000000000000014 /* EconomicEventsSection.swift in Sources */ = {isa = PBXBuildFile; fileRef = F00100000000000000000014 /* EconomicEventsSection.swift */; };
 		A00100000000000000000015 /* events-2026.json in Resources */ = {isa = PBXBuildFile; fileRef = F00100000000000000000015 /* events-2026.json */; };
 		A00100000000000000000016 /* events-2026.json in Resources */ = {isa = PBXBuildFile; fileRef = F00100000000000000000015 /* events-2026.json */; };
+		A0010000000000000000001F /* events-2027.json in Resources */ = {isa = PBXBuildFile; fileRef = F0010000000000000000001E /* events-2027.json */; };
+		A00100000000000000000020 /* events-2027.json in Resources */ = {isa = PBXBuildFile; fileRef = F0010000000000000000001E /* events-2027.json */; };
 		A00100000000000000000017 /* MarketException.swift in Sources */ = {isa = PBXBuildFile; fileRef = F00100000000000000000016 /* MarketException.swift */; };
 		A00100000000000000000018 /* MarketExceptionCatalog.swift in Sources */ = {isa = PBXBuildFile; fileRef = F00100000000000000000017 /* MarketExceptionCatalog.swift */; };
 		A00100000000000000000019 /* market-exceptions-2026.json in Resources */ = {isa = PBXBuildFile; fileRef = F00100000000000000000018 /* market-exceptions-2026.json */; };
@@ -80,6 +82,7 @@
 		F00100000000000000000013 /* EconomicEventCatalog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EconomicEventCatalog.swift; sourceTree = "<group>"; };
 		F00100000000000000000014 /* EconomicEventsSection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EconomicEventsSection.swift; sourceTree = "<group>"; };
 		F00100000000000000000015 /* events-2026.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "events-2026.json"; sourceTree = "<group>"; };
+		F0010000000000000000001E /* events-2027.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "events-2027.json"; sourceTree = "<group>"; };
 		F00100000000000000000016 /* MarketException.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MarketException.swift; sourceTree = "<group>"; };
 		F00100000000000000000017 /* MarketExceptionCatalog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MarketExceptionCatalog.swift; sourceTree = "<group>"; };
 		F00100000000000000000018 /* market-exceptions-2026.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "market-exceptions-2026.json"; sourceTree = "<group>"; };
@@ -194,6 +197,7 @@
 			isa = PBXGroup;
 			children = (
 				F00100000000000000000015 /* events-2026.json */,
+				F0010000000000000000001E /* events-2027.json */,
 				F00100000000000000000018 /* market-exceptions-2026.json */,
 			);
 			path = Resources;
@@ -295,10 +299,12 @@
 /* Begin PBXResourcesBuildPhase section */
 		B00100000000000000000003 /* Resources */ = {isa = PBXResourcesBuildPhase; buildActionMask = 2147483647; files = (
 				A00100000000000000000015 /* events-2026.json in Resources */,
+				A0010000000000000000001F /* events-2027.json in Resources */,
 				A00100000000000000000019 /* market-exceptions-2026.json in Resources */,
 			); runOnlyForDeploymentPostprocessing = 0; };
 		B00200000000000000000003 /* Resources */ = {isa = PBXResourcesBuildPhase; buildActionMask = 2147483647; files = (
 				A00100000000000000000016 /* events-2026.json in Resources */,
+				A00100000000000000000020 /* events-2027.json in Resources */,
 				A0010000000000000000001A /* market-exceptions-2026.json in Resources */,
 			); runOnlyForDeploymentPostprocessing = 0; };
 /* End PBXResourcesBuildPhase section */

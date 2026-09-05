@@ -22,9 +22,9 @@ final class EconomicEventTests: XCTestCase {
     func testBundledCatalogContainsTheTierOneKinds() throws {
         let events = try EconomicEventCatalog.loadAll(bundle: Bundle(for: Self.self))
 
-        XCTAssertEqual(events.count, 73)
+        XCTAssertEqual(events.count, 97)
         XCTAssertEqual(Set(events.map(\.kind)), Set(EconomicEventKind.allCases))
-        XCTAssertEqual(events.filter { $0.kind == .fomc }.count, 8)
+        XCTAssertEqual(events.filter { $0.kind == .fomc }.count, 16)
         XCTAssertEqual(events.filter { $0.kind == .cpi }.count, 12)
         XCTAssertEqual(events.filter { $0.kind == .employment }.count, 12)
         XCTAssertEqual(events.filter { $0.kind == .pce }.count, 13)
@@ -32,10 +32,26 @@ final class EconomicEventTests: XCTestCase {
         XCTAssertEqual(events.filter { $0.kind == .fedSpeech }.count, 1)
         XCTAssertEqual(events.filter { $0.kind == .fomcMinutes }.count, 3)
         XCTAssertEqual(events.filter { $0.kind == .gdp }.count, 1)
-        XCTAssertEqual(events.filter { $0.kind == .ecb }.count, 3)
-        XCTAssertEqual(events.filter { $0.kind == .boj }.count, 3)
+        XCTAssertEqual(events.filter { $0.kind == .ecb }.count, 11)
+        XCTAssertEqual(events.filter { $0.kind == .boj }.count, 11)
         XCTAssertEqual(events.filter { $0.kind == .ppi }.count, 4)
         XCTAssertEqual(Set(events.map(\.id)).count, events.count)
+    }
+
+    func testBundled2027CentralBankDecisionsAreCompleteAndOnWeekdays() throws {
+        let events = try EconomicEventCatalog.loadAll(bundle: Bundle(for: Self.self))
+        var calendar = Calendar(identifier: .gregorian)
+        calendar.timeZone = try XCTUnwrap(TimeZone(identifier: "UTC"))
+        let next = events.filter { calendar.component(.year, from: $0.start) == 2027 }
+
+        XCTAssertEqual(next.filter { $0.kind == .fomc }.count, 8)
+        XCTAssertEqual(next.filter { $0.kind == .ecb }.count, 8)
+        XCTAssertEqual(next.filter { $0.kind == .boj }.count, 8)
+        XCTAssertEqual(next.count, 24, "Only published central-bank calendars exist for 2027")
+        for event in next {
+            let weekday = calendar.component(.weekday, from: event.start)
+            XCTAssertTrue((2...6).contains(weekday), "\(event.id) falls on a weekend")
+        }
     }
 
     func testJacksonHoleKeynoteIsBundledWithItsOwnTitle() throws {
@@ -53,8 +69,8 @@ final class EconomicEventTests: XCTestCase {
     func testScheduleEndSurfacesWhenTheCatalogIsNearlyExhausted() throws {
         let events = try EconomicEventCatalog.loadAll(bundle: Bundle(for: Self.self))
         let newYork = try XCTUnwrap(TimeZone(identifier: "America/New_York"))
-        // Mid-December: fewer than four events remain in the 2026 catalog.
-        let now = try makeDate(year: 2026, month: 12, day: 17, hour: 12, minute: 0, timeZone: newYork)
+        // Mid-December 2027: only the ECB and BOJ decisions remain in the bundled catalog.
+        let now = try makeDate(year: 2027, month: 12, day: 15, hour: 12, minute: 0, timeZone: newYork)
 
         let snapshot = UpcomingEconomicEventResolver().resolve(events, at: now)
 
