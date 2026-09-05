@@ -195,6 +195,22 @@ final class MarketSessionsModel {
         savePreferences()
     }
 
+    /// One sample banner a second from now, so the user can confirm delivery and sound.
+    func sendTestNotification() {
+        let sample = PlannedNotification(
+            id: "test", title: "Market Sessions",
+            body: "Notifications are working. Market and event alerts will look like this.",
+            fireDate: nowProvider().addingTimeInterval(1)
+        )
+        let center = notificationCenter
+        Task { @MainActor [weak self] in
+            if self?.notificationAuthorization == .notDetermined {
+                self?.notificationAuthorization = await center.requestAuthorization()
+            }
+            await center.add([sample])
+        }
+    }
+
     private func requestNotificationAuthorizationIfNeeded() {
         guard preferences.notifiesAnything, notificationAuthorization == .notDetermined else { return }
         let center = notificationCenter
