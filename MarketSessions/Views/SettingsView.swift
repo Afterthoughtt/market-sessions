@@ -145,7 +145,7 @@ struct SettingsView: View {
         guard let next = model.nextEvent(of: kind) else { return "No dates announced yet" }
         let style = Date.FormatStyle(date: .abbreviated, time: .shortened, timeZone: model.displayTimeZone)
         let approximate = kind == .boj ? " (approx.)" : ""
-        return "Next \(next.start.formatted(style))\(approximate)"
+        return "\(next.start.formatted(style))\(approximate)"
     }
 
     private var eventCoverageFooter: String {
