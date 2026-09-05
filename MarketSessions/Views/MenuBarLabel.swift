@@ -2,20 +2,31 @@ import AppKit
 import SwiftUI
 
 /// One monochrome ring: drains to the next close, or fills toward the next open.
+/// Only the ring is rendered to a template image (SwiftUI shapes do not draw in
+/// a MenuBarExtra label); the code is native text so the system sets its menu
+/// bar weight and the glyph-to-title gap.
 struct MenuBarLabel: View {
     let resolved: ResolvedSession?
     let now: Date
     let displayTimeZone: TimeZone
 
     var body: some View {
-        Image(nsImage: Self.render(resolved: resolved, now: now))
-            .accessibilityLabel(tooltip)
-            .help(tooltip)
+        Group {
+            if let resolved {
+                Image(nsImage: Self.render(resolved: resolved, now: now))
+                Text(resolved.session.code)
+            } else {
+                // Keep Settings reachable even when the user hides every market.
+                Image(systemName: "clock")
+            }
+        }
+        .accessibilityLabel(tooltip)
+        .help(tooltip)
     }
 
     @MainActor
-    private static func render(resolved: ResolvedSession?, now: Date) -> NSImage {
-        let renderer = ImageRenderer(content: MenuBarPill(resolved: resolved, now: now))
+    private static func render(resolved: ResolvedSession, now: Date) -> NSImage {
+        let renderer = ImageRenderer(content: MenuBarRing(resolved: resolved, now: now))
         renderer.scale = max(NSScreen.screens.map(\.backingScaleFactor).max() ?? 2, 2)
         guard let image = renderer.nsImage else { return NSImage() }
         image.isTemplate = true
@@ -38,36 +49,20 @@ struct MenuBarLabel: View {
 /// Drawn in black so the template image follows the active menu-bar tint.
 /// Ring metrics copy the SF Symbol `circle` at the kit's menu-bar glyph
 /// configuration (13pt Semibold): 16pt box, 14pt outer diameter, 1.5pt
-/// stroke, measured from a rendered symbol. Glyph-to-label gap is the kit
-/// menu item's 10pt item spacing.
-private struct MenuBarPill: View {
-    let resolved: ResolvedSession?
+/// stroke, measured from a rendered symbol.
+private struct MenuBarRing: View {
+    let resolved: ResolvedSession
     let now: Date
 
     var body: some View {
-        HStack(spacing: 10) {
-            if let resolved {
-                ProgressRing(
-                    fraction: progressFraction(for: resolved),
-                    size: 14,
-                    lineWidth: 1.5,
-                    track: .black.opacity(0.3),
-                    arc: .black
-                )
-                .frame(width: 16, height: 16)
-                Text(resolved.session.code)
-                    .font(.system(size: 13, weight: .semibold))
-                    .foregroundStyle(.black)
-            } else {
-                // Keep Settings reachable even when the user hides every market.
-                Image(systemName: "clock")
-                    .font(.system(size: 13, weight: .semibold))
-                    .foregroundStyle(.black)
-            }
-        }
-        .padding(.horizontal, 2)
-        .frame(height: 18)
-        .fixedSize()
+        ProgressRing(
+            fraction: progressFraction(for: resolved),
+            size: 14,
+            lineWidth: 1.5,
+            track: .black.opacity(0.3),
+            arc: .black
+        )
+        .frame(width: 16, height: 16)
     }
 
     private func progressFraction(for resolved: ResolvedSession) -> Double {

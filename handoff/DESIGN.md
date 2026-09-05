@@ -23,7 +23,7 @@ Static design reference only. Data shown is a fixed snapshot (Thu 6:09 PM PDT); 
 Primary text rgba(0,0,0,0.85); secondary rgba(0,0,0,0.55); hairline rgba(0,0,0,0.07–0.08). No green, no blue, in the popover; the only color is the extended-hours row tint below. Dark mode: white at 0.92 / 0.50 / 0.09 respectively.
 
 ## Menu-bar label (10a)
-One ring drawn at SF Symbol `circle` metrics for the kit's 13pt Semibold menu-bar glyph (16pt box, 14pt outer diameter, 1.5pt stroke; track 30% black, arc primary label colour, fraction = elapsed of the next-to-change session) + its 3-letter code, 13pt semibold, 10pt apart (kit menu item spacing). Template image so it inverts with the bar. Tooltip: full name + "Closes 7:30 PM".
+One ring drawn at SF Symbol `circle` metrics for the kit's 13pt Semibold menu-bar glyph (16pt box, 14pt outer diameter, 1.5pt stroke; track 30% black, arc primary label colour, fraction = elapsed of the next-to-change session) + its 3-letter code as native status-item text, so the system sets weight and glyph gap. The ring is a template image so it inverts with the bar. Tooltip: full name + "Closes 7:30 PM".
 
 ## Owner decisions (amend the sections above; these win on conflict)
 
@@ -58,7 +58,7 @@ Bars and the open-market menu ring **drain to the close shown**: full at the sta
 
 ### Menu bar label
 
-Rendered via `ImageRenderer` to a template `NSImage` at the sharpest display's scale and integral height. With no markets selected, keep a clock glyph so Settings stays reachable.
+Only the ring is rendered via `ImageRenderer` to a template `NSImage` at the sharpest display's scale; the code is a native `Text` in the label (SwiftUI shapes do not draw in a `MenuBarExtra` label, text and images do). With no markets selected, keep a clock glyph so Settings stays reachable.
 
 ### Settings
 
