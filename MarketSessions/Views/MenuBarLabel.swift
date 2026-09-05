@@ -36,20 +36,25 @@ struct MenuBarLabel: View {
 }
 
 /// Drawn in black so the template image follows the active menu-bar tint.
+/// Ring metrics copy the SF Symbol `circle` at the kit's menu-bar glyph
+/// configuration (13pt Semibold): 16pt box, 14pt outer diameter, 1.5pt
+/// stroke, measured from a rendered symbol. Glyph-to-label gap is the kit
+/// menu item's 10pt item spacing.
 private struct MenuBarPill: View {
     let resolved: ResolvedSession?
     let now: Date
 
     var body: some View {
-        HStack(spacing: 5) {
+        HStack(spacing: 10) {
             if let resolved {
                 ProgressRing(
                     fraction: progressFraction(for: resolved),
                     size: 14,
-                    lineWidth: 3.5,
-                    track: .black.opacity(0.22),
+                    lineWidth: 1.5,
+                    track: .black.opacity(0.3),
                     arc: .black
                 )
+                .frame(width: 16, height: 16)
                 Text(resolved.session.code)
                     .font(.system(size: 13, weight: .semibold))
                     .foregroundStyle(.black)

@@ -23,7 +23,7 @@ Static design reference only. Data shown is a fixed snapshot (Thu 6:09 PM PDT); 
 Primary text rgba(0,0,0,0.85); secondary rgba(0,0,0,0.55); hairline rgba(0,0,0,0.07–0.08). No green, no blue, in the popover; the only color is the extended-hours row tint below. Dark mode: white at 0.92 / 0.50 / 0.09 respectively.
 
 ## Menu-bar label (10a)
-One 14pt ring (3.5 stroke, track 22% black, fill primary label colour, fraction = elapsed of the next-to-change session) + its 3-letter code, 13pt semibold (kit menu bar item). Template image so it inverts with the bar. Tooltip: full name + "Closes 7:30 PM".
+One ring drawn at SF Symbol `circle` metrics for the kit's 13pt Semibold menu-bar glyph (16pt box, 14pt outer diameter, 1.5pt stroke; track 30% black, arc primary label colour, fraction = elapsed of the next-to-change session) + its 3-letter code, 13pt semibold, 10pt apart (kit menu item spacing). Template image so it inverts with the bar. Tooltip: full name + "Closes 7:30 PM".
 
 ## Owner decisions (amend the sections above; these win on conflict)
 
