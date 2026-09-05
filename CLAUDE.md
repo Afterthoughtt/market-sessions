@@ -28,7 +28,7 @@ Swift 6 menu-bar-only macOS app (macOS 26, Xcode 26.6). Answers two questions at
 
 ## Verification
 
-- `./script/build_and_run.sh --verify` builds and relaunches the app.
+- `./script/build_and_run.sh --verify` builds and relaunches the app. It signs ad hoc (`CODE_SIGN_IDENTITY=-`); a build with `CODE_SIGNING_ALLOWED=NO` is refused by the notification daemon and never appears in System Settings › Notifications.
 - `xcodebuild -project MarketSessions.xcodeproj -scheme MarketSessions -destination 'platform=macOS' test` is the full suite. Keep it green and update tests in the same change.
 - Do not report completion while builds or tests fail.
 

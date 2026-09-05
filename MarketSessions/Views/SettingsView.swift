@@ -136,20 +136,30 @@ struct SettingsView: View {
 
                 LabeledContent {
                     Group {
-                        if model.notificationAuthorization == .denied {
+                        switch model.notificationAuthorization {
+                        case .denied:
                             Button("Open System Settings…", action: openNotificationSettings)
-                        } else {
+                        case .unavailable:
+                            Button("Try Again") { model.sendTestNotification() }
+                        case .notDetermined, .authorized:
                             Button("Send Test Notification") { model.sendTestNotification() }
                         }
                     }
                     .centeredInRow()
                 } label: {
-                    SettingsRowLabel(
-                        model.notificationAuthorization == .denied ? "Notifications Are Off" : "Test Notification",
-                        subtitle: model.notificationAuthorization == .denied
-                            ? "Allow Market Sessions in System Settings › Notifications."
-                            : "Shows a sample banner right away."
-                    )
+                    Group {
+                        switch model.notificationAuthorization {
+                        case .denied:
+                            SettingsRowLabel(
+                                "Notifications Are Off",
+                                subtitle: "Allow Market Sessions in System Settings › Notifications."
+                            )
+                        case .unavailable(let reason):
+                            SettingsRowLabel("Notifications Unavailable", subtitle: "macOS refused the request: \(reason)")
+                        case .notDetermined, .authorized:
+                            SettingsRowLabel("Test Notification", subtitle: "Shows a sample banner right away.")
+                        }
+                    }
                     .centeredInRow()
                 }
             } footer: {

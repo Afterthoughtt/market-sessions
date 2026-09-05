@@ -5,6 +5,8 @@ enum NotificationAuthorizationState: Hashable, Sendable {
     case notDetermined
     case authorized
     case denied
+    /// macOS refused to register the app (for example an unsigned build); carries the system's reason.
+    case unavailable(String)
 }
 
 @MainActor
@@ -31,7 +33,11 @@ final class NotificationCenterService: NotificationCentering {
     }
 
     func requestAuthorization() async -> NotificationAuthorizationState {
-        _ = try? await UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .sound])
+        do {
+            _ = try await UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .sound])
+        } catch {
+            return .unavailable(error.localizedDescription)
+        }
         return await authorizationStatus()
     }
 

@@ -35,6 +35,7 @@ final class MarketSessionsModel {
     private let notificationCenter: any NotificationCentering
     private let notificationPlanner = NotificationPlanner()
     private var scheduledNotifications: [PlannedNotification]?
+    private var notificationAuthorizationRequest: Task<Void, Never>?
     private let nowProvider: @Sendable () -> Date
     private let displayTimeZoneProvider: @Sendable () -> TimeZone
     private let preferencesStore: UserDefaults?
@@ -162,10 +163,13 @@ final class MarketSessionsModel {
         }
     }
 
+    /// Re-read the system status; if the user already selected something but was
+    /// never asked (or a previous ask failed), ask now.
     func refreshNotificationAuthorization() {
         let center = notificationCenter
         Task { @MainActor [weak self] in
             self?.notificationAuthorization = await center.authorizationStatus()
+            self?.requestNotificationAuthorizationIfNeeded()
         }
     }
 
@@ -204,7 +208,7 @@ final class MarketSessionsModel {
         )
         let center = notificationCenter
         Task { @MainActor [weak self] in
-            if self?.notificationAuthorization == .notDetermined {
+            if self?.notificationAuthorization != .authorized {
                 self?.notificationAuthorization = await center.requestAuthorization()
             }
             await center.add([sample])
@@ -212,10 +216,12 @@ final class MarketSessionsModel {
     }
 
     private func requestNotificationAuthorizationIfNeeded() {
-        guard preferences.notifiesAnything, notificationAuthorization == .notDetermined else { return }
+        guard preferences.notifiesAnything, notificationAuthorization == .notDetermined,
+              notificationAuthorizationRequest == nil else { return }
         let center = notificationCenter
-        Task { @MainActor [weak self] in
+        notificationAuthorizationRequest = Task { @MainActor [weak self] in
             self?.notificationAuthorization = await center.requestAuthorization()
+            self?.notificationAuthorizationRequest = nil
         }
     }
 
