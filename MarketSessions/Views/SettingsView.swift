@@ -152,7 +152,7 @@ struct SettingsView: View {
         let style = Date.FormatStyle(date: .abbreviated, time: .omitted, timeZone: model.displayTimeZone)
         let us = model.eventScheduleEnd(for: Set(Self.usReleaseKinds)).map { $0.formatted(style) } ?? "unavailable"
         let banks = model.eventScheduleEnd(for: Set(Self.centralBankKinds)).map { $0.formatted(style) } ?? "unavailable"
-        return "The popover shows the four soonest of the events you turn on. "
+        return "The popover shows only the next four upcoming events. "
             + "Bundled dates run through \(us) for U.S. releases and \(banks) for central banks."
     }
 
