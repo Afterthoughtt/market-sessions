@@ -36,27 +36,21 @@ struct SessionsPopover: View {
                     )
                 }
 
-                if !breakSessions.isEmpty {
-                    sectionHeader("Break")
-                    sessionRows(breakSessions) { resolved in
-                        ClosedSessionRow(
-                            resolved: resolved,
-                            now: model.now,
-                            displayTimeZone: model.displayTimeZone,
-                            palette: palette
-                        )
-                    }
-                }
-
-                if !closedSessions.isEmpty {
-                    sectionHeader("Closed")
-                    sessionRows(closedSessions) { resolved in
-                        ClosedSessionRow(
-                            resolved: resolved,
-                            now: model.now,
-                            displayTimeZone: model.displayTimeZone,
-                            palette: palette
-                        )
+                ForEach(
+                    [SessionStatus.preMarket, .postMarket, .onBreak, .closed],
+                    id: \.self
+                ) { status in
+                    let sessions = inactiveSessions(status)
+                    if !sessions.isEmpty {
+                        sectionHeader(status.label)
+                        sessionRows(sessions) { resolved in
+                            ClosedSessionRow(
+                                resolved: resolved,
+                                now: model.now,
+                                displayTimeZone: model.displayTimeZone,
+                                palette: palette
+                            )
+                        }
                     }
                 }
             }
@@ -170,15 +164,9 @@ struct SessionsPopover: View {
             .sorted(by: transitionComesFirst)
     }
 
-    private var closedSessions: [ResolvedSession] {
+    private func inactiveSessions(_ status: SessionStatus) -> [ResolvedSession] {
         model.orderedSessions
-            .filter { $0.status == .closed }
-            .sorted(by: transitionComesFirst)
-    }
-
-    private var breakSessions: [ResolvedSession] {
-        model.orderedSessions
-            .filter { $0.status == .onBreak }
+            .filter { $0.status == status }
             .sorted(by: transitionComesFirst)
     }
 

@@ -48,7 +48,12 @@ struct SessionResolver: Sendable {
                     verb: .opens,
                     date: nextActiveStart ?? current.end
                 )
-            case .preMarket, .postMarket, .trading, .auction:
+            case .preMarket, .postMarket:
+                status = current.kind == .preMarket ? .preMarket : .postMarket
+                transition = nextActiveStart.map {
+                    SessionTransition(verb: .opens, date: $0)
+                }
+            case .trading, .auction:
                 status = .closed
                 transition = nextActiveStart.map {
                     SessionTransition(verb: .opens, date: $0)

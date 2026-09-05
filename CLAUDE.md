@@ -5,7 +5,7 @@ Swift 6 menu-bar-only macOS app (macOS 26, Xcode 26.6). Answers two questions at
 ## Non-negotiables
 
 - Fully offline: no network entitlement or code, no dependencies, no telemetry, no accounts. Do not add any without being asked.
-- Exactly three market states: Open, Break, Closed. The popover is monochrome on the system material.
+- Exactly five market states: Open, Pre-Market, After Hours, Break, Closed. The popover is monochrome on the system material except the extended-hours row tint defined in `handoff/DESIGN.md`.
 - Schedules and event times are defined in canonical IANA zones. Never hardcode UTC offsets or local clock times. Never generate dates from recurrence formulas.
 
 ## Where the spec lives

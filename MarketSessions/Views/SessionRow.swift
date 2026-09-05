@@ -62,6 +62,9 @@ struct OpenSessionRow: View {
 }
 
 /// A non-trading session: name and the local time of its next state change.
+/// Pre-market and after-hours rows carry a vertical system-color tint on the
+/// kit's 24pt / 8pt-radius menu-item highlight geometry, extended 7pt past
+/// the text inset like the Settings hover.
 struct ClosedSessionRow: View {
     let resolved: ResolvedSession
     let now: Date
@@ -84,11 +87,29 @@ struct ClosedSessionRow: View {
                 .lineLimit(1)
                 .fixedSize(horizontal: true, vertical: false)
         }
-        .frame(height: 32)
+        .padding(.horizontal, 7)
+        .frame(height: 24)
+        .background(tintBackground)
+        .padding(.horizontal, -7)
+        .padding(.vertical, 4)
         .accessibilityElement(children: .ignore)
         .accessibilityLabel(
             "\(resolved.session.name), \(resolved.status.label), \(transitionText)"
         )
+    }
+
+    @ViewBuilder
+    private var tintBackground: some View {
+        if let tint = palette.extendedHoursTint(resolved.status) {
+            RoundedRectangle(cornerRadius: 8, style: .continuous)
+                .fill(
+                    LinearGradient(
+                        colors: [tint.opacity(0.22), tint.opacity(0.10)],
+                        startPoint: .top,
+                        endPoint: .bottom
+                    )
+                )
+        }
     }
 
     private var transitionText: String {

@@ -63,8 +63,21 @@ struct MarketPalette {
     func statusColor(_ status: SessionStatus) -> Color {
         switch status {
         case .open: green
-        case .onBreak: orange
+        case .preMarket, .onBreak: orange
+        case .postMarket: purple
         case .closed: sec
+        }
+    }
+
+    /// Row tint for extended hours. Opaque system colors from the macOS 26 kit
+    /// (Colors → Accents: Orange #FF8D28, Indigo #6155F5 in light; Indigo dark
+    /// #6D7CFF per the 26.0.1 change log). NSColor supplies the appearance-
+    /// correct value, so the popover does not hardcode either variant.
+    func extendedHoursTint(_ status: SessionStatus) -> Color? {
+        switch status {
+        case .preMarket: Color(nsColor: .systemOrange)
+        case .postMarket: Color(nsColor: .systemIndigo)
+        case .open, .onBreak, .closed: nil
         }
     }
 }

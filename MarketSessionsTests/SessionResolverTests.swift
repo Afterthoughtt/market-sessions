@@ -3,7 +3,7 @@ import XCTest
 
 final class SessionResolverTests: XCTestCase {
     func testThereAreOnlyThreeMarketStates() {
-        XCTAssertEqual(Set(SessionStatus.allCases.map(\.label)), ["Open", "Break", "Closed"])
+        XCTAssertEqual(Set(SessionStatus.allCases.map(\.label)), ["Open", "Pre-Market", "After Hours", "Break", "Closed"])
     }
 
     func testCMEUsesScheduledBoundaryWithoutEstimateMarker() throws {
@@ -161,7 +161,7 @@ final class SessionResolverTests: XCTestCase {
 
         let preMarket = try makeDate(year: 2026, month: 8, day: 24, hour: 8, minute: 0, timeZoneIdentifier: zone)
         let pre = SessionResolver().resolve(session, at: preMarket)
-        XCTAssertEqual(pre.status, .closed)
+        XCTAssertEqual(pre.status, .preMarket)
         XCTAssertEqual(pre.currentOccurrence?.kind, .preMarket)
         XCTAssertFalse(pre.status.isActive)
         XCTAssertEqual(pre.transition?.verb, .opens)
@@ -172,7 +172,7 @@ final class SessionResolverTests: XCTestCase {
 
         let postMarket = try makeDate(year: 2026, month: 8, day: 24, hour: 17, minute: 0, timeZoneIdentifier: zone)
         let post = SessionResolver().resolve(session, at: postMarket)
-        XCTAssertEqual(post.status, .closed)
+        XCTAssertEqual(post.status, .postMarket)
         XCTAssertEqual(post.currentOccurrence?.kind, .postMarket)
         XCTAssertFalse(post.status.isActive)
         XCTAssertEqual(post.transition?.verb, .opens)

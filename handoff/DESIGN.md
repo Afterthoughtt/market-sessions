@@ -20,7 +20,7 @@ Static design reference only. Data shown is a fixed snapshot (Thu 6:09 PM PDT); 
 15 title · 13 body / headers-of-things · 11 meta and section headers · 10 header readouts. Tabular figures on every time and countdown.
 
 ## Colour
-Primary text rgba(0,0,0,0.85); secondary rgba(0,0,0,0.55); hairline rgba(0,0,0,0.07–0.08). No green, no blue, in the popover. Dark mode: white at 0.92 / 0.50 / 0.09 respectively.
+Primary text rgba(0,0,0,0.85); secondary rgba(0,0,0,0.55); hairline rgba(0,0,0,0.07–0.08). No green, no blue, in the popover; the only color is the extended-hours row tint below. Dark mode: white at 0.92 / 0.50 / 0.09 respectively.
 
 ## Menu-bar label (10a)
 One 14pt ring (3.5 stroke, track 22% black, fill primary label colour, fraction = elapsed of the next-to-change session) + its 3-letter code, 13pt semibold (kit menu bar item). Template image so it inverts with the bar. Tooltip: full name + "Closes 7:30 PM".
@@ -42,7 +42,7 @@ Schedules are defined in canonical IANA zones. Display time defaults to the syst
 
 ### States and appearance
 
-Exactly three market states: **Open, Break, Closed**. Trading and contiguous auctions resolve to Open; recess and maintenance to Break; pre-/post-market and overnight/weekend closures to Closed. Interval kinds stay internal to schedule math. Transition readouts say Opens/Closes with the scheduled boundary and no estimate marker. The popover is monochrome on the system material; neutral values follow the macOS 26 kit tokens. No cards, accent colors, or status badges.
+Five market states: **Open, Pre-Market, After Hours, Break, Closed**. Trading and contiguous auctions resolve to Open; New York's 4:00–9:30 ET early session to Pre-Market and its 16:00–20:00 ET late session to After Hours (NYSE Arca and Nasdaq published hours, verified 2026-09-05); recess and maintenance to Break; overnight/weekend closures to Closed. Only Open counts as active for rings, bars, and the menu ring. Transition readouts say Opens/Closes with the scheduled boundary and no estimate marker. The popover is monochrome on the system material except the extended-hours tint: Pre-Market rows carry a vertical system Orange tint and After Hours rows a vertical system Indigo tint (kit Colors → Accents; NSColor supplies the light/dark value), 22%→10% top to bottom on the kit's 24pt / 8pt-radius menu-item highlight geometry. Break and Closed rows stay untinted. Neutral values follow the macOS 26 kit tokens. No cards, other accent colors, or status badges.
 
 ### Progress
 
@@ -52,7 +52,7 @@ Bars and the open-market menu ring **drain to the close shown**: full at the sta
 
 1. Header — title and local weekday; `Your time · <zone>` (or `Time · <zone>` for an override); UTC "Daily Close in Xh Ym".
 2. Open — active markets ordered by nearest close, with local close time and a draining bar.
-3. Break, then Closed — ordered by nearest open, with local Opens time. Omit empty sections. Each selected market appears once. Rows are non-interactive.
+3. Pre-Market, After Hours, Break, then Closed — ordered by nearest open, with local Opens time. Omit empty sections. Each selected market appears once. Rows are non-interactive.
 4. Upcoming Events — the next four of the selected kinds, no disclosure. Compact names (U.S. Jobs Report, FOMC Decision); full description and exact local date/time in tooltips and accessibility labels. Preserve per-event titles (Jackson Hole keynote). Inside 24 hours emphasize Today/Tomorrow + local time; while live show Live. BOJ times carry the approximation marker. When nothing selected remains, say the bundled schedule has none.
 5. Footer — holiday-data warning only when unavailable or expired, then a full-width Settings row (⌘,) with the kit's menu-item hover.
 

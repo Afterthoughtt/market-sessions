@@ -2,6 +2,8 @@ import Foundation
 
 enum SessionStatus: String, CaseIterable, Hashable, Sendable {
     case open = "Open"
+    case preMarket = "Pre-Market"
+    case postMarket = "After Hours"
     case onBreak = "Break"
     case closed = "Closed"
 
