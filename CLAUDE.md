@@ -23,7 +23,7 @@ Schedules are defined in canonical IANA zones. Display time defaults to the syst
 
 ### States and appearance
 
-There are exactly three market states: **Open, Break, Closed**. Trading and contiguous auctions resolve to Open; recess and maintenance intervals resolve to Break; pre-/post-market and overnight/weekend closures resolve to Closed. Detailed interval kinds remain internal to schedule math, never separate display states. Use Opens/Closes for transition readouts. Market times use the chosen scheduled boundary with no estimate marker. The popover is monochrome, with neutral light/dark text, hairlines, and progress tracks on the system material. No cards, accent colors, or status badges.
+There are exactly three market states: **Open, Break, Closed**. Trading and contiguous auctions resolve to Open; recess and maintenance intervals resolve to Break; pre-/post-market and overnight/weekend closures resolve to Closed. Detailed interval kinds remain internal to schedule math, never separate display states. Use Opens/Closes for transition readouts. Market times use the chosen scheduled boundary with no estimate marker. The popover is monochrome, with neutral light/dark text, hairlines, and progress tracks on the system material. Neutral values follow Apple's macOS 26 kit tokens (see design reference below). No cards, accent colors, or status badges.
 
 ### Progress
 
@@ -52,6 +52,14 @@ Macro events from a bundled per-year JSON (`MarketSessions/Resources/events-<yea
 **Data rules:** never generate dates from recurrence formulas — store the published dates from official sources (Fed FOMC calendar, BLS, BEA, Census, ECB and BOJ meeting calendars, Fed monthly newsevents calendar for Chair speeches; URLs are in the JSON's `sources`). BOJ decisions have no fixed announcement time; 12:00 JST on the meeting's second day is the stored approximation. Regenerate once a year in the fall; hand-add Jackson Hole (last week of August, Chair keynote Friday morning) and the Feb/Jul congressional testimony when announced. When no selected future events remain, show that the bundled schedule has none rather than silently inventing dates.
 
 **Networking is a deliberate non-feature.** The owner's machine is privacy-focused; the app has no network entitlement or code. If live fetching is ever added, it is Phase 2: sandboxed XPC helper, `federalreserve.gov` only, weekly, off by default. Do not add it, or any dependency/telemetry/account, without being asked.
+
+## Design reference: Apple macOS 26 UI kit
+
+Apple's official macOS 26 Figma kit is the spec for hover states, row metrics, type, and color tokens. The owner's copy is Figma file `Y5S76dMwnwkVKikaIg8Nxj`; the Figma MCP and REST API are capped on the Starter View seat (REST Tier 1 ≈ 20 calls/month), so do not query them per node.
+
+- The full file JSON is cached at `.build/reference/figma-macos26.json` (gitignored, 25 MB, pulled 2026-09-05). Read it locally; re-pull only if the kit changes.
+- Re-pull with one call: `source ~/.zshrc; curl -H "X-Figma-Token: $FIGMA_TOKEN" https://api.figma.com/v1/files/Y5S76dMwnwkVKikaIg8Nxj -o .build/reference/figma-macos26.json`. `FIGMA_TOKEN` (scope `file_content:read`) lives in `~/.zshrc`; the Bash tool's shell snapshot may predate it, so `source ~/.zshrc` first. Never print, copy, or commit the token.
+- Query it with a short script rather than reading the raw JSON; pages of interest are Menus, Colors, Text Styles, Popovers, Menu Bar and Dock.
 
 ## Architecture
 

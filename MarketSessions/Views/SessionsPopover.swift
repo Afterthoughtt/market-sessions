@@ -21,10 +21,9 @@ struct SessionsPopover: View {
                 sectionHeader("Open")
                 if openSessions.isEmpty {
                     Text("No markets open")
-                        .font(.system(size: 11))
+                        .font(.system(size: 13))
                         .foregroundStyle(palette.sec)
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                        .padding(.vertical, 8)
+                        .frame(maxWidth: .infinity, minHeight: 32, alignment: .leading)
                 }
                 sessionRows(openSessions) { resolved in
                     OpenSessionRow(
@@ -84,9 +83,8 @@ struct SessionsPopover: View {
 
             SettingsLink {
                 Text("Settings…")
-                    .font(.system(size: 13))
+                    .font(.system(size: 13, weight: .medium))
                     .foregroundStyle(palette.text)
-                    .frame(maxWidth: .infinity, minHeight: 32, alignment: .leading)
             }
             .buttonStyle(PopoverRowButtonStyle(palette: palette))
             .keyboardShortcut(",")
@@ -105,7 +103,6 @@ struct SessionsPopover: View {
             VStack(alignment: .leading, spacing: 3) {
                 Text("Market Sessions")
                     .font(.system(size: 15, weight: .semibold))
-                    .tracking(-0.15)
                     .foregroundStyle(palette.text)
 
                 Text(weekday)
@@ -215,22 +212,25 @@ struct SessionsPopover: View {
     }
 }
 
-/// Menu-row affordance for full-width popover actions: a rounded highlight on
-/// hover, slightly stronger while pressed, drawn in the neutral palette.
+/// Menu-item hover highlight per Apple's macOS 26 UI kit (Menus → _Menu Item,
+/// State=Hover): 24pt row, 8pt continuous corner radius, highlight extending
+/// 7pt past the text inset on both sides, fill = Fills-Vibrant/Secondary (the
+/// separator color). Padded to the 32pt footer row from the design.
 private struct PopoverRowButtonStyle: ButtonStyle {
     let palette: MarketPalette
     @State private var isHovering = false
 
     func makeBody(configuration: Configuration) -> some View {
         configuration.label
-            .padding(.horizontal, 8)
+            .frame(maxWidth: .infinity, minHeight: 24, alignment: .leading)
+            .padding(.horizontal, 7)
             .background(
-                RoundedRectangle(cornerRadius: 6, style: .continuous)
-                    .fill(configuration.isPressed ? palette.ringTrack : (isHovering ? palette.track : .clear))
+                RoundedRectangle(cornerRadius: 8, style: .continuous)
+                    .fill(isHovering ? palette.divider : .clear)
             )
-            .padding(.horizontal, -8)
+            .padding(.horizontal, -7)
+            .padding(.vertical, 4)
             .contentShape(Rectangle())
             .onHover { isHovering = $0 }
-            .animation(.easeOut(duration: 0.1), value: isHovering)
     }
 }

@@ -1,7 +1,8 @@
 import SwiftUI
 
-/// Shared colors. The final popover uses only the neutral text, separator, and
-/// scrubber values; legacy status colors remain available to non-popover views.
+/// Shared colors. Neutral text, separator, and track values follow Apple's
+/// macOS 26 UI kit label and fill tokens (see CLAUDE.md, design reference);
+/// legacy status colors remain available to non-popover views.
 struct MarketPalette {
     let text: Color
     let sec: Color
@@ -21,8 +22,8 @@ struct MarketPalette {
 
     static let light = MarketPalette(
         text: Color.black.opacity(0.85),
-        sec: Color.black.opacity(0.55),
-        faint: Color.black.opacity(0.55),
+        sec: Color.black.opacity(0.5),
+        faint: Color.black.opacity(0.5),
         divider: Color.black.opacity(0.07),
         dividerStrong: Color.black.opacity(0.08),
         cell: Color.white.opacity(0.72),
@@ -38,15 +39,15 @@ struct MarketPalette {
     )
 
     static let dark = MarketPalette(
-        text: Color.white.opacity(0.92),
-        sec: Color.white.opacity(0.5),
-        faint: Color.white.opacity(0.5),
+        text: Color.white.opacity(0.85),
+        sec: Color.white.opacity(0.55),
+        faint: Color.white.opacity(0.55),
         divider: Color.white.opacity(0.09),
         dividerStrong: Color.white.opacity(0.09),
         cell: Color.white.opacity(0.07),
-        track: Color.white.opacity(0.09),
+        track: Color.white.opacity(0.08),
         ringTrack: Color.white.opacity(0.18),
-        ringSec: Color.white.opacity(0.5),
+        ringSec: Color.white.opacity(0.55),
         accent: Color(red: 0x0A / 255, green: 0x84 / 255, blue: 0xFF / 255),
         accentRing: Color(red: 0x0A / 255, green: 0x84 / 255, blue: 0xFF / 255).opacity(0.55),
         green: Color(red: 0x32 / 255, green: 0xD7 / 255, blue: 0x4B / 255),

@@ -15,7 +15,7 @@ struct EconomicEventsSection: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
-            Text("Upcoming events")
+            Text("Upcoming Events")
                 .font(.system(size: 11, weight: .semibold))
                 .foregroundStyle(palette.sec)
                 .frame(maxWidth: .infinity, alignment: .leading)
