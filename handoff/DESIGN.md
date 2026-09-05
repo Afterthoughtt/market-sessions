@@ -23,4 +23,4 @@ Static design reference only. Data shown is a fixed snapshot (Thu 6:09 PM PDT); 
 Primary text rgba(0,0,0,0.85); secondary rgba(0,0,0,0.55); hairline rgba(0,0,0,0.07–0.08). No green, no blue, in the popover. Dark mode: white at 0.92 / 0.50 / 0.09 respectively.
 
 ## Menu-bar label (10a)
-One 14pt ring (3.5 stroke, track 22% black, fill primary label colour, fraction = elapsed of the next-to-change session) + its 3-letter code, 12pt medium. Template image so it inverts with the bar. Tooltip: full name + "Closes 7:30 PM".
+One 14pt ring (3.5 stroke, track 22% black, fill primary label colour, fraction = elapsed of the next-to-change session) + its 3-letter code, 13pt semibold (kit menu bar item). Template image so it inverts with the bar. Tooltip: full name + "Closes 7:30 PM".

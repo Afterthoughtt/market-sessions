@@ -51,12 +51,12 @@ private struct MenuBarPill: View {
                     arc: .black
                 )
                 Text(resolved.session.code)
-                    .font(.system(size: 12, weight: .medium))
+                    .font(.system(size: 13, weight: .semibold))
                     .foregroundStyle(.black)
             } else {
                 // Keep Settings reachable even when the user hides every market.
                 Image(systemName: "clock")
-                    .font(.system(size: 14))
+                    .font(.system(size: 13, weight: .semibold))
                     .foregroundStyle(.black)
             }
         }
