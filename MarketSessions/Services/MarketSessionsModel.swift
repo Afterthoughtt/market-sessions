@@ -120,14 +120,14 @@ final class MarketSessionsModel {
 
     /// Next bundled occurrence of a kind that has not yet ended, for Settings rows.
     func nextEvent(of kind: EconomicEventKind) -> EconomicEvent? {
-        economicEvents
-            .filter { $0.kind == kind && $0.end > now }
-            .min { $0.start < $1.start }
+        upcomingEventResolver
+            .resolve(economicEvents, at: now, minimumCount: 1, enabledKinds: [kind])
+            .events.first
     }
 
-    /// Latest bundled end date among the given kinds, for coverage readouts.
-    func eventScheduleEnd(for kinds: Set<EconomicEventKind>) -> Date? {
-        economicEvents.filter { kinds.contains($0.kind) }.map(\.end).max()
+    /// Latest bundled end date in a category, for coverage readouts.
+    func eventScheduleEnd(for category: EconomicEventKind.Category) -> Date? {
+        economicEvents.filter { $0.kind.category == category }.map(\.end).max()
     }
 
     func setLaunchAtLogin(_ enabled: Bool) {

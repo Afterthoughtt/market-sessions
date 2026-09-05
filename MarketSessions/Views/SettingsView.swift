@@ -101,13 +101,10 @@ struct SettingsView: View {
         .formStyle(.grouped)
     }
 
-    private static let usReleaseKinds: [EconomicEventKind] = [.employment, .cpi, .pce, .ppi, .retailSales, .gdp]
-    private static let centralBankKinds: [EconomicEventKind] = [.fomc, .fomcMinutes, .fedSpeech, .ecb, .boj]
-
     private var events: some View {
         Form {
-            eventSection("U.S. Releases", kinds: Self.usReleaseKinds)
-            eventSection("Central Banks", kinds: Self.centralBankKinds, footer: eventCoverageFooter)
+            eventSection("U.S. Releases", kinds: EconomicEventKind.kinds(in: .usRelease))
+            eventSection("Central Banks", kinds: EconomicEventKind.kinds(in: .centralBank), footer: eventCoverageFooter)
         }
         .formStyle(.grouped)
     }
@@ -125,7 +122,7 @@ struct SettingsView: View {
                 )) {
                     SettingsRowLabel(kind.compactTitle, subtitle: nextEventSubtitle(kind))
                 }
-                .help(eventDescription(kind))
+                .help(kind.detail)
             }
         } header: {
             Text(title)
@@ -144,41 +141,21 @@ struct SettingsView: View {
     private func nextEventSubtitle(_ kind: EconomicEventKind) -> String {
         guard let next = model.nextEvent(of: kind) else { return "No dates announced yet" }
         let style = Date.FormatStyle(date: .abbreviated, time: .shortened, timeZone: model.displayTimeZone)
-        let approximate = kind == .boj ? " (approx.)" : ""
+        let approximate = kind.hasApproximateTime ? " (approx.)" : ""
         return "\(next.start.formatted(style))\(approximate)"
     }
 
     private var eventCoverageFooter: String {
         let style = Date.FormatStyle(date: .abbreviated, time: .omitted, timeZone: model.displayTimeZone)
-        let us = model.eventScheduleEnd(for: Set(Self.usReleaseKinds)).map { $0.formatted(style) } ?? "unavailable"
-        let banks = model.eventScheduleEnd(for: Set(Self.centralBankKinds)).map { $0.formatted(style) } ?? "unavailable"
+        let us = model.eventScheduleEnd(for: .usRelease).map { $0.formatted(style) } ?? "unavailable"
+        let banks = model.eventScheduleEnd(for: .centralBank).map { $0.formatted(style) } ?? "unavailable"
         return "The popover shows only the next four upcoming events. "
             + "Bundled dates run through \(us) for U.S. releases and \(banks) for central banks."
     }
 
-    private func eventDescription(_ kind: EconomicEventKind) -> String {
-        switch kind {
-        case .employment: "Nonfarm payrolls and unemployment · BLS"
-        case .cpi: "Consumer Price Index · BLS"
-        case .pce: "Personal Consumption Expenditures inflation · BEA"
-        case .ppi: "Producer Price Index · BLS"
-        case .retailSales: "Advance monthly sales · Census Bureau"
-        case .gdp: "First quarterly estimate · BEA"
-        case .fomc: "Rate decision and press conference as one window"
-        case .fomcMinutes: "Released three weeks after each meeting"
-        case .fedSpeech: "Jackson Hole keynote and semiannual congressional testimony; other Chair speeches are announced only weeks ahead"
-        case .ecb: "Rate decision and press conference"
-        case .boj: "Rate decision; announcement time is approximate"
-        }
-    }
-
     private var coverageDetail: String {
         guard let end = model.exceptionCoverageEnd else { return "Unavailable" }
-        let formatter = DateFormatter()
-        formatter.dateStyle = .medium
-        formatter.timeStyle = .none
-        formatter.timeZone = model.displayTimeZone
-        let date = formatter.string(from: end)
+        let date = end.formatted(Date.FormatStyle(date: .abbreviated, time: .omitted, timeZone: model.displayTimeZone))
         return model.now > end ? "Ended \(date)" : "Through \(date)"
     }
 }

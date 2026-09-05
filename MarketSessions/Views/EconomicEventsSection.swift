@@ -92,7 +92,7 @@ struct EconomicEventsSection: View {
                 formatter.dateFormat = "EEE"
                 day = formatter.string(from: event.start)
             }
-            let approximation = event.kind == .boj ? "≈" : ""
+            let approximation = event.kind.hasApproximateTime ? "≈" : ""
             return "\(day) \(approximation)\(MarketDateFormatting.time(event.start, timeZone: displayTimeZone))"
         }
 
@@ -110,7 +110,7 @@ struct EconomicEventsSection: View {
         formatter.dateStyle = .full
         formatter.timeStyle = .short
         let zone = displayTimeZone.abbreviation(for: event.start) ?? displayTimeZone.identifier
-        let approximation = event.kind == .boj ? " (approximate announcement time)" : ""
+        let approximation = event.kind.hasApproximateTime ? " (approximate announcement time)" : ""
         let live = event.phase(at: now) == .live ? " · Live" : ""
         return "\(event.displayTitle) · \(formatter.string(from: event.start)) \(zone)\(approximation)\(live)"
     }

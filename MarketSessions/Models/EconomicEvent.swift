@@ -57,6 +57,43 @@ enum EconomicEventKind: String, CaseIterable, Codable, Hashable, Sendable {
         }
     }
 
+    enum Category: CaseIterable, Sendable {
+        case usRelease
+        case centralBank
+    }
+
+    var category: Category {
+        switch self {
+        case .cpi, .employment, .pce, .retailSales, .gdp, .ppi: .usRelease
+        case .fomc, .fedSpeech, .fomcMinutes, .ecb, .boj: .centralBank
+        }
+    }
+
+    /// One-line explanation for Settings tooltips: what the release measures and who publishes it.
+    var detail: String {
+        switch self {
+        case .employment: "Nonfarm payrolls and unemployment · BLS"
+        case .cpi: "Consumer Price Index · BLS"
+        case .pce: "Personal Consumption Expenditures inflation · BEA"
+        case .ppi: "Producer Price Index · BLS"
+        case .retailSales: "Advance monthly sales · Census Bureau"
+        case .gdp: "First quarterly estimate · BEA"
+        case .fomc: "Rate decision and press conference as one window"
+        case .fomcMinutes: "Released three weeks after each meeting"
+        case .fedSpeech: "Jackson Hole keynote and semiannual congressional testimony; other Chair speeches are announced only weeks ahead"
+        case .ecb: "Rate decision and press conference"
+        case .boj: "Rate decision; announcement time is approximate"
+        }
+    }
+
+    /// BOJ decisions have no fixed announcement time; the stored 12:00 JST is an approximation.
+    var hasApproximateTime: Bool { self == .boj }
+
+    /// Kinds in a category, in display rank order.
+    static func kinds(in category: Category) -> [EconomicEventKind] {
+        allCases.filter { $0.category == category }.sorted { $0.rank < $1.rank }
+    }
+
     /// The initial high-impact selection, before the user customizes Settings.
     var isDefault: Bool {
         switch self {
