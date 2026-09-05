@@ -15,6 +15,7 @@ struct MenuBarLabel: View {
             if let resolved {
                 Image(nsImage: Self.render(resolved: resolved, now: now))
                 Text(resolved.session.code)
+                    .font(.system(size: 13, weight: .semibold))
             } else {
                 // Keep Settings reachable even when the user hides every market.
                 Image(systemName: "clock")
