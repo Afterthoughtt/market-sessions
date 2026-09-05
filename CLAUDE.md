@@ -43,7 +43,7 @@ One 14pt ring (3.5pt stroke) plus the code of the selected market with the earli
 
 ### Settings
 
-A dedicated native Settings scene with General, Markets, and Events tabs. General includes a searchable IANA time-zone chooser with System (automatic) selected by default, Launch at Login, holiday coverage, and Quit. Markets and event-kind selections apply immediately and persist through `MarketPreferences` in UserDefaults. Turning off every market is allowed; turning off every event kind hides the event section. Tests inject isolated stores or no store and never use the app's standard preferences.
+A dedicated native Settings scene with General, Markets, and Events tabs. General includes a time-zone pop-up (North American zones plus UTC, stored as IANA identifiers) with System selected by default, Launch at Login, holiday coverage, and Quit. Markets and event-kind selections apply immediately and persist through `MarketPreferences` in UserDefaults. Turning off every market is allowed; turning off every event kind hides the event section. Tests inject isolated stores or no store and never use the app's standard preferences.
 
 ### Upcoming Events
 

@@ -3,63 +3,81 @@ import SwiftUI
 
 struct SettingsView: View {
     let model: MarketSessionsModel
-    @State private var isChoosingTimeZone = false
+    @State private var selectedTab = SettingsTab.general
+
+    private enum SettingsTab: Hashable {
+        case general, markets, events
+
+        /// Content height so the window fits each pane instead of a shared maximum.
+        var height: CGFloat {
+            switch self {
+            case .general: 290
+            case .markets: 350
+            case .events: 660
+            }
+        }
+    }
 
     var body: some View {
-        TabView {
-            Tab("General", systemImage: "gearshape") {
+        TabView(selection: $selectedTab) {
+            Tab("General", systemImage: "gearshape", value: .general) {
                 general
             }
-            Tab("Markets", systemImage: "globe") {
+            Tab("Markets", systemImage: "globe", value: .markets) {
                 markets
             }
-            Tab("Events", systemImage: "calendar") {
+            Tab("Events", systemImage: "calendar", value: .events) {
                 events
             }
         }
-        .frame(width: 520, height: 500)
-        .sheet(isPresented: $isChoosingTimeZone) {
-            TimeZonePicker(model: model)
-        }
+        .frame(width: 520, height: selectedTab.height)
         .onAppear { model.start() }
     }
 
     private var general: some View {
         Form {
             Section {
-                LabeledContent("Time zone") {
-                    Button(timeZoneLabel) { isChoosingTimeZone = true }
-                        .help("Choose the time zone used for all market and event times")
+                LabeledContent {
+                    TimeZonePicker(model: model)
+                        .help("Time zone used for all market and event times")
+                } label: {
+                    SettingsRowLabel(
+                        "Time Zone",
+                        subtitle: TimeZonePicker.detail(for: model.displayTimeZone, at: model.now)
+                    )
                 }
-                Text("System time is detected automatically by default. A custom time zone changes displayed times, not market schedules. Daily Close stays at midnight UTC.")
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
-            }
 
-            Section("Startup") {
-                Toggle("Launch at Login", isOn: Binding(
-                    get: { model.loginItemState.isEnabled },
-                    set: { model.setLaunchAtLogin($0) }
-                ))
-                if model.loginItemState == .requiresApproval {
-                    Text("Approve Market Sessions in System Settings → Login Items.")
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
+                LabeledContent {
+                    Text(coverageDetail)
+                } label: {
+                    SettingsRowLabel(
+                        "Holiday Coverage",
+                        subtitle: "Holidays and early closes for all six markets."
+                    )
                 }
-            }
-
-            Section("Schedule data") {
-                Text(coverageDescription)
-                Text("Schedules are bundled and work offline. CME follows the equity-index futures session. BOJ announcement times are approximate.")
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
+            } footer: {
+                Text("The time zone changes displayed times only. Daily Close stays at midnight UTC.")
             }
 
             Section {
-                Button("Quit Market Sessions") {
-                    NSApplication.shared.terminate(nil)
+                Toggle(isOn: Binding(
+                    get: { model.loginItemState.isEnabled },
+                    set: { model.setLaunchAtLogin($0) }
+                )) {
+                    SettingsRowLabel(
+                        "Launch at Login",
+                        subtitle: model.loginItemState == .requiresApproval
+                            ? "Approve Market Sessions in System Settings › Login Items."
+                            : nil
+                    )
                 }
-                .keyboardShortcut("q")
+
+                LabeledContent {
+                    Button("Quit") { NSApplication.shared.terminate(nil) }
+                        .keyboardShortcut("q")
+                } label: {
+                    SettingsRowLabel("Quit Market Sessions")
+                }
             }
         }
         .formStyle(.grouped)
@@ -69,15 +87,15 @@ struct SettingsView: View {
         Form {
             Section {
                 ForEach(model.availableMarkets) { market in
-                    Toggle(market.name, isOn: Binding(
+                    Toggle(isOn: Binding(
                         get: { model.preferences.visibleMarkets.contains(market.id) },
                         set: { model.setMarket(market.id, visible: $0) }
-                    ))
+                    )) {
+                        SettingsRowLabel(market.name, subtitle: marketSubtitle(market))
+                    }
                 }
-            } header: {
-                Text("Show markets")
             } footer: {
-                Text("Applies to the popover and menu-bar indicator. You can hide every market and still access Settings.")
+                Text("Applies to the popover and menu-bar indicator. You can hide every market and still open Settings.")
             }
         }
         .formStyle(.grouped)
@@ -85,56 +103,91 @@ struct SettingsView: View {
 
     private var events: some View {
         Form {
-            eventSection("U.S. releases", kinds: [.employment, .cpi, .pce, .ppi, .retailSales, .gdp])
-            eventSection("Central banks", kinds: [.fomc, .fomcMinutes, .fedSpeech, .ecb, .boj])
-            Text("The next four selected events appear in the popover. Turn all off to hide the section.")
-                .font(.caption)
-                .foregroundStyle(.secondary)
+            eventSection("U.S. Releases", kinds: [.employment, .cpi, .pce, .ppi, .retailSales, .gdp])
+            eventSection(
+                "Central Banks",
+                kinds: [.fomc, .fomcMinutes, .fedSpeech, .ecb, .boj],
+                footer: "The next four selected events appear in the popover. Turn all off to hide the section."
+            )
         }
         .formStyle(.grouped)
     }
 
-    private func eventSection(_ title: String, kinds: [EconomicEventKind]) -> some View {
-        Section(title) {
+    private func eventSection(
+        _ title: String,
+        kinds: [EconomicEventKind],
+        footer: String? = nil
+    ) -> some View {
+        Section {
             ForEach(kinds, id: \.self) { kind in
                 Toggle(isOn: Binding(
                     get: { model.preferences.eventKinds.contains(kind) },
                     set: { model.setEventKind(kind, visible: $0) }
                 )) {
-                    VStack(alignment: .leading, spacing: 2) {
-                        Text(kind.compactTitle)
-                        if kind.title != kind.compactTitle {
-                            Text(kind.title)
-                                .font(.caption)
-                                .foregroundStyle(.secondary)
-                        }
-                    }
+                    SettingsRowLabel(kind.compactTitle, subtitle: eventSubtitle(kind))
                 }
                 .help(kind.title)
+            }
+        } header: {
+            Text(title)
+        } footer: {
+            if let footer {
+                Text(footer)
             }
         }
     }
 
-    private var timeZoneLabel: String {
-        if let identifier = model.preferences.timeZoneIdentifier {
-            return identifier.replacingOccurrences(of: "_", with: " ")
-        }
-        let abbreviation = model.systemTimeZone.abbreviation(for: model.now)
-            ?? model.systemTimeZone.identifier
-        return "System — \(abbreviation)"
+    private func marketSubtitle(_ market: MarketSession) -> String? {
+        market.id == .cmeFutures ? "Equity-index futures session" : nil
     }
 
-    private var coverageDescription: String {
-        guard let end = model.exceptionCoverageEnd else {
-            return "Recurring hours only; holiday data is unavailable."
+    private func eventSubtitle(_ kind: EconomicEventKind) -> String {
+        switch kind {
+        case .employment: "Nonfarm payrolls and unemployment · BLS"
+        case .cpi: "Consumer Price Index · BLS"
+        case .pce: "Personal Consumption Expenditures inflation · BEA"
+        case .ppi: "Producer Price Index · BLS"
+        case .retailSales: "Advance monthly sales · Census Bureau"
+        case .gdp: "First quarterly estimate · BEA"
+        case .fomc: "Rate decision and press conference as one window"
+        case .fomcMinutes: "Released three weeks after each meeting"
+        case .fedSpeech: "Jackson Hole, testimony, and major policy speeches"
+        case .ecb: "Rate decision and press conference"
+        case .boj: "Rate decision; announcement time is approximate"
         }
+    }
+
+    private var coverageDetail: String {
+        guard let end = model.exceptionCoverageEnd else { return "Unavailable" }
         let formatter = DateFormatter()
         formatter.dateStyle = .medium
         formatter.timeStyle = .none
         formatter.timeZone = model.displayTimeZone
         let date = formatter.string(from: end)
-        return model.now > end
-            ? "Holiday data ended \(date). Using recurring hours."
-            : "Includes holidays and early closes through \(date)."
+        return model.now > end ? "Ended \(date)" : "Through \(date)"
+    }
+}
+
+/// Form row label per Apple's macOS 26 kit (Examples › Form, "Leading
+/// Accessories"): 13pt Medium title over an 11pt Medium secondary subtitle, 2pt apart.
+private struct SettingsRowLabel: View {
+    let title: String
+    let subtitle: String?
+
+    init(_ title: String, subtitle: String? = nil) {
+        self.title = title
+        self.subtitle = subtitle
+    }
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 2) {
+            Text(title)
+                .font(.system(size: 13, weight: .medium))
+            if let subtitle {
+                Text(subtitle)
+                    .font(.system(size: 11, weight: .medium))
+                    .foregroundStyle(.secondary)
+            }
+        }
     }
 }
