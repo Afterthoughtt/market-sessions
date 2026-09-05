@@ -17,6 +17,9 @@ final class MarketSessionsModel {
     private(set) var utcDayRemainingMinutes = 0
     private(set) var upcomingEvents: UpcomingEconomicEvents = .empty
     private(set) var loginItemState: LoginItemState = .disabled
+    private(set) var notificationAuthorization: NotificationAuthorizationState = .notDetermined
+    /// In-flight write to the notification center; tests await it.
+    private(set) var notificationSync: Task<Void, Never>?
     /// Last date the bundled holiday/early-close data covers; nil when absent.
     var exceptionCoverageEnd: Date? { marketExceptions.coverageEnd }
     /// The status item follows the session whose next transition happens first.
@@ -29,6 +32,9 @@ final class MarketSessionsModel {
     private let upcomingEventResolver = UpcomingEconomicEventResolver()
     private let focusResolver: FocusSessionResolver
     private let loginItemService: any LoginItemServicing
+    private let notificationCenter: any NotificationCentering
+    private let notificationPlanner = NotificationPlanner()
+    private var scheduledNotifications: [PlannedNotification]?
     private let nowProvider: @Sendable () -> Date
     private let displayTimeZoneProvider: @Sendable () -> TimeZone
     private let preferencesStore: UserDefaults?
@@ -43,6 +49,7 @@ final class MarketSessionsModel {
         economicEvents: [EconomicEvent]? = nil,
         focusResolver: FocusSessionResolver = FocusSessionResolver(),
         loginItemService: any LoginItemServicing = LoginItemService(),
+        notificationCenter: any NotificationCentering = NotificationCenterService(),
         nowProvider: @escaping @Sendable () -> Date = Date.init,
         displayTimeZoneProvider: @escaping @Sendable () -> TimeZone = { .autoupdatingCurrent },
         preferencesStore: UserDefaults? = nil
@@ -53,6 +60,7 @@ final class MarketSessionsModel {
         self.economicEvents = economicEvents ?? ((try? EconomicEventCatalog.loadAll()) ?? [])
         self.focusResolver = focusResolver
         self.loginItemService = loginItemService
+        self.notificationCenter = notificationCenter
         self.nowProvider = nowProvider
         self.displayTimeZoneProvider = displayTimeZoneProvider
         self.preferencesStore = preferencesStore
@@ -63,11 +71,14 @@ final class MarketSessionsModel {
     func start() {
         guard clockTask == nil else {
             refresh()
+            refreshNotificationAuthorization()
             return
         }
 
         installNotificationObservers()
+        notificationCenter.activate()
         refresh()
+        refreshNotificationAuthorization()
         clockTask = Task { @MainActor [weak self] in
             while !Task.isCancelled {
                 let current = Date().timeIntervalSince1970
@@ -116,6 +127,80 @@ final class MarketSessionsModel {
         )
         updateUTCDay(at: snapshot)
         loginItemState = loginItemService.state
+        syncNotifications(at: snapshot, resolver: resolver)
+    }
+
+    /// Replan and push only the difference to the notification center, so the
+    /// per-minute refresh is free until a notification fires or a selection changes.
+    private func syncNotifications(at now: Date, resolver: SessionResolver) {
+        let planned = preferences.notifiesAnything
+            ? notificationPlanner.plan(
+                sessions: catalog.filter { preferences.notifiedMarkets.contains($0.id) },
+                events: economicEvents.filter { preferences.notifiedEventKinds.contains($0.kind) },
+                leadMinutes: preferences.notificationLeadMinutes,
+                at: now,
+                resolver: resolver,
+                displayTimeZone: displayTimeZone
+            )
+            : []
+        guard planned != scheduledNotifications else { return }
+
+        let previous = scheduledNotifications
+        scheduledNotifications = planned
+        let removed = Set(previous ?? []).subtracting(planned).map(\.id)
+        let added = planned.filter { !(previous ?? []).contains($0) }
+        let center = notificationCenter
+        let earlier = notificationSync
+        notificationSync = Task { @MainActor in
+            await earlier?.value
+            if previous == nil {
+                center.removeAllPending()
+            } else if !removed.isEmpty {
+                center.removePending(identifiers: removed)
+            }
+            await center.add(added)
+        }
+    }
+
+    func refreshNotificationAuthorization() {
+        let center = notificationCenter
+        Task { @MainActor [weak self] in
+            self?.notificationAuthorization = await center.authorizationStatus()
+        }
+    }
+
+    func setNotifiedMarket(_ id: MarketSession.ID, enabled: Bool) {
+        if enabled {
+            preferences.notifiedMarkets.insert(id)
+        } else {
+            preferences.notifiedMarkets.remove(id)
+        }
+        requestNotificationAuthorizationIfNeeded()
+        savePreferences()
+    }
+
+    func setNotifiedEventKind(_ kind: EconomicEventKind, enabled: Bool) {
+        if enabled {
+            preferences.notifiedEventKinds.insert(kind)
+        } else {
+            preferences.notifiedEventKinds.remove(kind)
+        }
+        requestNotificationAuthorizationIfNeeded()
+        savePreferences()
+    }
+
+    func setNotificationLead(minutes: Int) {
+        guard NotificationPlanner.leadOptions.contains(minutes) else { return }
+        preferences.notificationLeadMinutes = minutes
+        savePreferences()
+    }
+
+    private func requestNotificationAuthorizationIfNeeded() {
+        guard preferences.notifiesAnything, notificationAuthorization == .notDetermined else { return }
+        let center = notificationCenter
+        Task { @MainActor [weak self] in
+            self?.notificationAuthorization = await center.requestAuthorization()
+        }
     }
 
     /// Next bundled occurrence of a kind that has not yet ended, for Settings rows.

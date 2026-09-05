@@ -6,14 +6,16 @@ struct SettingsView: View {
     @State private var selectedTab = SettingsTab.general
 
     private enum SettingsTab: Hashable {
-        case general, markets, events
+        case general, markets, events, notifications
 
         /// Content height so the window fits each pane instead of a shared maximum.
+        /// Notifications lists every market and event kind, so its form scrolls.
         var height: CGFloat {
             switch self {
             case .general: 290
             case .markets: 350
             case .events: 660
+            case .notifications: 660
             }
         }
     }
@@ -28,6 +30,9 @@ struct SettingsView: View {
             }
             Tab("Events", systemImage: "calendar", value: .events) {
                 events
+            }
+            Tab("Notifications", systemImage: "bell", value: .notifications) {
+                notifications
             }
         }
         .frame(width: 520, height: selectedTab.height)
@@ -109,16 +114,80 @@ struct SettingsView: View {
         .formStyle(.grouped)
     }
 
+    private var notifications: some View {
+        Form {
+            Section {
+                LabeledContent {
+                    Picker("Lead Time", selection: Binding(
+                        get: { model.preferences.notificationLeadMinutes },
+                        set: { model.setNotificationLead(minutes: $0) }
+                    )) {
+                        ForEach(NotificationPlanner.leadOptions, id: \.self) { minutes in
+                            Text(minutes == 0 ? "At the time" : "\(minutes) minutes before").tag(minutes)
+                        }
+                    }
+                    .labelsHidden()
+                    .fixedSize()
+                } label: {
+                    SettingsRowLabel("Lead Time", subtitle: "Applies to every notification below.")
+                }
+
+                if model.notificationAuthorization == .denied, model.preferences.notifiesAnything {
+                    LabeledContent {
+                        Button("Open System Settings…", action: openNotificationSettings)
+                    } label: {
+                        SettingsRowLabel(
+                            "Notifications Are Off",
+                            subtitle: "Allow Market Sessions in System Settings › Notifications."
+                        )
+                    }
+                }
+            } footer: {
+                Text("Markets notify at the first open and final close of each trading day; events at their scheduled time. Selections here are independent of what the popover shows.")
+            }
+
+            Section("Markets") {
+                ForEach(model.availableMarkets) { market in
+                    Toggle(isOn: Binding(
+                        get: { model.preferences.notifiedMarkets.contains(market.id) },
+                        set: { model.setNotifiedMarket(market.id, enabled: $0) }
+                    )) {
+                        SettingsRowLabel(market.name, subtitle: marketSubtitle(market))
+                    }
+                }
+            }
+
+            eventSection("U.S. Releases", kinds: EconomicEventKind.kinds(in: .usRelease), selection: .notify)
+            eventSection("Central Banks", kinds: EconomicEventKind.kinds(in: .centralBank), selection: .notify)
+        }
+        .formStyle(.grouped)
+    }
+
+    private enum EventSelection {
+        case show, notify
+    }
+
     private func eventSection(
         _ title: String,
         kinds: [EconomicEventKind],
-        footer: String? = nil
+        footer: String? = nil,
+        selection: EventSelection = .show
     ) -> some View {
         Section {
             ForEach(kinds, id: \.self) { kind in
                 Toggle(isOn: Binding(
-                    get: { model.preferences.eventKinds.contains(kind) },
-                    set: { model.setEventKind(kind, visible: $0) }
+                    get: {
+                        switch selection {
+                        case .show: model.preferences.eventKinds.contains(kind)
+                        case .notify: model.preferences.notifiedEventKinds.contains(kind)
+                        }
+                    },
+                    set: {
+                        switch selection {
+                        case .show: model.setEventKind(kind, visible: $0)
+                        case .notify: model.setNotifiedEventKind(kind, enabled: $0)
+                        }
+                    }
                 )) {
                     SettingsRowLabel(kind.compactTitle, subtitle: nextEventSubtitle(kind))
                 }
@@ -130,6 +199,13 @@ struct SettingsView: View {
             if let footer {
                 Text(footer)
             }
+        }
+    }
+
+    private func openNotificationSettings() {
+        let bundleID = Bundle.main.bundleIdentifier ?? ""
+        if let url = URL(string: "x-apple.systempreferences:com.apple.Notifications-Settings.extension?id=\(bundleID)") {
+            NSWorkspace.shared.open(url)
         }
     }
 
