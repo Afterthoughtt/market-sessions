@@ -118,6 +118,18 @@ final class MarketSessionsModel {
         loginItemState = loginItemService.state
     }
 
+    /// Next bundled occurrence of a kind that has not yet ended, for Settings rows.
+    func nextEvent(of kind: EconomicEventKind) -> EconomicEvent? {
+        economicEvents
+            .filter { $0.kind == kind && $0.end > now }
+            .min { $0.start < $1.start }
+    }
+
+    /// Latest bundled end date among the given kinds, for coverage readouts.
+    func eventScheduleEnd(for kinds: Set<EconomicEventKind>) -> Date? {
+        economicEvents.filter { kinds.contains($0.kind) }.map(\.end).max()
+    }
+
     func setLaunchAtLogin(_ enabled: Bool) {
         try? loginItemService.setEnabled(enabled)
         loginItemState = loginItemService.state

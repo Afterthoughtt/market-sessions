@@ -26,7 +26,7 @@ enum EconomicEventKind: String, CaseIterable, Codable, Hashable, Sendable {
         case .retailSales:
             "U.S. retail sales"
         case .fedSpeech:
-            "Fed Chair speech"
+            "Fed Chair testimony and Jackson Hole keynote"
         case .fomcMinutes:
             "FOMC minutes"
         case .gdp:
@@ -48,7 +48,7 @@ enum EconomicEventKind: String, CaseIterable, Codable, Hashable, Sendable {
         case .employment: "U.S. Jobs Report"
         case .pce: "U.S. PCE"
         case .retailSales: "U.S. Retail Sales"
-        case .fedSpeech: "Fed Chair Speech"
+        case .fedSpeech: "Fed Chair Appearances"
         case .fomcMinutes: "FOMC Minutes"
         case .gdp: "U.S. GDP (Advance)"
         case .ecb: "ECB Decision"

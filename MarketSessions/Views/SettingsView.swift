@@ -101,14 +101,13 @@ struct SettingsView: View {
         .formStyle(.grouped)
     }
 
+    private static let usReleaseKinds: [EconomicEventKind] = [.employment, .cpi, .pce, .ppi, .retailSales, .gdp]
+    private static let centralBankKinds: [EconomicEventKind] = [.fomc, .fomcMinutes, .fedSpeech, .ecb, .boj]
+
     private var events: some View {
         Form {
-            eventSection("U.S. Releases", kinds: [.employment, .cpi, .pce, .ppi, .retailSales, .gdp])
-            eventSection(
-                "Central Banks",
-                kinds: [.fomc, .fomcMinutes, .fedSpeech, .ecb, .boj],
-                footer: "The next four selected events appear in the popover. Turn all off to hide the section."
-            )
+            eventSection("U.S. Releases", kinds: Self.usReleaseKinds)
+            eventSection("Central Banks", kinds: Self.centralBankKinds, footer: eventCoverageFooter)
         }
         .formStyle(.grouped)
     }
@@ -124,9 +123,9 @@ struct SettingsView: View {
                     get: { model.preferences.eventKinds.contains(kind) },
                     set: { model.setEventKind(kind, visible: $0) }
                 )) {
-                    SettingsRowLabel(kind.compactTitle, subtitle: eventSubtitle(kind))
+                    SettingsRowLabel(kind.compactTitle, subtitle: nextEventSubtitle(kind))
                 }
-                .help(kind.title)
+                .help(eventDescription(kind))
             }
         } header: {
             Text(title)
@@ -141,7 +140,24 @@ struct SettingsView: View {
         market.id == .cmeFutures ? "Equity-index futures session" : nil
     }
 
-    private func eventSubtitle(_ kind: EconomicEventKind) -> String {
+    /// Kit row subtitle: the next bundled date in the display zone, or an honest gap.
+    private func nextEventSubtitle(_ kind: EconomicEventKind) -> String {
+        guard let next = model.nextEvent(of: kind) else { return "No dates announced yet" }
+        let style = Date.FormatStyle(date: .abbreviated, time: .shortened, timeZone: model.displayTimeZone)
+        let approximate = kind == .boj ? " (approx.)" : ""
+        return "Next \(next.start.formatted(style))\(approximate)"
+    }
+
+    private var eventCoverageFooter: String {
+        let style = Date.FormatStyle(date: .abbreviated, time: .omitted, timeZone: model.displayTimeZone)
+        let us = model.eventScheduleEnd(for: Set(Self.usReleaseKinds)).map { $0.formatted(style) } ?? "unavailable"
+        let banks = model.eventScheduleEnd(for: Set(Self.centralBankKinds)).map { $0.formatted(style) } ?? "unavailable"
+        return "The next four selected events appear in the popover. "
+            + "Bundled dates run through \(us) for U.S. releases and \(banks) for central banks; "
+            + "agencies publish the following year each December."
+    }
+
+    private func eventDescription(_ kind: EconomicEventKind) -> String {
         switch kind {
         case .employment: "Nonfarm payrolls and unemployment · BLS"
         case .cpi: "Consumer Price Index · BLS"
@@ -151,7 +167,7 @@ struct SettingsView: View {
         case .gdp: "First quarterly estimate · BEA"
         case .fomc: "Rate decision and press conference as one window"
         case .fomcMinutes: "Released three weeks after each meeting"
-        case .fedSpeech: "Jackson Hole, testimony, and major policy speeches"
+        case .fedSpeech: "Jackson Hole keynote and semiannual congressional testimony; other Chair speeches are announced only weeks ahead"
         case .ecb: "Rate decision and press conference"
         case .boj: "Rate decision; announcement time is approximate"
         }
