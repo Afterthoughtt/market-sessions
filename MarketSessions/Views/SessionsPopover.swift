@@ -87,9 +87,8 @@ struct SessionsPopover: View {
                     .font(.system(size: 13))
                     .foregroundStyle(palette.text)
                     .frame(maxWidth: .infinity, minHeight: 32, alignment: .leading)
-                    .contentShape(Rectangle())
             }
-            .buttonStyle(.plain)
+            .buttonStyle(PopoverRowButtonStyle(palette: palette))
             .keyboardShortcut(",")
         }
         .padding(.top, 14)
@@ -213,5 +212,25 @@ struct SessionsPopover: View {
         formatter.timeZone = model.displayTimeZone
         formatter.dateFormat = "MMM yyyy"
         return "Holiday data ended \(formatter.string(from: coverage))"
+    }
+}
+
+/// Menu-row affordance for full-width popover actions: a rounded highlight on
+/// hover, slightly stronger while pressed, drawn in the neutral palette.
+private struct PopoverRowButtonStyle: ButtonStyle {
+    let palette: MarketPalette
+    @State private var isHovering = false
+
+    func makeBody(configuration: Configuration) -> some View {
+        configuration.label
+            .padding(.horizontal, 8)
+            .background(
+                RoundedRectangle(cornerRadius: 6, style: .continuous)
+                    .fill(configuration.isPressed ? palette.ringTrack : (isHovering ? palette.track : .clear))
+            )
+            .padding(.horizontal, -8)
+            .contentShape(Rectangle())
+            .onHover { isHovering = $0 }
+            .animation(.easeOut(duration: 0.1), value: isHovering)
     }
 }
