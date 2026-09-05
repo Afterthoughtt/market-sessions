@@ -2,7 +2,7 @@ import XCTest
 @testable import MarketSessions
 
 final class SessionResolverTests: XCTestCase {
-    func testThereAreOnlyThreeMarketStates() {
+    func testMarketStateLabels() {
         XCTAssertEqual(Set(SessionStatus.allCases.map(\.label)), ["Open", "Pre-Market", "After Hours", "Break", "Closed"])
     }
 
@@ -180,6 +180,30 @@ final class SessionResolverTests: XCTestCase {
             post.transition?.date,
             try makeDate(year: 2026, month: 8, day: 25, hour: 9, minute: 30, timeZoneIdentifier: zone)
         )
+    }
+
+    // Exchange pre-open windows (auction call or order acceptance) resolve to
+    // Pre-Market and point at the continuous-trading open.
+    func testExchangePreOpenWindowsResolveToPreMarket() throws {
+        let cases: [(MarketSession.ID, String, Int, Int, Int, Int)] = [
+            (.london, "Europe/London", 7, 55, 8, 0),
+            (.tokyo, "Asia/Tokyo", 8, 30, 9, 0),
+            (.hongKong, "Asia/Hong_Kong", 9, 10, 9, 30),
+            (.shanghai, "Asia/Shanghai", 9, 27, 9, 30),
+        ]
+
+        for item in cases {
+            let now = try makeDate(year: 2026, month: 8, day: 24, hour: item.2, minute: item.3, timeZoneIdentifier: item.1)
+            let result = SessionResolver().resolve(MarketScheduleCatalog.session(item.0), at: now)
+            XCTAssertEqual(result.status, .preMarket, "\(item.0)")
+            XCTAssertFalse(result.status.isActive, "\(item.0)")
+            XCTAssertEqual(result.transition?.verb, .opens, "\(item.0)")
+            XCTAssertEqual(
+                result.transition?.date,
+                try makeDate(year: 2026, month: 8, day: 24, hour: item.4, minute: item.5, timeZoneIdentifier: item.1),
+                "\(item.0)"
+            )
+        }
     }
 
     func testSaturdayEverythingClosedWithOpensTransitions() throws {

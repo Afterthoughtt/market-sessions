@@ -51,6 +51,13 @@ enum MarketScheduleCatalog {
             name: "London",
             canonicalTimeZoneIdentifier: "Europe/London",
             intervals: [
+                // SETS opening auction call.
+                SessionInterval(
+                    weekdays: Weekday.weekdays,
+                    start: LocalTime(7, 50),
+                    end: LocalTime(8),
+                    kind: .preMarket
+                ),
                 SessionInterval(weekdays: Weekday.weekdays, start: LocalTime(8), end: LocalTime(16, 30)),
             ],
             focusPriority: 3
@@ -61,6 +68,13 @@ enum MarketScheduleCatalog {
             name: "Tokyo",
             canonicalTimeZoneIdentifier: "Asia/Tokyo",
             intervals: [
+                // Order acceptance before the morning session; no matching.
+                SessionInterval(
+                    weekdays: Weekday.weekdays,
+                    start: LocalTime(8),
+                    end: LocalTime(9),
+                    kind: .preMarket
+                ),
                 SessionInterval(weekdays: Weekday.weekdays, start: LocalTime(9), end: LocalTime(11, 30)),
                 SessionInterval(
                     weekdays: Weekday.weekdays,
@@ -78,6 +92,13 @@ enum MarketScheduleCatalog {
             name: "Hong Kong",
             canonicalTimeZoneIdentifier: "Asia/Hong_Kong",
             intervals: [
+                // Pre-opening auction session.
+                SessionInterval(
+                    weekdays: Weekday.weekdays,
+                    start: LocalTime(9),
+                    end: LocalTime(9, 30),
+                    kind: .preMarket
+                ),
                 SessionInterval(weekdays: Weekday.weekdays, start: LocalTime(9, 30), end: LocalTime(12)),
                 SessionInterval(
                     weekdays: Weekday.weekdays,
@@ -102,6 +123,15 @@ enum MarketScheduleCatalog {
             name: "Shanghai",
             canonicalTimeZoneIdentifier: "Asia/Shanghai",
             intervals: [
+                // Opening call auction runs 9:15–9:25; the 9:25–9:30 gap before
+                // continuous trading stays Pre-Market so the row does not drop
+                // to Closed for five minutes.
+                SessionInterval(
+                    weekdays: Weekday.weekdays,
+                    start: LocalTime(9, 15),
+                    end: LocalTime(9, 30),
+                    kind: .preMarket
+                ),
                 SessionInterval(weekdays: Weekday.weekdays, start: LocalTime(9, 30), end: LocalTime(11, 30)),
                 SessionInterval(
                     weekdays: Weekday.weekdays,
