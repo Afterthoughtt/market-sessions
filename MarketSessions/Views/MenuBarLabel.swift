@@ -1,7 +1,9 @@
 import SwiftUI
 
-/// The next-to-change session's code and a countdown to that change, as native
-/// status-item text at the kit's 13pt Semibold with tabular figures.
+/// A status dot, the next-to-change session's code, and a countdown to that
+/// change. The dot carries the direction the way Apple's own extras do, by
+/// symbol variant: filled while the countdown runs to a close, hollow while it
+/// runs to an open. Everything is native text at the kit's 13pt Semibold.
 struct MenuBarLabel: View {
     let resolved: ResolvedSession?
     let now: Date
@@ -10,20 +12,32 @@ struct MenuBarLabel: View {
     var body: some View {
         Group {
             if let resolved {
+                if let symbol = Self.symbol(for: resolved) {
+                    Image(systemName: symbol)
+                }
                 Text(Self.title(for: resolved, now: now))
-                    .font(.system(size: 13, weight: .semibold))
                     .monospacedDigit()
             } else {
                 // Keep Settings reachable even when the user hides every market.
                 Image(systemName: "clock")
             }
         }
+        .font(.system(size: 13, weight: .semibold))
         .accessibilityLabel(tooltip)
         .help(tooltip)
     }
 
+    /// `circle.fill` counting down to a close, `circle` to an open; nil without a transition.
+    nonisolated static func symbol(for resolved: ResolvedSession) -> String? {
+        switch resolved.transition?.verb {
+        case .closes: "circle.fill"
+        case .opens: "circle"
+        case nil: nil
+        }
+    }
+
     /// `LDN 2h 14m`; just the code when the session has no next transition.
-    static func title(for resolved: ResolvedSession, now: Date) -> String {
+    nonisolated static func title(for resolved: ResolvedSession, now: Date) -> String {
         guard let transition = resolved.transition else { return resolved.session.code }
         let minutes = FocusSessionResolver.remainingMinutes(until: transition.date, from: now)
         return "\(resolved.session.code) \(MarketDurationFormatting.compact(minutes: minutes))"
