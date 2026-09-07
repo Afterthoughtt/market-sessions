@@ -1,9 +1,11 @@
+import AppKit
 import SwiftUI
 
 /// A status dot, the next-to-change session's code, and a countdown to that
 /// change. The dot carries the direction the way Apple's own extras do, by
-/// symbol variant: filled while the countdown runs to a close, hollow while it
-/// runs to an open. Everything is native text at the kit's 13pt Semibold.
+/// variant rather than a word: filled while the countdown runs to a close,
+/// hollow while it runs to an open. Code and countdown are native text at the
+/// kit's 13pt Semibold; the dot is a template image so it inverts with the bar.
 struct MenuBarLabel: View {
     let resolved: ResolvedSession?
     let now: Date
@@ -12,8 +14,8 @@ struct MenuBarLabel: View {
     var body: some View {
         Group {
             if let resolved {
-                if let symbol = Self.symbol(for: resolved) {
-                    Image(systemName: symbol)
+                if let filled = Self.dotIsFilled(for: resolved) {
+                    Image(nsImage: Self.renderDot(filled: filled))
                 }
                 Text(Self.title(for: resolved, now: now))
                     .monospacedDigit()
@@ -27,11 +29,11 @@ struct MenuBarLabel: View {
         .help(tooltip)
     }
 
-    /// `circle.fill` counting down to a close, `circle` to an open; nil without a transition.
-    nonisolated static func symbol(for resolved: ResolvedSession) -> String? {
+    /// Filled counting down to a close, hollow to an open; nil without a transition.
+    nonisolated static func dotIsFilled(for resolved: ResolvedSession) -> Bool? {
         switch resolved.transition?.verb {
-        case .closes: "circle.fill"
-        case .opens: "circle"
+        case .closes: true
+        case .opens: false
         case nil: nil
         }
     }
@@ -41,6 +43,15 @@ struct MenuBarLabel: View {
         guard let transition = resolved.transition else { return resolved.session.code }
         let minutes = FocusSessionResolver.remainingMinutes(until: transition.date, from: now)
         return "\(resolved.session.code) \(MarketDurationFormatting.compact(minutes: minutes))"
+    }
+
+    @MainActor
+    private static func renderDot(filled: Bool) -> NSImage {
+        let renderer = ImageRenderer(content: MenuBarDot(filled: filled))
+        renderer.scale = max(NSScreen.screens.map(\.backingScaleFactor).max() ?? 2, 2)
+        guard let image = renderer.nsImage else { return NSImage() }
+        image.isTemplate = true
+        return image
     }
 
     private var tooltip: String {
@@ -53,5 +64,24 @@ struct MenuBarLabel: View {
             timeZone: displayTimeZone
         )
         return "\(resolved.session.name) · \(resolved.status.label) · \(transition.verb.rawValue) \(time)"
+    }
+}
+
+/// Drawn in black so the template image follows the active menu-bar tint.
+/// An 8pt dot centred in the 16pt box of the kit's 13pt Semibold menu-bar
+/// glyph; the hollow variant keeps the 1.5pt stroke of that glyph weight.
+private struct MenuBarDot: View {
+    let filled: Bool
+
+    var body: some View {
+        Group {
+            if filled {
+                Circle().fill(.black)
+            } else {
+                Circle().strokeBorder(.black, lineWidth: 1.5)
+            }
+        }
+        .frame(width: 8, height: 8)
+        .frame(width: 16, height: 16)
     }
 }

@@ -98,7 +98,7 @@ final class FocusSessionResolverTests: XCTestCase {
 
         XCTAssertEqual(next.id, .london)
         XCTAssertEqual(MenuBarLabel.title(for: next, now: now), "LDN 1h 18m")
-        XCTAssertEqual(MenuBarLabel.symbol(for: next), "circle.fill")
+        XCTAssertEqual(MenuBarLabel.dotIsFilled(for: next), true)
     }
 
     // Saturday: nothing trading, so the dot is hollow while counting to CME's Sunday open.
@@ -110,7 +110,7 @@ final class FocusSessionResolverTests: XCTestCase {
         )
 
         XCTAssertEqual(next.id, .cmeFutures)
-        XCTAssertEqual(MenuBarLabel.symbol(for: next), "circle")
+        XCTAssertEqual(MenuBarLabel.dotIsFilled(for: next), false)
     }
 
     private func makeDate(
