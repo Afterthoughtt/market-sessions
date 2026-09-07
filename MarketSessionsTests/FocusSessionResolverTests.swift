@@ -88,6 +88,18 @@ final class FocusSessionResolverTests: XCTestCase {
         )
     }
 
+    // Menu bar text: the nearest transition is London's 8:30 AM close, 78 minutes out.
+    func testMenuBarTitleCountsDownToNearestTransition() throws {
+        let now = try makeDate(year: 2026, month: 8, day: 28, hour: 7, minute: 12)
+        let resolved = SessionResolver().resolve(MarketScheduleCatalog.sessions, at: now)
+        let next = try XCTUnwrap(
+            resolved.min { ($0.transition?.date ?? .distantFuture) < ($1.transition?.date ?? .distantFuture) }
+        )
+
+        XCTAssertEqual(next.id, .london)
+        XCTAssertEqual(MenuBarLabel.title(for: next, now: now), "LDN 1h 18m")
+    }
+
     private func makeDate(
         year: Int,
         month: Int,

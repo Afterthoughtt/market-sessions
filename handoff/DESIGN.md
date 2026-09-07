@@ -23,7 +23,7 @@ Static design reference only. Data shown is a fixed snapshot (Thu 6:09 PM PDT); 
 Primary text rgba(0,0,0,0.85); secondary rgba(0,0,0,0.55); hairline rgba(0,0,0,0.07–0.08). No green, no blue, in the popover; the only color is the extended-hours row tint below. Dark mode: white at 0.92 / 0.50 / 0.09 respectively.
 
 ## Menu-bar label (10a)
-One ring drawn at SF Symbol `circle` metrics for the kit's 13pt Semibold menu-bar glyph (16pt box, 14pt outer diameter, 1.5pt stroke; track 30% black, arc primary label colour, fraction = elapsed of the next-to-change session) + its 3-letter code as native status-item text at 13pt Semibold (kit menu bar label); the system sets the glyph gap. The ring is a template image so it inverts with the bar. Tooltip: full name + "Closes 7:30 PM".
+Text only, no glyph: the next-to-change session's 3-letter code and a countdown to that change (`LDN 2h 14m`, the popover's compact duration) as native status-item text at 13pt Semibold with tabular figures (kit menu bar trailing label, the same style as the clock). Tooltip: full name + status + "Closes 7:30 PM".
 
 ## Owner decisions (amend the sections above; these win on conflict)
 
@@ -42,11 +42,11 @@ Schedules are defined in canonical IANA zones. Display time defaults to the syst
 
 ### States and appearance
 
-Five market states: **Open, Pre-Market, After Hours, Break, Closed**. Trading and contiguous auctions resolve to Open; pre-open windows to Pre-Market (New York 4:00–9:30 ET early trading; London 7:50–8:00 opening auction call; Tokyo 8:00–9:00 order acceptance; Hong Kong 9:00–9:30 pre-opening auction; Shanghai 9:15–9:30 opening call auction plus the gap to continuous trading) and New York's 16:00–20:00 ET late session to After Hours (exchange-published hours, verified 2026-09-05, see `finance-market-sessions-reference.md`); recess and maintenance to Break; overnight/weekend closures to Closed. Only Open counts as active for rings, bars, and the menu ring. Transition readouts say Opens/Closes with the scheduled boundary and no estimate marker. The popover is monochrome on the system material except the extended-hours tint: Pre-Market rows carry a vertical system Orange tint and After Hours rows a vertical system Indigo tint (kit Colors → Accents; NSColor supplies the light/dark value), 22%→10% top to bottom on the kit's 24pt / 8pt-radius menu-item highlight geometry. Break and Closed rows stay untinted. Neutral values follow the macOS 26 kit tokens. No cards, other accent colors, or status badges.
+Five market states: **Open, Pre-Market, After Hours, Break, Closed**. Trading and contiguous auctions resolve to Open; pre-open windows to Pre-Market (New York 4:00–9:30 ET early trading; London 7:50–8:00 opening auction call; Tokyo 8:00–9:00 order acceptance; Hong Kong 9:00–9:30 pre-opening auction; Shanghai 9:15–9:30 opening call auction plus the gap to continuous trading) and New York's 16:00–20:00 ET late session to After Hours (exchange-published hours, verified 2026-09-05, see `finance-market-sessions-reference.md`); recess and maintenance to Break; overnight/weekend closures to Closed. Only Open counts as active for rings and bars. Transition readouts say Opens/Closes with the scheduled boundary and no estimate marker. The popover is monochrome on the system material except the extended-hours tint: Pre-Market rows carry a vertical system Orange tint and After Hours rows a vertical system Indigo tint (kit Colors → Accents; NSColor supplies the light/dark value), 22%→10% top to bottom on the kit's 24pt / 8pt-radius menu-item highlight geometry. Break and Closed rows stay untinted. Neutral values follow the macOS 26 kit tokens. No cards, other accent colors, or status badges.
 
 ### Progress
 
-Bars and the open-market menu ring **drain to the close shown**: full at the start of the uninterrupted trading period (`activePeriodStart`), empty at the next close (`transition.date`). Restart after lunch or maintenance, not at a contiguous auction. Bars have equal full-row track widths below the name/time line. A closed-market menu ring fills across the closed gap toward its next open.
+Bars **drain to the close shown**: full at the start of the uninterrupted trading period (`activePeriodStart`), empty at the next close (`transition.date`). Restart after lunch or maintenance, not at a contiguous auction. Bars have equal full-row track widths below the name/time line.
 
 ### Popover (340 wide, height fits content)
 
@@ -58,7 +58,7 @@ Bars and the open-market menu ring **drain to the close shown**: full at the sta
 
 ### Menu bar label
 
-Only the ring is rendered via `ImageRenderer` to a template `NSImage` at the sharpest display's scale; the code is a native `Text` in the label (SwiftUI shapes do not draw in a `MenuBarExtra` label, text and images do). With no markets selected, keep a clock glyph so Settings stays reachable.
+One native `Text` (code, space, compact countdown) with `monospacedDigit()`; the countdown ticks with the model's minute clock. The earlier progress ring was dropped (decision 2026-09-07): the label answers "what changes next, and when" directly. With no markets selected, keep a clock glyph so Settings stays reachable.
 
 ### Settings
 
