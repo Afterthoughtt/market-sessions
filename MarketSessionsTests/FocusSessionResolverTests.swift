@@ -97,12 +97,11 @@ final class FocusSessionResolverTests: XCTestCase {
         )
 
         XCTAssertEqual(next.id, .london)
-        XCTAssertEqual(MenuBarLabel.title(for: next, now: now), "LDN 1h 18m")
-        XCTAssertEqual(MenuBarLabel.dotIsFilled(for: next), true)
+        XCTAssertEqual(MenuBarLabel.title(for: next, now: now), "LDN closes 1h 18m")
     }
 
-    // Saturday: nothing trading, so the dot is hollow while counting to CME's Sunday open.
-    func testMenuBarDotIsHollowWhileCountingToAnOpen() throws {
+    // Saturday: nothing trading, so the label counts down to CME's Sunday 3:00 PM open.
+    func testMenuBarTitleSaysOpensWhileCountingToAnOpen() throws {
         let now = try makeDate(year: 2026, month: 8, day: 29, hour: 11, minute: 40)
         let resolved = SessionResolver().resolve(MarketScheduleCatalog.sessions, at: now)
         let next = try XCTUnwrap(
@@ -110,7 +109,7 @@ final class FocusSessionResolverTests: XCTestCase {
         )
 
         XCTAssertEqual(next.id, .cmeFutures)
-        XCTAssertEqual(MenuBarLabel.dotIsFilled(for: next), false)
+        XCTAssertEqual(MenuBarLabel.title(for: next, now: now), "CME opens 1d 3h")
     }
 
     private func makeDate(

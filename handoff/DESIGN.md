@@ -23,7 +23,7 @@ Static design reference only. Data shown is a fixed snapshot (Thu 6:09 PM PDT); 
 Primary text rgba(0,0,0,0.85); secondary rgba(0,0,0,0.55); hairline rgba(0,0,0,0.07–0.08). No green, no blue, in the popover; the only color is the extended-hours row tint below. Dark mode: white at 0.92 / 0.50 / 0.09 respectively.
 
 ## Menu-bar label (10a)
-A status dot, the next-to-change session's 3-letter code, and a countdown to that change (`● LDN 2h 14m`, the popover's compact duration) as native status-item text at 13pt Semibold with tabular figures (kit menu bar trailing label, the same style as the clock). The dot is an 8pt disc while the countdown runs to a close and an 8pt ring (1.5pt stroke) while it runs to an open, centred in the 16pt menu-bar glyph box, following Apple's own extras: state in a glyph variant, the value in text, no verb. A full-size SF Symbol `circle.fill` at the 13pt glyph configuration was tried and rejected as a blot (2026-09-07). Tooltip: full name + status + "Closes 7:30 PM".
+Text only, no glyph: the next-to-change session's 3-letter code, its transition verb, and a countdown to that change (`LDN closes 2h 14m`, `TYO opens 1d 3h`, the popover's compact duration) as native status-item text at 13pt Semibold with tabular figures (kit menu bar trailing label, the same style as the clock). The spelled-out verb was chosen over a status dot (2026-09-07): a full-size `circle.fill` read as a blot and a small dot left open-versus-closed ambiguous at a glance. Tooltip: full name + status + "Closes 7:30 PM".
 
 ## Owner decisions (amend the sections above; these win on conflict)
 
@@ -58,7 +58,7 @@ Bars **drain to the close shown**: full at the start of the uninterrupted tradin
 
 ### Menu bar label
 
-The dot is rendered via `ImageRenderer` to a template `NSImage` at the sharpest display's scale (SwiftUI shapes do not draw in a `MenuBarExtra` label), followed by one native `Text` (code, space, compact countdown) with `monospacedDigit()` at 13pt Semibold; the system sets the glyph gap and the countdown ticks with the model's minute clock. The dot keys off the transition verb, not the Open state, so After Hours counting to its close stays filled. The earlier progress ring was dropped (decision 2026-09-07): the label answers "what changes next, and when" directly. With no markets selected, keep a clock glyph so Settings stays reachable.
+One native `Text` (code, lowercased transition verb, compact countdown) with `monospacedDigit()` at 13pt Semibold; the countdown ticks with the model's minute clock. The verb comes from the transition, not the Open state, so After Hours reads "closes" and Pre-Market reads "opens". The earlier progress ring was dropped (decision 2026-09-07): the label answers "what changes next, and when" directly. With no markets selected, keep a clock glyph so Settings stays reachable.
 
 ### Settings
 
