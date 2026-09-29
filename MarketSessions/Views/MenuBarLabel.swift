@@ -103,5 +103,8 @@ private struct MenuBarPill: View {
             }
         }
         .frame(height: 16)
+        // The system's image-to-title gap leaves ~3.5pt of ink gap; Apple's Weather
+        // item (glyph + "57°F") shows ~5pt, measured from an owner screenshot.
+        .padding(.trailing, 1.5)
     }
 }
