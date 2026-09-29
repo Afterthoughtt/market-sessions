@@ -12,7 +12,7 @@ struct SettingsView: View {
         /// Notifications lists every market and event kind, so its form scrolls.
         var height: CGFloat {
             switch self {
-            case .general: 290
+            case .general: 340
             case .markets: 350
             case .events: 660
             case .notifications: 660
@@ -65,6 +65,16 @@ struct SettingsView: View {
             }
 
             Section {
+                Toggle(isOn: Binding(
+                    get: { model.preferences.showsMenuBarTime },
+                    set: { model.setShowsMenuBarTime($0) }
+                )) {
+                    SettingsRowLabel(
+                        "Show Time in Menu Bar",
+                        subtitle: "When the next market opens or closes. Off shows the market code only."
+                    )
+                }
+
                 Toggle(isOn: Binding(
                     get: { model.loginItemState.isEnabled },
                     set: { model.setLaunchAtLogin($0) }

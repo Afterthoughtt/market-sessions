@@ -88,8 +88,8 @@ final class FocusSessionResolverTests: XCTestCase {
         )
     }
 
-    // Menu bar text: the nearest transition is London's 8:30 AM close, 78 minutes out.
-    func testMenuBarTitleCountsDownToNearestTransition() throws {
+    // Menu bar: the nearest transition is London's 8:30 AM close, so a filled pill and its clock time.
+    func testMenuBarShowsFilledPillAndCloseTimeForNearestTransition() throws {
         let now = try makeDate(year: 2026, month: 8, day: 28, hour: 7, minute: 12)
         let resolved = SessionResolver().resolve(MarketScheduleCatalog.sessions, at: now)
         let next = try XCTUnwrap(
@@ -97,11 +97,12 @@ final class FocusSessionResolverTests: XCTestCase {
         )
 
         XCTAssertEqual(next.id, .london)
-        XCTAssertEqual(MenuBarLabel.title(for: next, now: now), "LDN closes 1h 18m")
+        XCTAssertTrue(MenuBarLabel.isFilled(next))
+        XCTAssertEqual(try menuBarTime(next, now: now), "8:30 AM")
     }
 
-    // Saturday: nothing trading, so the label counts down to CME's Sunday 3:00 PM open.
-    func testMenuBarTitleSaysOpensWhileCountingToAnOpen() throws {
+    // Saturday: nothing trading, so an outlined pill and CME's Sunday 3:00 PM open with its weekday.
+    func testMenuBarShowsOutlinedPillAndWeekdayWhileCountingToAnOpen() throws {
         let now = try makeDate(year: 2026, month: 8, day: 29, hour: 11, minute: 40)
         let resolved = SessionResolver().resolve(MarketScheduleCatalog.sessions, at: now)
         let next = try XCTUnwrap(
@@ -109,7 +110,17 @@ final class FocusSessionResolverTests: XCTestCase {
         )
 
         XCTAssertEqual(next.id, .cmeFutures)
-        XCTAssertEqual(MenuBarLabel.title(for: next, now: now), "CME opens 1d 3h")
+        XCTAssertFalse(MenuBarLabel.isFilled(next))
+        XCTAssertEqual(try menuBarTime(next, now: now), "Sun 3:00 PM")
+    }
+
+    private func menuBarTime(_ resolved: ResolvedSession, now: Date) throws -> String {
+        let text = try XCTUnwrap(MenuBarLabel.time(
+            for: resolved, now: now,
+            timeZone: try XCTUnwrap(TimeZone(identifier: "America/Los_Angeles")),
+            locale: Locale(identifier: "en_US_POSIX")
+        ))
+        return text.replacingOccurrences(of: "\u{202F}", with: " ")
     }
 
     private func makeDate(

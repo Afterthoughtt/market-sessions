@@ -12,7 +12,8 @@ struct MarketSessionsApp: App {
             MenuBarLabel(
                 resolved: model.nextTransitionSession,
                 now: model.now,
-                displayTimeZone: model.displayTimeZone
+                displayTimeZone: model.displayTimeZone,
+                showsTime: model.preferences.showsMenuBarTime
             )
                 .task {
                     model.start()

@@ -260,6 +260,11 @@ final class MarketSessionsModel {
         savePreferences()
     }
 
+    func setShowsMenuBarTime(_ shows: Bool) {
+        preferences.showsMenuBarTime = shows
+        savePreferences()
+    }
+
     func setDisplayTimeZone(_ identifier: String?) {
         guard identifier == nil || identifier.flatMap(TimeZone.init(identifier:)) != nil else { return }
         preferences.timeZoneIdentifier = identifier

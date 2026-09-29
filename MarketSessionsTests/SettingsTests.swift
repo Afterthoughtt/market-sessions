@@ -7,6 +7,7 @@ final class SettingsTests: XCTestCase {
         XCTAssertEqual(preferences.visibleMarkets, Set(MarketSession.ID.allCases))
         XCTAssertEqual(preferences.eventKinds, Set(EconomicEventKind.allCases.filter(\.isDefault)))
         XCTAssertNil(preferences.timeZoneIdentifier)
+        XCTAssertTrue(preferences.showsMenuBarTime)
         let system = TimeZone(identifier: "America/Vancouver")!
         XCTAssertEqual(preferences.displayTimeZone(system: system), system)
     }
@@ -19,6 +20,7 @@ final class SettingsTests: XCTestCase {
         preferences.visibleMarkets = [.tokyo, .london]
         preferences.eventKinds = [.boj, .ecb]
         preferences.timeZoneIdentifier = "Asia/Tokyo"
+        preferences.showsMenuBarTime = false
         preferences.save(to: defaults)
         XCTAssertEqual(MarketPreferences(defaults: defaults), preferences)
 

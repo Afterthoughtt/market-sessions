@@ -23,7 +23,7 @@ Static design reference only. Data shown is a fixed snapshot (Thu 6:09 PM PDT); 
 Primary text rgba(0,0,0,0.85); secondary rgba(0,0,0,0.55); hairline rgba(0,0,0,0.07–0.08). No green, no blue, in the popover; the only color is the extended-hours row tint below. Dark mode: white at 0.92 / 0.50 / 0.09 respectively.
 
 ## Menu-bar label (10a)
-Text only, no glyph: the next-to-change session's 3-letter code, its transition verb, and a countdown to that change (`LDN closes 2h 14m`, `TYO opens 1d 3h`, the popover's compact duration) as native status-item text at 13pt Semibold with tabular figures (kit menu bar trailing label, the same style as the clock). The spelled-out verb was chosen over a status dot (2026-09-07): a full-size `circle.fill` read as a blot and a small dot left open-versus-closed ambiguous at a glance. Tooltip: full name + status + "Closes 7:30 PM".
+Superseded 2026-09-29 by the owner decision under "Menu bar label" below: a code pill plus the clock time of the next change. The earlier text-only label (`LDN closes 2h 14m`) and the status dot before it were dropped.
 
 ## Owner decisions (amend the sections above; these win on conflict)
 
@@ -58,7 +58,7 @@ Bars **drain to the close shown**: full at the start of the uninterrupted tradin
 
 ### Menu bar label
 
-One native `Text` (code, lowercased transition verb, compact countdown) with `monospacedDigit()` at 13pt Semibold; the countdown ticks with the model's minute clock. The verb comes from the transition, not the Open state, so After Hours reads "closes" and Pre-Market reads "opens". The earlier progress ring was dropped (decision 2026-09-07): the label answers "what changes next, and when" directly. With no markets selected, keep a clock glyph so Settings stays reachable.
+The next-to-change session's code in a rounded pill, then the local clock time of that change: `[LDN] 8:30 AM`, `[TYO] Sun 5:00 PM` (decision 2026-09-29, canvas board H). A filled pill counts to a close (Open, After Hours); an outlined pill counts to an open (Pre-Market, Break, Closed). The pill is a template image so the system tints it for light and dark bars, the pressed state and the Liquid Glass tint; the filled pill's code is knocked out to transparent. Pill metrics (15pt tall in a 16pt glyph box, 4pt continuous corners, 11pt Bold code) are our own; the kit has no text-badge item to trace. The time is native text at the kit's 13pt Semibold with tabular figures and uses the clock's format: minutes always, weekday when not today, the system's 12/24-hour setting. Settings › General › Show Time in Menu Bar (default on) leaves only the pill when off, like Battery's Show Percentage. Tooltip and accessibility label: full name, status, and "Closes 1:00 PM". With no markets selected, keep a clock glyph so Settings stays reachable.
 
 ### Settings
 
