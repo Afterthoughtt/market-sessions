@@ -85,9 +85,10 @@ struct SettingsView: View {
                 )) {
                     SettingsRowLabel(
                         "Launch at Login",
-                        subtitle: model.loginItemState == .requiresApproval
-                            ? "Approve Market Sessions in System Settings › Login Items."
-                            : nil
+                        subtitle: model.loginItemError.map { "Couldn’t change: \($0)" }
+                            ?? (model.loginItemState == .requiresApproval
+                                ? "Approve Market Sessions in System Settings › Login Items."
+                                : nil)
                     )
                 }
 

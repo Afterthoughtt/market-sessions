@@ -16,6 +16,8 @@ final class MarketSessionsModel {
     private(set) var utcDayRemainingMinutes = 0
     private(set) var upcomingEvents: UpcomingEconomicEvents = .empty
     private(set) var loginItemState: LoginItemState = .disabled
+    /// Why the last Launch at Login change failed; cleared by the next success.
+    private(set) var loginItemError: String?
     private(set) var notificationAuthorization: NotificationAuthorizationState = .notDetermined
     /// In-flight write to the notification center; tests await it.
     private(set) var notificationSync: Task<Void, Never>?
@@ -329,7 +331,12 @@ final class MarketSessionsModel {
     }
 
     func setLaunchAtLogin(_ enabled: Bool) {
-        try? loginItemService.setEnabled(enabled)
+        do {
+            try loginItemService.setEnabled(enabled)
+            loginItemError = nil
+        } catch {
+            loginItemError = error.localizedDescription
+        }
         loginItemState = loginItemService.state
     }
 

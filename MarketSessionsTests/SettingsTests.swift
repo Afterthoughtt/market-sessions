@@ -177,7 +177,26 @@ final class SettingsTests: XCTestCase {
     }
 
     @MainActor
-    private func makeModel(defaults: UserDefaults? = nil) -> MarketSessionsModel {
+    func testLaunchAtLoginFailureIsSurfacedUntilTheNextSuccess() {
+        let loginItem = SettingsLoginItemStub()
+        let model = makeModel(loginItem: loginItem)
+        loginItem.failure = NSError(domain: "test", code: 1, userInfo: [NSLocalizedDescriptionKey: "Operation not permitted"])
+
+        model.setLaunchAtLogin(true)
+        XCTAssertEqual(model.loginItemError, "Operation not permitted")
+        XCTAssertFalse(model.loginItemState.isEnabled)
+
+        loginItem.failure = nil
+        model.setLaunchAtLogin(true)
+        XCTAssertNil(model.loginItemError)
+        XCTAssertTrue(model.loginItemState.isEnabled)
+    }
+
+    @MainActor
+    private func makeModel(
+        defaults: UserDefaults? = nil,
+        loginItem: SettingsLoginItemStub = SettingsLoginItemStub()
+    ) -> MarketSessionsModel {
         let now = ISO8601DateFormatter().date(from: "2026-09-04T01:31:00Z")!
         let events = [EconomicEventKind.cpi, .ecb].enumerated().map { index, kind in
             EconomicEvent(
@@ -190,7 +209,7 @@ final class SettingsTests: XCTestCase {
         return MarketSessionsModel(
             marketExceptions: .empty,
             economicEvents: events,
-            loginItemService: SettingsLoginItemStub(),
+            loginItemService: loginItem,
             nowProvider: { now },
             displayTimeZoneProvider: { TimeZone(identifier: "America/Vancouver")! },
             preferencesStore: defaults
@@ -201,7 +220,11 @@ final class SettingsTests: XCTestCase {
 @MainActor
 private final class SettingsLoginItemStub: LoginItemServicing {
     var state: LoginItemState = .disabled
-    func setEnabled(_ enabled: Bool) throws { state = enabled ? .enabled : .disabled }
+    var failure: Error?
+    func setEnabled(_ enabled: Bool) throws {
+        if let failure { throw failure }
+        state = enabled ? .enabled : .disabled
+    }
 }
 
 private final class MutableSystemZone: @unchecked Sendable {

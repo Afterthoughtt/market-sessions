@@ -6,7 +6,7 @@ Out of scope (owner decision 2026-09-29, personal use only): distribution signin
 
 ## Next up
 
-5. **Launch at Login errors are swallowed.** `MarketSessionsModel.setLaunchAtLogin` uses `try?`, so a failed register/unregister just snaps the toggle back. Fix: surface the error in the row subtitle.
+Nothing queued; see the sections below.
 
 ## Unverified, check when convenient
 
