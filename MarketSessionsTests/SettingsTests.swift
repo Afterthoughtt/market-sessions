@@ -138,6 +138,22 @@ final class SettingsTests: XCTestCase {
     }
 
     @MainActor
+    func testPopoverFlagsTransitionsPastHolidayCoverage() {
+        let now = ISO8601DateFormatter().date(from: "2026-09-04T01:31:00Z")!
+        func model(coverageEnd: Date) -> MarketSessionsModel {
+            MarketSessionsModel(
+                marketExceptions: MarketExceptionIndex(exceptions: [], coverageEnd: coverageEnd),
+                economicEvents: [],
+                loginItemService: SettingsLoginItemStub(),
+                nowProvider: { now },
+                displayTimeZoneProvider: { TimeZone(identifier: "America/Vancouver")! }
+            )
+        }
+        XCTAssertFalse(model(coverageEnd: now.addingTimeInterval(30 * 86_400)).transitionsPassHolidayCoverage)
+        XCTAssertTrue(model(coverageEnd: now.addingTimeInterval(60)).transitionsPassHolidayCoverage)
+    }
+
+    @MainActor
     private func makeModel(defaults: UserDefaults? = nil) -> MarketSessionsModel {
         let now = ISO8601DateFormatter().date(from: "2026-09-04T01:31:00Z")!
         let events = [EconomicEventKind.cpi, .ecb].enumerated().map { index, kind in

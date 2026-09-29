@@ -12,7 +12,8 @@ struct PlannedNotification: Hashable, Sendable {
 /// Deterministic schedule for market and event notifications. Markets notify at
 /// the first open and final close of each trading day in the canonical zone
 /// (lunch recesses and CME's daily maintenance gap stay quiet); events notify at
-/// their scheduled start. Both fire `leadMinutes` early.
+/// their scheduled start. Both fire `leadMinutes` early. Market boundaries after
+/// the bundled holiday data ends are skipped: they may fall on an unknown holiday.
 struct NotificationPlanner: Sendable {
     static let leadOptions = [0, 5, 15, 30]
     /// UNUserNotificationCenter keeps at most 64 pending requests per app.
@@ -25,16 +26,31 @@ struct NotificationPlanner: Sendable {
         at now: Date,
         resolver: SessionResolver,
         displayTimeZone: TimeZone,
+        holidayCoverageEnd: Date?,
         locale: Locale = .autoupdatingCurrent
     ) -> [PlannedNotification] {
         let lead = TimeInterval(max(0, leadMinutes) * 60)
         var planned: [PlannedNotification] = []
 
         for session in sessions {
-            let active = resolver.occurrences(for: session, around: now).filter(\.kind.countsAsActive)
+            let occurrences = resolver.occurrences(for: session, around: now)
+            let active = occurrences.filter(\.kind.countsAsActive)
+            // Only silence maintenance that actually connects two trading periods
+            // after holiday and early-close adjustments have been applied.
+            let maintenance = occurrences.filter { gap in
+                gap.kind == .maintenance
+                    && active.contains { $0.end == gap.start }
+                    && active.contains { $0.start == gap.end }
+            }
             for cycle in Dictionary(grouping: active, by: \.anchorDate).values {
                 guard let start = cycle.map(\.start).min(), let end = cycle.map(\.end).max() else { continue }
                 for (verb, boundary) in [(SessionTransition.Verb.opens, start), (.closes, end)] {
+                    if maintenance.contains(where: { verb == .closes ? $0.start == boundary : $0.end == boundary }) {
+                        continue
+                    }
+                    if let holidayCoverageEnd, boundary > holidayCoverageEnd {
+                        continue
+                    }
                     let clock = MarketDateFormatting.time(boundary, timeZone: displayTimeZone, locale: locale)
                     planned.append(PlannedNotification(
                         id: "market.\(session.id.rawValue).\(verb.rawValue.lowercased()).\(Int(boundary.timeIntervalSince1970))",

@@ -15,7 +15,8 @@ protocol NotificationCentering {
     func activate()
     func authorizationStatus() async -> NotificationAuthorizationState
     func requestAuthorization() async -> NotificationAuthorizationState
-    func add(_ notifications: [PlannedNotification]) async
+    /// Returns only identifiers accepted by the system; all others remain eligible for retry.
+    func add(_ notifications: [PlannedNotification]) async -> Set<String>
     func removePending(identifiers: [String])
     func removeAllPending()
 }
@@ -41,19 +42,33 @@ final class NotificationCenterService: NotificationCentering {
         return await authorizationStatus()
     }
 
-    func add(_ notifications: [PlannedNotification]) async {
+    func add(_ notifications: [PlannedNotification]) async -> Set<String> {
         let center = UNUserNotificationCenter.current()
+        var accepted: Set<String> = []
         for notification in notifications {
             let content = UNMutableNotificationContent()
             content.title = notification.title
             content.body = notification.body
             content.sound = .default
-            let components = Calendar.autoupdatingCurrent.dateComponents(
-                [.year, .month, .day, .hour, .minute, .second], from: notification.fireDate
-            )
-            let trigger = UNCalendarNotificationTrigger(dateMatching: components, repeats: false)
-            try? await center.add(UNNotificationRequest(identifier: notification.id, content: content, trigger: trigger))
+            let trigger = Self.trigger(for: notification.fireDate)
+            do {
+                try await center.add(UNNotificationRequest(identifier: notification.id, content: content, trigger: trigger))
+                accepted.insert(notification.id)
+            } catch {
+                // Omit failed requests so the next model refresh retries them.
+                continue
+            }
         }
+        return accepted
+    }
+
+    nonisolated static func trigger(for date: Date) -> UNCalendarNotificationTrigger {
+        var calendar = Calendar(identifier: .gregorian)
+        calendar.timeZone = .gmt
+        var components = calendar.dateComponents([.year, .month, .day, .hour, .minute, .second], from: date)
+        components.calendar = calendar
+        components.timeZone = calendar.timeZone
+        return UNCalendarNotificationTrigger(dateMatching: components, repeats: false)
     }
 
     func removePending(identifiers: [String]) {

@@ -22,6 +22,8 @@ final class MarketSessionsModel {
     private(set) var notificationSync: Task<Void, Never>?
     /// Last date the bundled holiday/early-close data covers; nil when absent.
     var exceptionCoverageEnd: Date? { marketExceptions.coverageEnd }
+    /// A shown transition falls after the holiday data ends, so it assumes regular hours.
+    private(set) var transitionsPassHolidayCoverage = false
     /// The status item follows the session whose next transition happens first.
     var nextTransitionSession: ResolvedSession? { orderedSessions.first }
     var availableMarkets: [MarketSession] { catalog }
@@ -35,14 +37,26 @@ final class MarketSessionsModel {
     private let notificationCenter: any NotificationCentering
     private let notificationPlanner = NotificationPlanner()
     private var scheduledNotifications: [PlannedNotification]?
-    private var notificationAuthorizationRequest: Task<Void, Never>?
+    /// In-flight permission prompt, kept outside the sync chain so a prompt the user
+    /// leaves open never stalls later syncs; tests await it.
+    private(set) var notificationAuthorizationRequest: Task<Void, Never>?
+    /// macOS refused registration; the system keeps reporting notDetermined, so remember
+    /// it and ask again only on Try Again or a selection change, not every minute.
+    private var authorizationRequestFailed = false
     private let nowProvider: @Sendable () -> Date
     private let displayTimeZoneProvider: @Sendable () -> TimeZone
     private let preferencesStore: UserDefaults?
     private var clockTask: Task<Void, Never>?
     private var notificationObservers: [NSObjectProtocol] = []
     private var sortedIDs: [MarketSession.ID] = []
-    private var handoverSignature: [MarketSession.ID: SessionStatus] = [:]
+    private var handoverSignature: [MarketSession.ID: Handover] = [:]
+
+    /// Re-sort whenever any session's state or next transition changes, so a sleep
+    /// that skips whole cycles with the same final states still re-sorts.
+    private struct Handover: Equatable {
+        let status: SessionStatus
+        let transition: Date?
+    }
 
     init(
         catalog: [MarketSession] = MarketScheduleCatalog.sessions,
@@ -105,7 +119,9 @@ final class MarketSessionsModel {
 
         let visibleCatalog = catalog.filter { preferences.visibleMarkets.contains($0.id) }
         let resolved = resolver.resolve(visibleCatalog, at: snapshot)
-        let signature = Dictionary(uniqueKeysWithValues: resolved.map { ($0.id, $0.status) })
+        let signature = Dictionary(uniqueKeysWithValues: resolved.map {
+            ($0.id, Handover(status: $0.status, transition: $0.transition?.date))
+        })
         if signature != handoverSignature || sortedIDs.count != resolved.count {
             handoverSignature = signature
             sortedIDs = resolved
@@ -121,6 +137,9 @@ final class MarketSessionsModel {
         }
         let byID = Dictionary(uniqueKeysWithValues: resolved.map { ($0.id, $0) })
         orderedSessions = sortedIDs.compactMap { byID[$0] }
+        transitionsPassHolidayCoverage = marketExceptions.coverageEnd.map { end in
+            orderedSessions.contains { ($0.transition?.date ?? .distantPast) > end }
+        } ?? false
 
         focus = focusResolver.resolve(resolved, at: snapshot)
         upcomingEvents = upcomingEventResolver.resolve(
@@ -132,8 +151,9 @@ final class MarketSessionsModel {
     }
 
     /// Replan and push only the difference to the notification center, so the
-    /// per-minute refresh is free until a notification fires or a selection changes.
+    /// per-minute refresh checks permission and retries any unaccepted requests.
     private func syncNotifications(at now: Date, resolver: SessionResolver) {
+        let needsAuthorization = preferences.notifiesAnything
         let planned = preferences.notifiesAnything
             ? notificationPlanner.plan(
                 sessions: catalog.filter { preferences.notifiedMarkets.contains($0.id) },
@@ -141,35 +161,42 @@ final class MarketSessionsModel {
                 leadMinutes: preferences.notificationLeadMinutes,
                 at: now,
                 resolver: resolver,
-                displayTimeZone: displayTimeZone
+                displayTimeZone: displayTimeZone,
+                holidayCoverageEnd: marketExceptions.coverageEnd
             )
             : []
-        guard planned != scheduledNotifications else { return }
-
-        let previous = scheduledNotifications
-        scheduledNotifications = planned
-        let removed = Set(previous ?? []).subtracting(planned).map(\.id)
-        let added = planned.filter { !(previous ?? []).contains($0) }
         let center = notificationCenter
         let earlier = notificationSync
-        notificationSync = Task { @MainActor in
+        notificationSync = Task { @MainActor [weak self] in
             await earlier?.value
+            guard let self else { return }
+            // Diff only after earlier writes finish, against requests actually accepted.
+            let previous = self.scheduledNotifications
+            var desired = planned
+            if needsAuthorization {
+                let status = await self.readNotificationAuthorization()
+                if status == .notDetermined { self.requestNotificationAuthorization() }
+                if status != .authorized { desired = [] }
+            }
             if previous == nil {
                 center.removeAllPending()
-            } else if !removed.isEmpty {
-                center.removePending(identifiers: removed)
+            } else {
+                let removed = Set(previous ?? []).subtracting(desired).map(\.id)
+                if !removed.isEmpty { center.removePending(identifiers: removed) }
             }
-            await center.add(added)
+            let retained = desired.filter { (previous ?? []).contains($0) }
+            let added = desired.filter { !(previous ?? []).contains($0) }
+            let accepted = added.isEmpty ? Set<String>() : await center.add(added)
+            self.scheduledNotifications = retained + added.filter { accepted.contains($0.id) }
         }
     }
 
     /// Re-read the system status; if the user already selected something but was
     /// never asked (or a previous ask failed), ask now.
     func refreshNotificationAuthorization() {
-        let center = notificationCenter
         Task { @MainActor [weak self] in
-            self?.notificationAuthorization = await center.authorizationStatus()
-            self?.requestNotificationAuthorizationIfNeeded()
+            _ = await self?.readNotificationAuthorization()
+            self?.refresh()
         }
     }
 
@@ -179,7 +206,7 @@ final class MarketSessionsModel {
         } else {
             preferences.notifiedMarkets.remove(id)
         }
-        requestNotificationAuthorizationIfNeeded()
+        authorizationRequestFailed = false
         savePreferences()
     }
 
@@ -189,7 +216,7 @@ final class MarketSessionsModel {
         } else {
             preferences.notifiedEventKinds.remove(kind)
         }
-        requestNotificationAuthorizationIfNeeded()
+        authorizationRequestFailed = false
         savePreferences()
     }
 
@@ -200,29 +227,52 @@ final class MarketSessionsModel {
     }
 
     /// One sample banner a second from now, so the user can confirm delivery and sound.
+    /// Also the "Try Again" action after a failed registration.
     func sendTestNotification() {
-        let sample = PlannedNotification(
-            id: "test", title: "Market Sessions",
-            body: "Notifications are working. Market and event alerts will look like this.",
-            fireDate: nowProvider().addingTimeInterval(1)
-        )
+        authorizationRequestFailed = false
         let center = notificationCenter
         Task { @MainActor [weak self] in
-            if self?.notificationAuthorization != .authorized {
-                self?.notificationAuthorization = await center.requestAuthorization()
+            guard let self else { return }
+            if await self.readNotificationAuthorization() == .notDetermined {
+                await self.requestNotificationAuthorization()?.value
             }
-            await center.add([sample])
+            guard self.notificationAuthorization == .authorized else { return }
+            let sample = PlannedNotification(
+                id: "test", title: "Market Sessions",
+                body: "Notifications are working. Market and event alerts will look like this.",
+                fireDate: self.nowProvider().addingTimeInterval(1)
+            )
+            _ = await center.add([sample])
         }
     }
 
-    private func requestNotificationAuthorizationIfNeeded() {
-        guard preferences.notifiesAnything, notificationAuthorization == .notDetermined,
-              notificationAuthorizationRequest == nil else { return }
-        let center = notificationCenter
-        notificationAuthorizationRequest = Task { @MainActor [weak self] in
-            self?.notificationAuthorization = await center.requestAuthorization()
-            self?.notificationAuthorizationRequest = nil
+    /// Reads the system status without prompting. After a failed registration the
+    /// system still says notDetermined; keep showing the failure instead.
+    private func readNotificationAuthorization() async -> NotificationAuthorizationState {
+        let status = await notificationCenter.authorizationStatus()
+        if !(status == .notDetermined && authorizationRequestFailed) {
+            notificationAuthorization = status
         }
+        return notificationAuthorization
+    }
+
+    /// Shows the permission prompt at most once at a time, then replans with the answer.
+    @discardableResult
+    private func requestNotificationAuthorization() -> Task<Void, Never>? {
+        guard notificationAuthorizationRequest == nil, !authorizationRequestFailed else {
+            return notificationAuthorizationRequest
+        }
+        let center = notificationCenter
+        let request = Task { @MainActor [weak self] in
+            let result = await center.requestAuthorization()
+            guard let self else { return }
+            self.notificationAuthorization = result
+            if case .unavailable = result { self.authorizationRequestFailed = true }
+            self.notificationAuthorizationRequest = nil
+            self.refresh()
+        }
+        notificationAuthorizationRequest = request
+        return request
     }
 
     /// Next bundled occurrence of a kind that has not yet ended, for Settings rows.
@@ -309,5 +359,16 @@ final class MarketSessionsModel {
                 }
             }
         }
+        // Wake is posted on the workspace center, not the default one; without it the
+        // label keeps its pre-sleep state until the next minute tick.
+        notificationObservers.append(
+            NSWorkspace.shared.notificationCenter.addObserver(
+                forName: NSWorkspace.didWakeNotification, object: nil, queue: .main
+            ) { [weak self] _ in
+                MainActor.assumeIsolated {
+                    self?.refresh()
+                }
+            }
+        )
     }
 }

@@ -54,7 +54,7 @@ Bars **drain to the close shown**: full at the start of the uninterrupted tradin
 2. Open — active markets ordered by nearest close, with local close time and a draining bar.
 3. Pre-Market, After Hours, Break, then Closed — ordered by nearest open, with local Opens time. Omit empty sections. Each selected market appears once. Rows are non-interactive.
 4. Upcoming Events — the next four of the selected kinds, no disclosure. Compact names (U.S. Jobs Report, FOMC Decision); full description and exact local date/time in tooltips and accessibility labels. Preserve per-event titles (Jackson Hole keynote). Inside 24 hours emphasize Today/Tomorrow + local time; while live show Live. BOJ times carry the approximation marker. When nothing selected remains, say the bundled schedule has none.
-5. Footer — holiday-data warning only when unavailable or expired, then a full-width Settings row (⌘,) with the kit's menu-item hover.
+5. Footer — holiday-data warning only when unavailable or expired, or when a shown open/close falls after the data ends ("Holiday data ends Dec 31, 2026; later times assume regular hours"), then a full-width Settings row (⌘,) with the kit's menu-item hover.
 
 ### Menu bar label
 

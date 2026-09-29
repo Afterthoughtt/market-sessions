@@ -15,7 +15,7 @@ Cadence: central banks publish 12–28 months ahead, so their next-year decision
 
 ## `market-exceptions-<year>.json`
 
-Per-market `holiday` and `earlyClose` rows, dated and timed in the market's canonical zone, keyed by session code, with a `coverageEnd`. Past coverage the app shows "Recurring hours only". Cover whole years only: HKEX and SSE publish next-year calendars in late fall (NYSE and JPX earlier), so regenerate each December together with the U.S. events, and do not bundle partial years.
+Per-market `holiday` and `earlyClose` rows, dated and timed in the market's canonical zone, keyed by session code, with a `coverageEnd`. Once a shown open or close falls past coverage the popover warns, and market notifications past coverage are not scheduled (they may land on an unknown holiday). Cover whole years only: HKEX and SSE publish next-year calendars in late fall (NYSE and JPX earlier), so regenerate each December together with the U.S. events, and do not bundle partial years.
 
 ## Registering a new file
 

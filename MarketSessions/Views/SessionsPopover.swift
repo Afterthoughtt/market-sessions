@@ -192,18 +192,27 @@ struct SessionsPopover: View {
             ?? model.displayTimeZone.identifier
     }
 
-    /// The streamlined popover only surfaces holiday coverage once it needs attention.
+    /// The streamlined popover only surfaces holiday coverage once it needs attention:
+    /// after it ends, or as soon as a shown open or close falls past it.
     private var hoursWarning: String? {
         guard let coverage = model.exceptionCoverageEnd else {
             return "Recurring hours only"
         }
-        guard model.now > coverage else { return nil }
-
+        // Coverage is the file's last date at 23:59 UTC; format it in UTC so a zone
+        // ahead of UTC does not show the following day.
         let formatter = DateFormatter()
         formatter.locale = .autoupdatingCurrent
-        formatter.timeZone = model.displayTimeZone
-        formatter.dateFormat = "MMM yyyy"
-        return "Holiday data ended \(formatter.string(from: coverage))"
+        formatter.timeZone = TimeZone(identifier: "UTC") ?? .gmt
+        formatter.dateStyle = .medium
+        formatter.timeStyle = .none
+        let date = formatter.string(from: coverage)
+        if model.now > coverage {
+            return "Holiday data ended \(date)"
+        }
+        if model.transitionsPassHolidayCoverage {
+            return "Holiday data ends \(date); later times assume regular hours"
+        }
+        return nil
     }
 }
 
