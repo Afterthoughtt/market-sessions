@@ -19,6 +19,12 @@ final class EconomicEventTests: XCTestCase {
         XCTAssertEqual(speech.compactTitle, "Congressional testimony")
     }
 
+    func testOnlyApproximateKindsCarryTheMarker() {
+        XCTAssertEqual(EconomicEventKind.boj.approximate("Wed, Mar 17"), "≈ Wed, Mar 17")
+        XCTAssertEqual(EconomicEventKind.boj.approximate("Live"), "≈ Live")
+        XCTAssertEqual(EconomicEventKind.ecb.approximate("Live"), "Live")
+    }
+
     func testBundledCatalogContainsTheTierOneKinds() throws {
         let events = try EconomicEventCatalog.loadAll(bundle: Bundle(for: Self.self))
 

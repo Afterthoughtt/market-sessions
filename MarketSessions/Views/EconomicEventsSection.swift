@@ -61,7 +61,7 @@ struct EconomicEventsSection: View {
 
             Spacer(minLength: 6)
 
-            Text(eventLabel(event))
+            Text(event.kind.approximate(eventLabel(event)))
                 .font(.system(size: 11, weight: isImminent(event) ? .semibold : .regular))
                 .monospacedDigit()
                 .foregroundStyle(isImminent(event) ? palette.text : palette.sec)
@@ -70,7 +70,7 @@ struct EconomicEventsSection: View {
         }
         .frame(height: 32)
         .accessibilityElement(children: .ignore)
-        .accessibilityLabel(eventDetails(event).replacingOccurrences(of: "≈", with: "approximately "))
+        .accessibilityLabel(eventDetails(event).replacingOccurrences(of: "≈ ", with: "approximately "))
         .help(eventDetails(event))
     }
 
@@ -102,8 +102,7 @@ struct EconomicEventsSection: View {
                 formatter.dateFormat = "EEE"
                 day = formatter.string(from: event.start)
             }
-            let approximation = event.kind.hasApproximateTime ? "≈" : ""
-            return "\(day) \(approximation)\(MarketDateFormatting.time(event.start, timeZone: displayTimeZone))"
+            return "\(day) \(MarketDateFormatting.time(event.start, timeZone: displayTimeZone))"
         }
 
         let formatter = DateFormatter()

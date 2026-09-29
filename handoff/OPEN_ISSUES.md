@@ -6,7 +6,6 @@ Out of scope (owner decision 2026-09-29, personal use only): distribution signin
 
 ## Next up
 
-2. **BOJ dates more than 24h out lack the approximation marker.** The assumed 12:00 JST lands on the previous evening for New York viewers (2027-03-18 BOJ shows "Wed, Mar 17"). The Live state has no marker either. Fix: prefix "≈" to the date and show "≈ Live" for `hasApproximateTime` kinds. File: `Views/EconomicEventsSection.swift`.
 3. **One event is formatted three ways.** The row tooltip (`DateFormatter.timeStyle .short`) and the Settings next-event subtitle (`Date.FormatStyle .shortened`) keep Foundation's narrow U+202F before AM/PM; the popover and notifications replace it (`MarketDateFormatting.time`). The approximation marker is "≈", "(approximate announcement time)" and "(approx.)" in different places. Fix: route both through `MarketDateFormatting` and keep one marker string on `EconomicEventKind`.
 4. **CME maintenance shows before a full holiday.** `SessionResolver` keeps the 16:00–17:00 CT maintenance gap on the day before a full CME holiday that has no early close. The row reads "Break · Opens …" for an hour, then Closed. `NotificationPlanner` already filters this (maintenance must sit between two active periods); apply the same rule in the resolver. No 2026 date triggers it; a future Good Friday would.
 5. **Launch at Login errors are swallowed.** `MarketSessionsModel.setLaunchAtLogin` uses `try?`, so a failed register/unregister just snaps the toggle back. Fix: surface the error in the row subtitle.
