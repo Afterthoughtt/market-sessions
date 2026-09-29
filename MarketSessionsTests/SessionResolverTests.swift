@@ -299,6 +299,28 @@ final class SessionResolverTests: XCTestCase {
         )
     }
 
+    func testCMEFullHolidayDropsTheMaintenanceBreakBeforeIt() throws {
+        let zone = "America/Chicago"
+        // Synthetic Good-Friday-style: CME closed all of Friday 2026-08-28, no early close.
+        let exceptions = MarketExceptionIndex(
+            exceptions: [
+                MarketException(market: .cmeFutures, year: 2026, month: 8, day: 28, kind: .holiday, close: nil, note: nil)
+            ],
+            coverageEnd: nil
+        )
+        let resolver = SessionResolver(exceptions: exceptions)
+
+        // Thursday 16:30 CT would be maintenance, but nothing reopens at 17:00.
+        let now = try makeDate(year: 2026, month: 8, day: 27, hour: 16, minute: 30, timeZoneIdentifier: zone)
+        let result = resolver.resolve(MarketScheduleCatalog.session(.cmeFutures), at: now)
+        XCTAssertEqual(result.status, .closed)
+        XCTAssertEqual(result.transition?.verb, .opens)
+        XCTAssertEqual(
+            result.transition?.date,
+            try makeDate(year: 2026, month: 8, day: 30, hour: 17, minute: 0, timeZoneIdentifier: zone)
+        )
+    }
+
     func testHalfDayDropsTheAfternoonSessionAndAuction() throws {
         let zone = "Asia/Hong_Kong"
         // Synthetic Christmas-Eve-style: HKG morning only, closes 12:00.

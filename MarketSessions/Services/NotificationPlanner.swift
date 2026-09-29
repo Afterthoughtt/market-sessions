@@ -35,13 +35,8 @@ struct NotificationPlanner: Sendable {
         for session in sessions {
             let occurrences = resolver.occurrences(for: session, around: now)
             let active = occurrences.filter(\.kind.countsAsActive)
-            // Only silence maintenance that actually connects two trading periods
-            // after holiday and early-close adjustments have been applied.
-            let maintenance = occurrences.filter { gap in
-                gap.kind == .maintenance
-                    && active.contains { $0.end == gap.start }
-                    && active.contains { $0.start == gap.end }
-            }
+            // The resolver keeps only maintenance that connects two trading periods.
+            let maintenance = occurrences.filter { $0.kind == .maintenance }
             for cycle in Dictionary(grouping: active, by: \.anchorDate).values {
                 guard let start = cycle.map(\.start).min(), let end = cycle.map(\.end).max() else { continue }
                 for (verb, boundary) in [(SessionTransition.Verb.opens, start), (.closes, end)] {

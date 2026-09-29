@@ -6,7 +6,6 @@ Out of scope (owner decision 2026-09-29, personal use only): distribution signin
 
 ## Next up
 
-4. **CME maintenance shows before a full holiday.** `SessionResolver` keeps the 16:00–17:00 CT maintenance gap on the day before a full CME holiday that has no early close. The row reads "Break · Opens …" for an hour, then Closed. `NotificationPlanner` already filters this (maintenance must sit between two active periods); apply the same rule in the resolver. No 2026 date triggers it; a future Good Friday would.
 5. **Launch at Login errors are swallowed.** `MarketSessionsModel.setLaunchAtLogin` uses `try?`, so a failed register/unregister just snaps the toggle back. Fix: surface the error in the row subtitle.
 
 ## Unverified, check when convenient

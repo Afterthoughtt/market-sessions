@@ -129,12 +129,20 @@ struct SessionResolver: Sendable {
             }
         }
 
-        return result.sorted {
-            if $0.start == $1.start {
-                return $0.end < $1.end
+        // Maintenance only exists between two trading periods; once a holiday removes
+        // the re-open (a full closure with no early close), the day simply ends.
+        let active = result.filter(\.kind.countsAsActive)
+        return result
+            .filter { gap in
+                gap.kind != .maintenance
+                    || (active.contains { $0.end == gap.start } && active.contains { $0.start == gap.end })
             }
-            return $0.start < $1.start
-        }
+            .sorted {
+                if $0.start == $1.start {
+                    return $0.end < $1.end
+                }
+                return $0.start < $1.start
+            }
     }
 
     /// Holiday: the occurrence vanishes if either its start or end falls on the
