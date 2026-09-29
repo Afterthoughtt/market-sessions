@@ -3,9 +3,14 @@ import SwiftUI
 
 struct SettingsView: View {
     let model: MarketSessionsModel
-    @State private var selectedTab = SettingsTab.general
+    @State private var selectedTab: SettingsTab
 
-    private enum SettingsTab: Hashable {
+    init(model: MarketSessionsModel, tab: SettingsTab = .general) {
+        self.model = model
+        _selectedTab = State(initialValue: tab)
+    }
+
+    enum SettingsTab: Hashable {
         case general, markets, events, notifications
 
         /// Content height so the window fits each pane instead of a shared maximum.

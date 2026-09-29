@@ -13,6 +13,7 @@
 		A00200000000000000000006 /* SettingsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F00200000000000000000006 /* SettingsTests.swift */; };
 		A00100000000000000000021 /* NotificationPlanner.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0010000000000000000001F /* NotificationPlanner.swift */; };
 		A00100000000000000000022 /* NotificationService.swift in Sources */ = {isa = PBXBuildFile; fileRef = F00100000000000000000020 /* NotificationService.swift */; };
+		A00100000000000000000023 /* Previews.swift in Sources */ = {isa = PBXBuildFile; fileRef = F00100000000000000000021 /* Previews.swift */; };
 		A00200000000000000000007 /* NotificationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F00200000000000000000007 /* NotificationTests.swift */; };
 		A00100000000000000000001 /* MarketSessionsApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = F00100000000000000000001 /* MarketSessionsApp.swift */; };
 		A00100000000000000000002 /* MarketSession.swift in Sources */ = {isa = PBXBuildFile; fileRef = F00100000000000000000002 /* MarketSession.swift */; };
@@ -61,6 +62,7 @@
 		F00100000000000000000019 /* MarketPreferences.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MarketPreferences.swift; sourceTree = "<group>"; };
 		F0010000000000000000001A /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
 		F0010000000000000000001B /* TimeZonePicker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TimeZonePicker.swift; sourceTree = "<group>"; };
+		F00100000000000000000021 /* Previews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Previews.swift; sourceTree = "<group>"; };
 		F00200000000000000000006 /* SettingsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsTests.swift; sourceTree = "<group>"; };
 		F0010000000000000000001F /* NotificationPlanner.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationPlanner.swift; sourceTree = "<group>"; };
 		F00100000000000000000020 /* NotificationService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationService.swift; sourceTree = "<group>"; };
@@ -191,6 +193,7 @@
 				F00100000000000000000014 /* EconomicEventsSection.swift */,
 				F0010000000000000000001A /* SettingsView.swift */,
 				F0010000000000000000001B /* TimeZonePicker.swift */,
+				F00100000000000000000021 /* Previews.swift */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -328,6 +331,7 @@
 				A00100000000000000000009 /* LoginItemService.swift in Sources */,
 				A00100000000000000000021 /* NotificationPlanner.swift in Sources */,
 				A00100000000000000000022 /* NotificationService.swift in Sources */,
+				A00100000000000000000023 /* Previews.swift in Sources */,
 				A0010000000000000000000A /* MarketSessionsModel.swift in Sources */,
 				A0010000000000000000000B /* DateFormatting.swift in Sources */,
 				A0010000000000000000000C /* MenuBarLabel.swift in Sources */,
