@@ -249,7 +249,10 @@ struct SettingsView: View {
 
     /// Kit row subtitle: the next bundled date in the display zone, or an honest gap.
     private func nextEventSubtitle(_ kind: EconomicEventKind) -> String {
-        guard let next = model.nextEvent(of: kind) else { return "No dates announced yet" }
+        guard let next = model.nextEvent(of: kind) else {
+            let coverageEnd = model.eventScheduleEnd(for: kind.category) ?? .distantPast
+            return model.now > coverageEnd ? "Not in bundled schedule" : "No dates announced yet"
+        }
         let style = Date.FormatStyle(date: .abbreviated, time: .shortened, timeZone: model.displayTimeZone)
         let approximate = kind.hasApproximateTime ? " (approx.)" : ""
         return "\(next.start.formatted(style))\(approximate)"

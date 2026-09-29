@@ -66,17 +66,25 @@ final class EconomicEventTests: XCTestCase {
                        DateComponents(year: 2026, month: 8, day: 28, hour: 10, minute: 0))
     }
 
-    func testScheduleEndSurfacesWhenTheCatalogIsNearlyExhausted() throws {
+    func testCoverageGapNamesTheCategoryThatRunsOutBeforeTheLastShownRow() throws {
         let events = try EconomicEventCatalog.loadAll(bundle: Bundle(for: Self.self))
         let newYork = try XCTUnwrap(TimeZone(identifier: "America/New_York"))
-        // Mid-December 2027: only the ECB and BOJ decisions remain in the bundled catalog.
-        let now = try makeDate(year: 2027, month: 12, day: 15, hour: 12, minute: 0, timeZone: newYork)
+        let usEnd = try XCTUnwrap(events.filter { $0.kind.category == .usRelease }.map(\.end).max())
+        let resolver = UpcomingEconomicEventResolver()
 
-        let snapshot = UpcomingEconomicEventResolver().resolve(events, at: now)
+        // Mid-December 2027: U.S. releases ran out a year earlier; only central banks remain.
+        let late = try makeDate(year: 2027, month: 12, day: 15, hour: 12, minute: 0, timeZone: newYork)
+        let lateGap = try XCTUnwrap(resolver.resolve(events, at: late).coverageGap(shownCount: 4))
+        XCTAssertEqual(lateGap.category, .usRelease)
+        XCTAssertEqual(lateGap.end, usEnd)
 
-        XCTAssertLessThan(snapshot.events.count, 4)
-        let scheduleEnd = try XCTUnwrap(snapshot.scheduleEnd)
-        XCTAssertEqual(scheduleEnd, events.map(\.end).max())
+        // Late September 2026: four shown rows all fall inside every category's coverage.
+        let now = try makeDate(year: 2026, month: 9, day: 29, hour: 12, minute: 0, timeZone: newYork)
+        XCTAssertNil(resolver.resolve(events, at: now).coverageGap(shownCount: 4))
+
+        // Central banks only: U.S. coverage is irrelevant and never reported.
+        let banks = resolver.resolve(events, at: late, enabledKinds: [.ecb, .boj])
+        XCTAssertNil(banks.coverageEnds[.usRelease])
     }
 
     func testUpcomingEventsAreNeverEmptyWhileTheCatalogHasFutureEvents() throws {

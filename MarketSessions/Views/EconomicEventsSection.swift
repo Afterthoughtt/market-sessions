@@ -38,6 +38,16 @@ struct EconomicEventsSection: View {
                     .foregroundStyle(palette.sec)
                     .padding(.vertical, 8)
             }
+
+            if let gap = upcoming.coverageGap(shownCount: Self.rowCap) {
+                let date = gap.end.formatted(
+                    Date.FormatStyle(date: .abbreviated, time: .omitted, timeZone: displayTimeZone)
+                )
+                Text("\(gap.category.coverageLabel) dates bundled through \(date)")
+                    .font(.system(size: 11))
+                    .foregroundStyle(palette.sec)
+                    .padding(.vertical, 8)
+            }
         }
     }
 

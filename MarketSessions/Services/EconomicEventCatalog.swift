@@ -139,10 +139,12 @@ struct UpcomingEconomicEventResolver: Sendable {
         if within.count < minimumCount {
             within = Array(upcoming.prefix(minimumCount))
         }
-        return UpcomingEconomicEvents(
-            events: within,
-            scheduleEnd: events.map(\.end).max()
+        let selectedCategories = Set(enabledKinds.map(\.category))
+        let coverageEnds = Dictionary(
+            events.filter { selectedCategories.contains($0.kind.category) }.map { ($0.kind.category, $0.end) },
+            uniquingKeysWith: max
         )
+        return UpcomingEconomicEvents(events: within, coverageEnds: coverageEnds)
     }
 }
 

@@ -6,7 +6,6 @@ Out of scope (owner decision 2026-09-29, personal use only): distribution signin
 
 ## Next up
 
-1. **U.S. release coverage is never shown.** `UpcomingEconomicEvents.scheduleEnd` is computed (`EconomicEventCatalog`) but never read. Once the bundled BLS/BEA/Census dates run out (last is Dec 23, 2026), the popover's Upcoming Events silently lists only central-bank decisions. Fix: when a selected kind's bundled coverage ends before the last row shown, add one 11pt secondary line ("U.S. release dates bundled through Dec 23, 2026"). In Settings › Events, say "Not in bundled schedule" instead of "No dates announced yet". Files: `Views/EconomicEventsSection.swift`, `Models/EconomicEvent.swift`, `Views/SettingsView.swift`.
 2. **BOJ dates more than 24h out lack the approximation marker.** The assumed 12:00 JST lands on the previous evening for New York viewers (2027-03-18 BOJ shows "Wed, Mar 17"). The Live state has no marker either. Fix: prefix "≈" to the date and show "≈ Live" for `hasApproximateTime` kinds. File: `Views/EconomicEventsSection.swift`.
 3. **One event is formatted three ways.** The row tooltip (`DateFormatter.timeStyle .short`) and the Settings next-event subtitle (`Date.FormatStyle .shortened`) keep Foundation's narrow U+202F before AM/PM; the popover and notifications replace it (`MarketDateFormatting.time`). The approximation marker is "≈", "(approximate announcement time)" and "(approx.)" in different places. Fix: route both through `MarketDateFormatting` and keep one marker string on `EconomicEventKind`.
 4. **CME maintenance shows before a full holiday.** `SessionResolver` keeps the 16:00–17:00 CT maintenance gap on the day before a full CME holiday that has no early close. The row reads "Break · Opens …" for an hour, then Closed. `NotificationPlanner` already filters this (maintenance must sit between two active periods); apply the same rule in the resolver. No 2026 date triggers it; a future Good Friday would.
@@ -26,6 +25,5 @@ Per `MarketSessions/Resources/README.md`: bundle `market-exceptions-2027.json` f
 
 ## Housekeeping
 
-- Every commit after cc771ef is local only. `git push` fails with a 403 because the machine's GitHub credential is the `kigensystems` account. Switch this repo to `afterthoughtt` (the `git-afterthoughtt` skill), then push.
 - Xcode 27 has not had "Update to Recommended Settings" accepted (`LastUpgradeCheck = 2660`). If accepted, review the pbxproj diff; the file is hand-maintained.
 - The design canvas (claude.ai artifact "Menu Bar Explorations", board H) still shows After Hours with a filled pill; the app correctly outlines it.

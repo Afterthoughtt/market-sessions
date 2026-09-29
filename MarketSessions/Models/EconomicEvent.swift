@@ -60,6 +60,14 @@ enum EconomicEventKind: String, CaseIterable, Codable, Hashable, Sendable {
     enum Category: CaseIterable, Sendable {
         case usRelease
         case centralBank
+
+        /// Leads the popover's coverage line: "U.S. release dates bundled through …".
+        var coverageLabel: String {
+            switch self {
+            case .usRelease: "U.S. release"
+            case .centralBank: "Central bank"
+            }
+        }
     }
 
     var category: Category {
@@ -177,9 +185,22 @@ struct EconomicEvent: Identifiable, Hashable, Sendable {
 
 struct UpcomingEconomicEvents: Hashable, Sendable {
     let events: [EconomicEvent]
-    /// End of the last event in the bundled catalog — surfaced when the schedule
-    /// is nearly exhausted so staleness is visible instead of the section going quiet.
-    let scheduleEnd: Date?
+    /// Last bundled end per category, for categories with a selected kind.
+    let coverageEnds: [EconomicEventKind.Category: Date]
 
-    static let empty = UpcomingEconomicEvents(events: [], scheduleEnd: nil)
+    static let empty = UpcomingEconomicEvents(events: [], coverageEnds: [:])
+
+    /// The first selected category whose bundled dates end before the last of
+    /// `shownCount` rows, so its missing rows are explained instead of silently absent.
+    func coverageGap(shownCount: Int) -> (category: EconomicEventKind.Category, end: Date)? {
+        let horizon = shownCount > 0 && events.count >= shownCount
+            ? events[shownCount - 1].start
+            : .distantFuture
+        for category in EconomicEventKind.Category.allCases {
+            if let end = coverageEnds[category], end < horizon {
+                return (category, end)
+            }
+        }
+        return nil
+    }
 }
