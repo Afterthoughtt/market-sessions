@@ -72,20 +72,22 @@ struct MenuBarLabel: View {
 }
 
 /// Drawn in black so the template image follows the active menu-bar tint; the
-/// filled pill knocks its code out to transparent. Geometry copies the SF Symbols
-/// `rectangle.fill` / `a.square.fill` at the kit's menu-bar configuration
-/// (13pt Semibold), measured from rendered symbols: 12pt tall in a 14pt box,
-/// 2pt continuous corners, 1.4pt outline, letters about half the height.
+/// filled pill knocks its code out to transparent. 15pt tall in a 16pt glyph box,
+/// which sits level with the menu bar's battery-with-percentage badge (checked by
+/// eye on screen, not measured); corners use the battery body's ratio of about
+/// 0.3 × height, measured from SF Symbols `battery.100percent` at the kit's
+/// menu-bar configuration (13pt Semibold). The outline matches that
+/// configuration's 1.3pt symbol stroke.
 private struct MenuBarPill: View {
     let code: String
     let filled: Bool
 
     var body: some View {
-        let shape = RoundedRectangle(cornerRadius: 2, style: .continuous)
+        let shape = RoundedRectangle(cornerRadius: 4.5, style: .continuous)
         let label = Text(code)
-            .font(.system(size: 9, weight: .semibold))
-            .padding(.horizontal, 3)
-            .frame(height: 12)
+            .font(.system(size: 11, weight: .bold))
+            .padding(.horizontal, 3.5)
+            .frame(height: 15)
 
         Group {
             if filled {
@@ -97,9 +99,9 @@ private struct MenuBarPill: View {
             } else {
                 label
                     .foregroundStyle(.black)
-                    .overlay(shape.inset(by: 0.7).stroke(.black, lineWidth: 1.4))
+                    .overlay(shape.inset(by: 0.65).stroke(.black, lineWidth: 1.3))
             }
         }
-        .frame(height: 14)
+        .frame(height: 16)
     }
 }
