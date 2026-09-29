@@ -137,6 +137,31 @@ final class SettingsTests: XCTestCase {
         XCTAssertEqual(model.displayTimeZone.identifier, "America/New_York")
     }
 
+    // Battery: minute ticks only while a surface is on screen; otherwise wake just
+    // after the next transition, at local midnight, or within an hour.
+    func testClockSleepsUntilTheMenuBarCanChange() {
+        let zone = TimeZone(identifier: "America/Los_Angeles")!
+        let now = ISO8601DateFormatter().date(from: "2026-09-29T17:05:30Z")!  // 10:05:30 PDT
+        let nextMinute = ISO8601DateFormatter().date(from: "2026-09-29T17:06:00Z")!
+        let close = ISO8601DateFormatter().date(from: "2026-09-29T17:30:00Z")!
+        let midnight = ISO8601DateFormatter().date(from: "2026-09-30T07:00:00Z")!
+
+        XCTAssertEqual(MarketSessionsModel.nextRefresh(after: now, live: true, transitions: [close], timeZone: zone), nextMinute)
+        XCTAssertEqual(
+            MarketSessionsModel.nextRefresh(after: now, live: false, transitions: [close], timeZone: zone),
+            close.addingTimeInterval(1)
+        )
+        XCTAssertEqual(
+            MarketSessionsModel.nextRefresh(after: now, live: false, transitions: [], timeZone: zone),
+            now.addingTimeInterval(3_600)
+        )
+        let lateEvening = ISO8601DateFormatter().date(from: "2026-09-30T06:30:00Z")!  // 11:30 PM PDT
+        XCTAssertEqual(
+            MarketSessionsModel.nextRefresh(after: lateEvening, live: false, transitions: [], timeZone: zone),
+            midnight
+        )
+    }
+
     @MainActor
     func testPopoverFlagsTransitionsPastHolidayCoverage() {
         let now = ISO8601DateFormatter().date(from: "2026-09-04T01:31:00Z")!

@@ -1,6 +1,6 @@
 # Market Sessions
 
-Swift 6 menu-bar-only macOS app (macOS 26, Xcode 26.6). Answers two questions at a glance: is a market open right now, and what changes next. `LSUIElement = YES`, SwiftUI `MenuBarExtra` with `.menuBarExtraStyle(.window)`.
+Swift 6 menu-bar-only macOS app (targets macOS 26; built with Xcode 27 on macOS 27). Answers two questions at a glance: is a market open right now, and what changes next. `LSUIElement = YES`, SwiftUI `MenuBarExtra` with `.menuBarExtraStyle(.window)`.
 
 ## Non-negotiables
 

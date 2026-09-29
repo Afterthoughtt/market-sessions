@@ -47,6 +47,7 @@ final class MarketSessionsModel {
     private let displayTimeZoneProvider: @Sendable () -> TimeZone
     private let preferencesStore: UserDefaults?
     private var clockTask: Task<Void, Never>?
+    private var liveSurfaces: Set<String> = []
     private var notificationObservers: [NSObjectProtocol] = []
     private var sortedIDs: [MarketSession.ID] = []
     private var handoverSignature: [MarketSession.ID: Handover] = [:]
@@ -94,19 +95,64 @@ final class MarketSessionsModel {
         notificationCenter.activate()
         refresh()
         refreshNotificationAuthorization()
+        restartClock()
+    }
+
+    /// The popover and Settings report when they show and hide. While one is on
+    /// screen the clock ticks every minute; otherwise it sleeps until the menu bar
+    /// can change, which saves battery.
+    func setLiveSurface(_ name: String, visible: Bool) {
+        let wasLive = !liveSurfaces.isEmpty
+        if visible { liveSurfaces.insert(name) } else { liveSurfaces.remove(name) }
+        guard wasLive != !liveSurfaces.isEmpty, clockTask != nil else { return }
+        refresh()
+        restartClock()
+    }
+
+    private func restartClock() {
+        clockTask?.cancel()
         clockTask = Task { @MainActor [weak self] in
             while !Task.isCancelled {
-                let current = Date().timeIntervalSince1970
-                let remainder = current.truncatingRemainder(dividingBy: 60)
-                let wait = max(0.05, 60 - remainder)
+                guard let self else { return }
+                let now = Date()
+                let next = Self.nextRefresh(
+                    after: now,
+                    live: !self.liveSurfaces.isEmpty,
+                    transitions: self.orderedSessions.compactMap { $0.transition?.date },
+                    timeZone: self.displayTimeZone
+                )
+                let delay = max(0.05, next.timeIntervalSince(now))
+                // Tolerance lets macOS coalesce this wake-up with others.
+                let tolerance = min(delay * 0.1, self.liveSurfaces.isEmpty ? 5 : 2)
                 do {
-                    try await Task.sleep(nanoseconds: UInt64(wait * 1_000_000_000))
+                    try await Task.sleep(for: .seconds(delay), tolerance: .seconds(tolerance))
                 } catch {
                     return
                 }
-                self?.refresh()
+                self.refresh()
             }
         }
+    }
+
+    /// Next minute while a surface is live. Otherwise the earliest moment the menu bar
+    /// or notification plan can change: just after a session's next transition, local
+    /// midnight (the label's weekday prefix), or an hour as a safety net.
+    nonisolated static func nextRefresh(
+        after now: Date,
+        live: Bool,
+        transitions: [Date],
+        timeZone: TimeZone
+    ) -> Date {
+        let nextMinute = Date(timeIntervalSince1970: (floor(now.timeIntervalSince1970 / 60) + 1) * 60)
+        if live { return nextMinute }
+        var calendar = Calendar(identifier: .gregorian)
+        calendar.timeZone = timeZone
+        let midnight = calendar.nextDate(
+            after: now, matching: DateComponents(hour: 0, minute: 0, second: 0), matchingPolicy: .nextTime
+        )
+        let candidates = transitions.filter { $0 > now }.map { $0.addingTimeInterval(1) }
+            + [midnight, now.addingTimeInterval(3_600)].compactMap { $0 }
+        return candidates.min() ?? nextMinute
     }
 
     func refresh() {
@@ -356,17 +402,19 @@ final class MarketSessionsModel {
             center.addObserver(forName: name, object: nil, queue: .main) { [weak self] _ in
                 MainActor.assumeIsolated {
                     self?.refresh()
+                    self?.restartClock()
                 }
             }
         }
         // Wake is posted on the workspace center, not the default one; without it the
-        // label keeps its pre-sleep state until the next minute tick.
+        // label keeps its pre-sleep state until the next scheduled refresh.
         notificationObservers.append(
             NSWorkspace.shared.notificationCenter.addObserver(
                 forName: NSWorkspace.didWakeNotification, object: nil, queue: .main
             ) { [weak self] _ in
                 MainActor.assumeIsolated {
                     self?.refresh()
+                    self?.restartClock()
                 }
             }
         )

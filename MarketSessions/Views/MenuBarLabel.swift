@@ -49,12 +49,19 @@ struct MenuBarLabel: View {
         )
     }
 
+    /// Twelve possible pills (six codes, filled or not); render each once.
+    @MainActor private static var pillCache: [String: NSImage] = [:]
+
     @MainActor
     private static func render(code: String, filled: Bool) -> NSImage {
+        let scale = max(NSScreen.screens.map(\.backingScaleFactor).max() ?? 2, 2)
+        let key = "\(code)-\(filled)-\(scale)"
+        if let cached = pillCache[key] { return cached }
         let renderer = ImageRenderer(content: MenuBarPill(code: code, filled: filled))
-        renderer.scale = max(NSScreen.screens.map(\.backingScaleFactor).max() ?? 2, 2)
+        renderer.scale = scale
         guard let image = renderer.nsImage else { return NSImage() }
         image.isTemplate = true
+        pillCache[key] = image
         return image
     }
 

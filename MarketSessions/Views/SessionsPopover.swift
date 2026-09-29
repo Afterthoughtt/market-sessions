@@ -97,6 +97,8 @@ struct SessionsPopover: View {
         .task {
             model.start()
         }
+        .onAppear { model.setLiveSurface("popover", visible: true) }
+        .onDisappear { model.setLiveSurface("popover", visible: false) }
     }
 
     private var header: some View {

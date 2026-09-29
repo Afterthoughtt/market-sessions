@@ -36,7 +36,11 @@ struct SettingsView: View {
             }
         }
         .frame(width: 520, height: selectedTab.height)
-        .onAppear { model.start() }
+        .onAppear {
+            model.start()
+            model.setLiveSurface("settings", visible: true)
+        }
+        .onDisappear { model.setLiveSurface("settings", visible: false) }
     }
 
     private var general: some View {
