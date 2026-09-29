@@ -11,8 +11,7 @@ Nothing queued; see the sections below.
 ## Unverified, check when convenient
 
 - A notification whose trigger passes while the Mac sleeps may be delivered late on wake ("Opens in 5 minutes" hours later). Owner to confirm: 5-minute lead, a market alert due within the hour, sleep through it, wake ~15 minutes later. A `BannerDelegate.willPresent` filter would not help: Apple calls it only while the app is in the foreground, which a menu-bar app rarely is. If confirmed, remove stale delivered banners from the existing wake refresh instead.
-- macOS 27 changed bordered `Picker` rendering (no longer `NSPopUpButton`). Check the time zone and notification lead-time pickers in Settings.
-- Not yet seen on screen: the Settings › General pane at its new 340pt height (the "Show Time in Menu Bar" toggle was added) and the outlined menu bar pill.
+- Not yet seen in the real menu bar: the outlined pill (previews draw it correctly; the owner screenshot showed the filled state).
 
 ## Data refresh (December 2026)
 

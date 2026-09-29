@@ -5,7 +5,7 @@ import SwiftUI
 /// is in After Hours. Stub services keep previews off the real login item,
 /// notification center and preferences.
 @MainActor
-private enum PreviewModel {
+enum PreviewModel {
     static func make() -> MarketSessionsModel {
         let newYork = TimeZone(identifier: "America/New_York")!
         var calendar = Calendar(identifier: .gregorian)
