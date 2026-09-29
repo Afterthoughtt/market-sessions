@@ -26,7 +26,7 @@ Swift 6 menu-bar-only macOS app (targets macOS 26; built with Xcode 27 on macOS 
 - Battery: the clock ticks per minute only while the popover or Settings is live (`setLiveSurface`); otherwise it sleeps until the next transition, midnight, or an hour. Put periodic work in `refresh()`.
 - The menu bar pill is a cached template image (`ImageRenderer`); SwiftUI shapes do not draw in a `MenuBarExtra` label.
 - Progress bars are decorative and `accessibilityHidden`; the value is carried in adjacent text.
-- Kind-specific knowledge (category, description, approximate-time flag) lives on `EconomicEventKind`, not in views.
+- Kind-specific knowledge (category, description) lives on `EconomicEventKind`, not in views.
 - The project file is a hand-maintained classic pbxproj with sequential IDs. Adding a file means edits in five places; follow the existing pattern.
 - Tests inject isolated preference stores and never touch the app's standard defaults.
 

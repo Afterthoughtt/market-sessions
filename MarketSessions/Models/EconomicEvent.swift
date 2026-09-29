@@ -94,14 +94,6 @@ enum EconomicEventKind: String, CaseIterable, Codable, Hashable, Sendable {
         }
     }
 
-    /// BOJ decisions have no fixed announcement time; the stored 12:00 JST is an approximation.
-    var hasApproximateTime: Bool { self == .boj }
-
-    /// The one approximation marker: prefixes any date, time or state label for these kinds.
-    func approximate(_ label: String) -> String {
-        hasApproximateTime ? "≈ \(label)" : label
-    }
-
     /// Kinds in a category, in display rank order.
     static func kinds(in category: Category) -> [EconomicEventKind] {
         allCases.filter { $0.category == category }.sorted { $0.rank < $1.rank }

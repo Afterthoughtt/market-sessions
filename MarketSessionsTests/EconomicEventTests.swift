@@ -19,12 +19,6 @@ final class EconomicEventTests: XCTestCase {
         XCTAssertEqual(speech.compactTitle, "Congressional testimony")
     }
 
-    func testOnlyApproximateKindsCarryTheMarker() {
-        XCTAssertEqual(EconomicEventKind.boj.approximate("Wed, Mar 17"), "≈ Wed, Mar 17")
-        XCTAssertEqual(EconomicEventKind.boj.approximate("Live"), "≈ Live")
-        XCTAssertEqual(EconomicEventKind.ecb.approximate("Live"), "Live")
-    }
-
     /// Not normalized: tooltips and Settings share the popover's full space before AM/PM.
     func testEventDateTimeUsesTheSharedClockSpacing() throws {
         let newYork = try XCTUnwrap(TimeZone(identifier: "America/New_York"))

@@ -61,7 +61,7 @@ struct EconomicEventsSection: View {
 
             Spacer(minLength: 6)
 
-            Text(event.kind.approximate(eventLabel(event)))
+            Text(eventLabel(event))
                 .font(.system(size: 11, weight: isImminent(event) ? .semibold : .regular))
                 .monospacedDigit()
                 .foregroundStyle(isImminent(event) ? palette.text : palette.sec)
@@ -70,7 +70,7 @@ struct EconomicEventsSection: View {
         }
         .frame(height: 32)
         .accessibilityElement(children: .ignore)
-        .accessibilityLabel(eventDetails(event).replacingOccurrences(of: "≈ ", with: "approximately "))
+        .accessibilityLabel(eventDetails(event))
         .help(eventDetails(event))
     }
 
@@ -116,6 +116,6 @@ struct EconomicEventsSection: View {
         let when = MarketDateFormatting.dateTime(event.start, dateStyle: .full, timeZone: displayTimeZone)
         let zone = displayTimeZone.abbreviation(for: event.start) ?? displayTimeZone.identifier
         let live = event.phase(at: now) == .live ? " · Live" : ""
-        return "\(event.displayTitle) · \(event.kind.approximate("\(when) \(zone)"))\(live)"
+        return "\(event.displayTitle) · \(when) \(zone)\(live)"
     }
 }

@@ -60,9 +60,7 @@ struct NotificationPlanner: Sendable {
         }
 
         for event in events {
-            let clock = event.kind.approximate(
-                MarketDateFormatting.time(event.start, timeZone: displayTimeZone, locale: locale)
-            )
+            let clock = MarketDateFormatting.time(event.start, timeZone: displayTimeZone, locale: locale)
             planned.append(PlannedNotification(
                 id: "event.\(event.id)",
                 title: event.compactTitle,
