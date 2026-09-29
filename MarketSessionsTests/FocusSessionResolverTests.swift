@@ -114,13 +114,13 @@ final class FocusSessionResolverTests: XCTestCase {
         XCTAssertEqual(try menuBarTime(next, now: now), "Sun 3:00 PM")
     }
 
+    /// Not normalized: the menu bar must use a full space before AM/PM, not U+202F.
     private func menuBarTime(_ resolved: ResolvedSession, now: Date) throws -> String {
-        let text = try XCTUnwrap(MenuBarLabel.time(
+        try XCTUnwrap(MenuBarLabel.time(
             for: resolved, now: now,
             timeZone: try XCTUnwrap(TimeZone(identifier: "America/Los_Angeles")),
-            locale: Locale(identifier: "en_US_POSIX")
+            locale: Locale(identifier: "en_US")
         ))
-        return text.replacingOccurrences(of: "\u{202F}", with: " ")
     }
 
     private func makeDate(

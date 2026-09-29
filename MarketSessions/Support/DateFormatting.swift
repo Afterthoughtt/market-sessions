@@ -11,7 +11,9 @@ enum MarketDateFormatting {
         formatter.timeZone = timeZone
         formatter.dateStyle = .none
         formatter.timeStyle = .short
-        return formatter.string(from: date)
+        // Foundation separates "PM" with a narrow no-break space (U+202F), which reads
+        // cramped at 13pt; the kit's menu bar clock uses a full space ("9:41 AM").
+        return formatter.string(from: date).replacingOccurrences(of: "\u{202F}", with: " ")
     }
 
     /// `1:00 PM` on the same display day, `Sun 3:00 PM` otherwise.

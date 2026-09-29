@@ -72,19 +72,20 @@ struct MenuBarLabel: View {
 }
 
 /// Drawn in black so the template image follows the active menu-bar tint; the
-/// filled pill knocks its code out to transparent. Sized to the 16pt glyph box
-/// of an SF Symbol at the kit's menu-bar configuration (13pt Semibold).
+/// filled pill knocks its code out to transparent. Geometry copies the SF Symbols
+/// `rectangle.fill` / `a.square.fill` at the kit's menu-bar configuration
+/// (13pt Semibold), measured from rendered symbols: 12pt tall in a 14pt box,
+/// 2pt continuous corners, 1.4pt outline, letters about half the height.
 private struct MenuBarPill: View {
     let code: String
     let filled: Bool
 
     var body: some View {
-        let shape = RoundedRectangle(cornerRadius: 4, style: .continuous)
+        let shape = RoundedRectangle(cornerRadius: 2, style: .continuous)
         let label = Text(code)
-            .font(.system(size: 11, weight: .bold))
-            .tracking(0.3)
-            .padding(.horizontal, 3.5)
-            .frame(height: 15)
+            .font(.system(size: 9, weight: .semibold))
+            .padding(.horizontal, 3)
+            .frame(height: 12)
 
         Group {
             if filled {
@@ -96,9 +97,9 @@ private struct MenuBarPill: View {
             } else {
                 label
                     .foregroundStyle(.black)
-                    .overlay(shape.inset(by: 0.5).stroke(.black, lineWidth: 1))
+                    .overlay(shape.inset(by: 0.7).stroke(.black, lineWidth: 1.4))
             }
         }
-        .frame(height: 16)
+        .frame(height: 14)
     }
 }
