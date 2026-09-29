@@ -35,7 +35,7 @@ Swift 6 menu-bar-only macOS app (targets macOS 26; built with Xcode 27 on macOS 
 - `./script/build_and_run.sh --verify` builds and relaunches the app. It signs ad hoc (`CODE_SIGN_IDENTITY=-`); a build with `CODE_SIGNING_ALLOWED=NO` is refused by the notification daemon and never appears in System Settings › Notifications.
 - `xcodebuild -project MarketSessions.xcodeproj -scheme MarketSessions -destination 'platform=macOS' test` is the full suite. Keep it green and update tests in the same change.
 - Do not report completion while builds or tests fail.
-- The `xcode` MCP server is available for Apple docs and previews; the commands above stay the source of truth.
+- The `xcode` MCP server is available for Apple docs and previews; the commands above stay the source of truth. `Views/Previews.swift` (DEBUG only, fixed Tue 2026-09-29 5:30 PM ET) renders the popover, each Settings tab and the menu bar label through `RenderPreview`; the preview host draws its own window chrome and no menu bar, so those still need owner screenshots.
 
 ## Working agreement
 
