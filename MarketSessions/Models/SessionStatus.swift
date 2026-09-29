@@ -19,12 +19,6 @@ struct ResolvedSession: Identifiable, Hashable, Sendable {
     let currentOccurrence: SessionOccurrence?
     /// Start of the uninterrupted trading period ending at the displayed close.
     let activePeriodStart: Date?
-    /// First open of the current trading day (the whole cycle, spanning recesses).
-    let activeCycleStart: Date?
-    /// Final close of the current trading day.
-    let activeCycleEnd: Date?
-    /// End of the most recent active occurrence at or before now.
-    let previousActiveEnd: Date?
     /// Start of the next active occurrence after now.
     let nextActiveStart: Date?
     let transition: SessionTransition?

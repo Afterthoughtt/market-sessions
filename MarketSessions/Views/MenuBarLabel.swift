@@ -31,7 +31,8 @@ struct MenuBarLabel: View {
         .help(tooltip)
     }
 
-    /// Filled while counting to a close (Open, After Hours); outlined while counting to an open.
+    /// Filled while counting to a close (Open); outlined while counting to an open,
+    /// which includes After Hours (it counts to the next session's open).
     nonisolated static func isFilled(_ resolved: ResolvedSession) -> Bool {
         resolved.transition?.verb == .closes
     }

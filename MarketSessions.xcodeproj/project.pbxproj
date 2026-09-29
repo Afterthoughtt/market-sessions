@@ -27,10 +27,8 @@
 		A0010000000000000000000B /* DateFormatting.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0010000000000000000000B /* DateFormatting.swift */; };
 		A0010000000000000000000C /* MenuBarLabel.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0010000000000000000000C /* MenuBarLabel.swift */; };
 		A0010000000000000000000D /* SessionsPopover.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0010000000000000000000D /* SessionsPopover.swift */; };
-		A0010000000000000000000E /* FocusSessionCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0010000000000000000000E /* FocusSessionCard.swift */; };
 		A0010000000000000000000F /* SessionRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0010000000000000000000F /* SessionRow.swift */; };
 		A00100000000000000000010 /* MarketPalette.swift in Sources */ = {isa = PBXBuildFile; fileRef = F00100000000000000000010 /* MarketPalette.swift */; };
-		A00100000000000000000011 /* ProgressRing.swift in Sources */ = {isa = PBXBuildFile; fileRef = F00100000000000000000011 /* ProgressRing.swift */; };
 		A00100000000000000000012 /* EconomicEvent.swift in Sources */ = {isa = PBXBuildFile; fileRef = F00100000000000000000012 /* EconomicEvent.swift */; };
 		A00100000000000000000013 /* EconomicEventCatalog.swift in Sources */ = {isa = PBXBuildFile; fileRef = F00100000000000000000013 /* EconomicEventCatalog.swift */; };
 		A00100000000000000000014 /* EconomicEventsSection.swift in Sources */ = {isa = PBXBuildFile; fileRef = F00100000000000000000014 /* EconomicEventsSection.swift */; };
@@ -80,10 +78,8 @@
 		F0010000000000000000000B /* DateFormatting.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DateFormatting.swift; sourceTree = "<group>"; };
 		F0010000000000000000000C /* MenuBarLabel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MenuBarLabel.swift; sourceTree = "<group>"; };
 		F0010000000000000000000D /* SessionsPopover.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionsPopover.swift; sourceTree = "<group>"; };
-		F0010000000000000000000E /* FocusSessionCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FocusSessionCard.swift; sourceTree = "<group>"; };
 		F0010000000000000000000F /* SessionRow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionRow.swift; sourceTree = "<group>"; };
 		F00100000000000000000010 /* MarketPalette.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MarketPalette.swift; sourceTree = "<group>"; };
-		F00100000000000000000011 /* ProgressRing.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProgressRing.swift; sourceTree = "<group>"; };
 		F00100000000000000000012 /* EconomicEvent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EconomicEvent.swift; sourceTree = "<group>"; };
 		F00100000000000000000013 /* EconomicEventCatalog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EconomicEventCatalog.swift; sourceTree = "<group>"; };
 		F00100000000000000000014 /* EconomicEventsSection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EconomicEventsSection.swift; sourceTree = "<group>"; };
@@ -191,9 +187,7 @@
 			children = (
 				F0010000000000000000000C /* MenuBarLabel.swift */,
 				F0010000000000000000000D /* SessionsPopover.swift */,
-				F0010000000000000000000E /* FocusSessionCard.swift */,
 				F0010000000000000000000F /* SessionRow.swift */,
-				F00100000000000000000011 /* ProgressRing.swift */,
 				F00100000000000000000014 /* EconomicEventsSection.swift */,
 				F0010000000000000000001A /* SettingsView.swift */,
 				F0010000000000000000001B /* TimeZonePicker.swift */,
@@ -338,10 +332,8 @@
 				A0010000000000000000000B /* DateFormatting.swift in Sources */,
 				A0010000000000000000000C /* MenuBarLabel.swift in Sources */,
 				A0010000000000000000000D /* SessionsPopover.swift in Sources */,
-				A0010000000000000000000E /* FocusSessionCard.swift in Sources */,
 				A0010000000000000000000F /* SessionRow.swift in Sources */,
 				A00100000000000000000010 /* MarketPalette.swift in Sources */,
-				A00100000000000000000011 /* ProgressRing.swift in Sources */,
 				A00100000000000000000012 /* EconomicEvent.swift in Sources */,
 				A00100000000000000000013 /* EconomicEventCatalog.swift in Sources */,
 				A00100000000000000000014 /* EconomicEventsSection.swift in Sources */,

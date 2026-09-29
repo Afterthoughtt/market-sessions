@@ -53,8 +53,6 @@ final class SettingsTests: XCTestCase {
         model.setMarket(.tokyo, visible: false)
         XCTAssertTrue(model.orderedSessions.isEmpty)
         XCTAssertNil(model.nextTransitionSession)
-        XCTAssertNil(model.focus.hero)
-        XCTAssertNil(model.focus.nextToOpen)
 
         model.setMarket(.london, visible: true)
         XCTAssertEqual(model.orderedSessions.map(\.id), [.london])

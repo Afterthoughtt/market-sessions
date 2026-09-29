@@ -11,7 +11,6 @@ final class MarketSessionsModel {
     private(set) var preferences: MarketPreferences
     /// Frozen list order — re-sorted only when some session's state changes (a handover).
     private(set) var orderedSessions: [ResolvedSession] = []
-    private(set) var focus = FocusSnapshot(openEntries: [], nextToOpen: nil)
     /// UTC-day metrics for the header readout, independent of the display zone.
     private(set) var utcDayRemainingFraction: Double = 0
     private(set) var utcDayRemainingMinutes = 0
@@ -32,7 +31,6 @@ final class MarketSessionsModel {
     private let marketExceptions: MarketExceptionIndex
     private let economicEvents: [EconomicEvent]
     private let upcomingEventResolver = UpcomingEconomicEventResolver()
-    private let focusResolver: FocusSessionResolver
     private let loginItemService: any LoginItemServicing
     private let notificationCenter: any NotificationCentering
     private let notificationPlanner = NotificationPlanner()
@@ -63,7 +61,6 @@ final class MarketSessionsModel {
         catalog: [MarketSession] = MarketScheduleCatalog.sessions,
         marketExceptions: MarketExceptionIndex? = nil,
         economicEvents: [EconomicEvent]? = nil,
-        focusResolver: FocusSessionResolver = FocusSessionResolver(),
         loginItemService: any LoginItemServicing = LoginItemService(),
         notificationCenter: any NotificationCentering = NotificationCenterService(),
         nowProvider: @escaping @Sendable () -> Date = Date.init,
@@ -74,7 +71,6 @@ final class MarketSessionsModel {
         self.marketExceptions = marketExceptions
             ?? ((try? MarketExceptionCatalog.loadIndex()) ?? .empty)
         self.economicEvents = economicEvents ?? ((try? EconomicEventCatalog.loadAll()) ?? [])
-        self.focusResolver = focusResolver
         self.loginItemService = loginItemService
         self.notificationCenter = notificationCenter
         self.nowProvider = nowProvider
@@ -187,7 +183,6 @@ final class MarketSessionsModel {
             orderedSessions.contains { ($0.transition?.date ?? .distantPast) > end }
         } ?? false
 
-        focus = focusResolver.resolve(resolved, at: snapshot)
         upcomingEvents = upcomingEventResolver.resolve(
             economicEvents, at: snapshot, enabledKinds: preferences.eventKinds
         )

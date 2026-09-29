@@ -46,36 +46,6 @@ final class ProgressTests: XCTestCase {
         XCTAssertEqual(session.remainingTradingFraction(at: now), 2.0 / 120, accuracy: 0.000_001)
     }
 
-    func testTokyoRingSpansTheWholeTradingDay() throws {
-        let now = try makeDate(
-            year: 2026, month: 8, day: 24, hour: 10, minute: 15,
-            timeZoneIdentifier: "Asia/Tokyo"
-        )
-        let resolved = SessionResolver().resolve(MarketScheduleCatalog.sessions, at: now)
-        let focus = FocusSessionResolver().resolve(resolved, at: now)
-        let tokyo = try XCTUnwrap(focus.openEntries.first(where: { $0.sessionID == .tokyo }))
-
-        // Rings drain over the whole day, 9:00–15:30 (390 minutes), spanning the recess.
-        XCTAssertEqual(tokyo.remainingFraction, 315.0 / 390.0, accuracy: 0.000_001)
-        // The countdown still tracks the next transition — the 11:30 morning close.
-        XCTAssertEqual(tokyo.remainingMinutes, 75)
-    }
-
-    func testShanghaiRingSpansTheDayAndCountdownIncludesTheAuction() throws {
-        let now = try makeDate(
-            year: 2026, month: 8, day: 24, hour: 14, minute: 0,
-            timeZoneIdentifier: "Asia/Shanghai"
-        )
-        let resolved = SessionResolver().resolve(MarketScheduleCatalog.sessions, at: now)
-        let focus = FocusSessionResolver().resolve(resolved, at: now)
-        let shanghai = try XCTUnwrap(focus.openEntries.first(where: { $0.sessionID == .shanghai }))
-
-        // Day runs 9:30–15:00 (330 minutes); 60 of 330 remain at 2:00 PM.
-        XCTAssertEqual(shanghai.remainingFraction, 60.0 / 330.0, accuracy: 0.000_001)
-        // Close is the end of the chain through the 2:57–3:00 auction.
-        XCTAssertEqual(shanghai.remainingMinutes, 60)
-    }
-
     func testCompactDurationFormatting() {
         XCTAssertEqual(MarketDurationFormatting.compact(minutes: 348), "5h 48m")
         XCTAssertEqual(MarketDurationFormatting.compact(minutes: 45), "45m")

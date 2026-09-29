@@ -20,22 +20,16 @@ struct SessionResolver: Sendable {
         let activeOccurrences = occurrences.filter(\.kind.countsAsActive)
         let current = occurrences.first(where: { $0.contains(now) && $0.kind.countsAsActive })
             ?? occurrences.first(where: { $0.contains(now) })
-        let previousActiveEnd = activeOccurrences.last(where: { $0.end <= now })?.end
         let nextActiveStart = activeOccurrences.first(where: { $0.start > now })?.start
 
         let status: SessionStatus
         var periodStart: Date?
-        var cycleStart: Date?
-        var cycleEnd: Date?
         let transition: SessionTransition?
 
         if let current, current.kind.countsAsActive {
             status = .open
             let chain = activeChain(containing: current, in: activeOccurrences)
             periodStart = chain.first?.start
-            let cycle = activeOccurrences.filter { $0.anchorDate == current.anchorDate }
-            cycleStart = cycle.first?.start
-            cycleEnd = cycle.last?.end
             transition = SessionTransition(
                 verb: .closes,
                 date: chain.last?.end ?? current.end
@@ -71,9 +65,6 @@ struct SessionResolver: Sendable {
             status: status,
             currentOccurrence: current,
             activePeriodStart: periodStart,
-            activeCycleStart: cycleStart,
-            activeCycleEnd: cycleEnd,
-            previousActiveEnd: previousActiveEnd,
             nextActiveStart: nextActiveStart,
             transition: transition
         )
