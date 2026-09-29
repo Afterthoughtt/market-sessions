@@ -6,10 +6,20 @@ enum MarketDateFormatting {
         timeZone: TimeZone,
         locale: Locale = .autoupdatingCurrent
     ) -> String {
+        dateTime(date, dateStyle: .none, timeZone: timeZone, locale: locale)
+    }
+
+    /// Date plus short time, `Mar 17, 2027 at 11:00 PM`, with the same spacing as `time`.
+    static func dateTime(
+        _ date: Date,
+        dateStyle: DateFormatter.Style,
+        timeZone: TimeZone,
+        locale: Locale = .autoupdatingCurrent
+    ) -> String {
         let formatter = DateFormatter()
         formatter.locale = locale
         formatter.timeZone = timeZone
-        formatter.dateStyle = .none
+        formatter.dateStyle = dateStyle
         formatter.timeStyle = .short
         // Foundation separates "PM" with a narrow no-break space (U+202F), which reads
         // cramped at 13pt; the kit's menu bar clock uses a full space ("9:41 AM").

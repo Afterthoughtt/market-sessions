@@ -65,14 +65,15 @@ struct NotificationPlanner: Sendable {
         }
 
         for event in events {
-            let clock = MarketDateFormatting.time(event.start, timeZone: displayTimeZone, locale: locale)
-            let approximate = event.kind.hasApproximateTime ? " (approx.)" : ""
+            let clock = event.kind.approximate(
+                MarketDateFormatting.time(event.start, timeZone: displayTimeZone, locale: locale)
+            )
             planned.append(PlannedNotification(
                 id: "event.\(event.id)",
                 title: event.compactTitle,
                 body: leadMinutes > 0
-                    ? "In \(MarketDurationFormatting.spoken(minutes: leadMinutes)), at \(clock)\(approximate)"
-                    : "Scheduled for \(clock)\(approximate)",
+                    ? "In \(MarketDurationFormatting.spoken(minutes: leadMinutes)), at \(clock)"
+                    : "Scheduled for \(clock)",
                 fireDate: event.start.addingTimeInterval(-lead)
             ))
         }

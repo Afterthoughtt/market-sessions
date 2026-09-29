@@ -25,6 +25,16 @@ final class EconomicEventTests: XCTestCase {
         XCTAssertEqual(EconomicEventKind.ecb.approximate("Live"), "Live")
     }
 
+    /// Not normalized: tooltips and Settings share the popover's full space before AM/PM.
+    func testEventDateTimeUsesTheSharedClockSpacing() throws {
+        let newYork = try XCTUnwrap(TimeZone(identifier: "America/New_York"))
+        let date = try makeDate(year: 2027, month: 3, day: 17, hour: 23, minute: 0, timeZone: newYork)
+        XCTAssertEqual(
+            MarketDateFormatting.dateTime(date, dateStyle: .medium, timeZone: newYork, locale: Locale(identifier: "en_US")),
+            "Mar 17, 2027 at 11:00 PM"
+        )
+    }
+
     func testBundledCatalogContainsTheTierOneKinds() throws {
         let events = try EconomicEventCatalog.loadAll(bundle: Bundle(for: Self.self))
 

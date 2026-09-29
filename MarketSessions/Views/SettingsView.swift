@@ -253,9 +253,9 @@ struct SettingsView: View {
             let coverageEnd = model.eventScheduleEnd(for: kind.category) ?? .distantPast
             return model.now > coverageEnd ? "Not in bundled schedule" : "No dates announced yet"
         }
-        let style = Date.FormatStyle(date: .abbreviated, time: .shortened, timeZone: model.displayTimeZone)
-        let approximate = kind.hasApproximateTime ? " (approx.)" : ""
-        return "\(next.start.formatted(style))\(approximate)"
+        return kind.approximate(
+            MarketDateFormatting.dateTime(next.start, dateStyle: .medium, timeZone: model.displayTimeZone)
+        )
     }
 
     private var eventCoverageFooter: String {

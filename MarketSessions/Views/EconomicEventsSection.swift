@@ -113,14 +113,9 @@ struct EconomicEventsSection: View {
     }
 
     private func eventDetails(_ event: EconomicEvent) -> String {
-        let formatter = DateFormatter()
-        formatter.locale = .autoupdatingCurrent
-        formatter.timeZone = displayTimeZone
-        formatter.dateStyle = .full
-        formatter.timeStyle = .short
+        let when = MarketDateFormatting.dateTime(event.start, dateStyle: .full, timeZone: displayTimeZone)
         let zone = displayTimeZone.abbreviation(for: event.start) ?? displayTimeZone.identifier
-        let approximation = event.kind.hasApproximateTime ? " (approximate announcement time)" : ""
         let live = event.phase(at: now) == .live ? " · Live" : ""
-        return "\(event.displayTitle) · \(formatter.string(from: event.start)) \(zone)\(approximation)\(live)"
+        return "\(event.displayTitle) · \(event.kind.approximate("\(when) \(zone)"))\(live)"
     }
 }

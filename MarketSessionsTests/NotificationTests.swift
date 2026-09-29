@@ -69,7 +69,7 @@ final class NotificationTests: XCTestCase {
         let first = try XCTUnwrap(planned.first)
         XCTAssertEqual(first.id, "event.boj-1")
         XCTAssertEqual(first.title, "BOJ Decision")
-        XCTAssertEqual(normalized(first.body), "In 5 minutes, at 12:00 PM (approx.)")
+        XCTAssertEqual(normalized(first.body), "In 5 minutes, at ≈ 12:00 PM")
         XCTAssertEqual(first.fireDate, boj.start.addingTimeInterval(-300))
     }
 
