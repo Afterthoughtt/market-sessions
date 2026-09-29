@@ -1,3 +1,4 @@
+import AppKit
 import XCTest
 @testable import MarketSessions
 
@@ -64,6 +65,20 @@ final class EconomicEventTests: XCTestCase {
         }
     }
 
+    /// A popover row is 340pt minus 14pt margins, minus 26pt of HStack spacing and
+    /// spacer, minus the widest label inside 24 hours ("Tomorrow 12:00 PM", 11pt
+    /// semibold). Every bundled title must fit the rest at 13pt without truncating.
+    func testEveryRowTitleFitsBesideTheWidestImminentLabel() throws {
+        let events = try EconomicEventCatalog.loadAll(bundle: Bundle(for: Self.self))
+        let label = NSFont.monospacedDigitSystemFont(ofSize: 11, weight: .semibold)
+        let budget = 340 - 28 - 26 - ("Tomorrow 12:00 PM" as NSString).size(withAttributes: [.font: label]).width
+        let titles = Set(events.map(\.compactTitle) + EconomicEventKind.allCases.map(\.compactTitle))
+        for title in titles {
+            let width = (title as NSString).size(withAttributes: [.font: NSFont.systemFont(ofSize: 13)]).width
+            XCTAssertLessThanOrEqual(width, budget, "\(title) truncates in the popover")
+        }
+    }
+
     func testJacksonHoleKeynoteIsBundledWithItsOwnTitle() throws {
         let events = try EconomicEventCatalog.loadAll(bundle: Bundle(for: Self.self))
         let keynote = try XCTUnwrap(events.first { $0.kind == .fedSpeech })
@@ -71,7 +86,7 @@ final class EconomicEventTests: XCTestCase {
         var calendar = Calendar(identifier: .gregorian)
         calendar.timeZone = newYork
 
-        XCTAssertEqual(keynote.displayTitle, "Jackson Hole keynote — Fed Chair")
+        XCTAssertEqual(keynote.displayTitle, "Jackson Hole Keynote")
         XCTAssertEqual(calendar.dateComponents([.year, .month, .day, .hour, .minute], from: keynote.start),
                        DateComponents(year: 2026, month: 8, day: 28, hour: 10, minute: 0))
     }

@@ -133,7 +133,7 @@ struct EconomicEvent: Identifiable, Hashable, Sendable {
 
     let id: String
     let kind: EconomicEventKind
-    /// Optional per-event title override — e.g. "Jackson Hole keynote" for a fedSpeech.
+    /// Optional per-event title override — e.g. "Jackson Hole Keynote" for a fedSpeech.
     let title: String?
     let start: Date
     let end: Date
