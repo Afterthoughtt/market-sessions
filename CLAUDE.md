@@ -19,14 +19,13 @@ Swift 6 menu-bar-only macOS app (targets macOS 26; built with Xcode 27 on macOS 
 
 ## Architecture
 
-`MarketSessions/` — `App/` (entry), `Models/` (value types), `Services/` (schedule catalog, `SessionResolver`, `FocusSessionResolver` countdown/progress helpers, event catalog and resolver, `NotificationPlanner` and `NotificationService`, `MarketSessionsModel`, login item), `Views/`, `Support/` (formatting, `MarketPalette`), `Resources/` (JSON).
+`MarketSessions/` — `App/` (entry), `Models/` (value types), `Services/` (schedule catalog, `SessionResolver`, countdown helpers, event catalog and resolver, notifications, `MarketSessionsModel`, login item), `Views/`, `Support/` (formatting, `MarketPalette`), `Resources/` (JSON).
 
 - All schedule and event math is deterministic and lives outside SwiftUI. `Date`, calendar, and display zone are injected; tests never depend on the machine clock.
 - `MarketSessionsModel` (`@MainActor @Observable`) owns the clock and every resolved snapshot. Views are dumb renderers that take a `MarketPalette`.
-- Battery: the clock ticks each minute only while the popover or Settings is on screen (views call `setLiveSurface`); otherwise it sleeps until just after the next transition, local midnight, or an hour, with timer tolerance. Wake, time zone and day changes refresh and reschedule. Keep new per-minute work inside `refresh()` so it inherits this.
-- The menu bar pill is a cached template `NSImage` from `ImageRenderer` (SwiftUI shapes do not draw in a `MenuBarExtra` label); the time beside it is native `Text`.
+- Battery: the clock ticks per minute only while the popover or Settings is live (`setLiveSurface`); otherwise it sleeps until the next transition, midnight, or an hour. Put periodic work in `refresh()`.
+- The menu bar pill is a cached template image (`ImageRenderer`); SwiftUI shapes do not draw in a `MenuBarExtra` label.
 - Progress bars are decorative and `accessibilityHidden`; the value is carried in adjacent text.
-- Notification permission is requested outside the sync chain; a refused registration is remembered until Try Again or a selection change. Market notifications past the holiday-data `coverageEnd` are not scheduled.
 - Kind-specific knowledge (category, description, approximate-time flag) lives on `EconomicEventKind`, not in views.
 - The project file is a hand-maintained classic pbxproj with sequential IDs. Adding a file means edits in five places; follow the existing pattern.
 - Tests inject isolated preference stores and never touch the app's standard defaults.
@@ -36,7 +35,7 @@ Swift 6 menu-bar-only macOS app (targets macOS 26; built with Xcode 27 on macOS 
 - `./script/build_and_run.sh --verify` builds and relaunches the app. It signs ad hoc (`CODE_SIGN_IDENTITY=-`); a build with `CODE_SIGNING_ALLOWED=NO` is refused by the notification daemon and never appears in System Settings › Notifications.
 - `xcodebuild -project MarketSessions.xcodeproj -scheme MarketSessions -destination 'platform=macOS' test` is the full suite. Keep it green and update tests in the same change.
 - Do not report completion while builds or tests fail.
-- The `xcode` MCP server (Xcode 27's `xcrun mcpbridge`, user scope) is available for `DocumentationSearch`, previews and build logs; the two commands above stay the source of truth.
+- The `xcode` MCP server is available for Apple docs and previews; the commands above stay the source of truth.
 
 ## Working agreement
 
