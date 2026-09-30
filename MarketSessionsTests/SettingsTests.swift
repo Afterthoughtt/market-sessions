@@ -7,7 +7,7 @@ final class SettingsTests: XCTestCase {
         XCTAssertEqual(preferences.visibleMarkets, Set(MarketSession.ID.allCases))
         XCTAssertEqual(preferences.eventKinds, Set(EconomicEventKind.allCases.filter(\.isDefault)))
         XCTAssertNil(preferences.timeZoneIdentifier)
-        XCTAssertTrue(preferences.showsMenuBarTime)
+        XCTAssertTrue(preferences.showsMenuBarCountdown)
         let system = TimeZone(identifier: "America/Vancouver")!
         XCTAssertEqual(preferences.displayTimeZone(system: system), system)
     }
@@ -20,7 +20,7 @@ final class SettingsTests: XCTestCase {
         preferences.visibleMarkets = [.tokyo, .london]
         preferences.eventKinds = [.boj, .ecb]
         preferences.timeZoneIdentifier = "Asia/Tokyo"
-        preferences.showsMenuBarTime = false
+        preferences.showsMenuBarCountdown = false
         preferences.save(to: defaults)
         XCTAssertEqual(MarketPreferences(defaults: defaults), preferences)
 
@@ -135,28 +135,36 @@ final class SettingsTests: XCTestCase {
         XCTAssertEqual(model.displayTimeZone.identifier, "America/New_York")
     }
 
-    // Battery: minute ticks only while a surface is on screen; otherwise wake just
-    // after the next transition, at local midnight, or within an hour.
+    // Battery: minute ticks only while a surface is on screen or the menu bar counts
+    // down; otherwise wake just after the next transition, when the countdown starts,
+    // or within an hour.
     func testClockSleepsUntilTheMenuBarCanChange() {
-        let zone = TimeZone(identifier: "America/Los_Angeles")!
-        let now = ISO8601DateFormatter().date(from: "2026-09-29T17:05:30Z")!  // 10:05:30 PDT
+        let now = ISO8601DateFormatter().date(from: "2026-09-29T17:05:30Z")!
         let nextMinute = ISO8601DateFormatter().date(from: "2026-09-29T17:06:00Z")!
         let close = ISO8601DateFormatter().date(from: "2026-09-29T17:30:00Z")!
-        let midnight = ISO8601DateFormatter().date(from: "2026-09-30T07:00:00Z")!
+        let laterClose = ISO8601DateFormatter().date(from: "2026-09-29T19:00:00Z")!
 
-        XCTAssertEqual(MarketSessionsModel.nextRefresh(after: now, live: true, transitions: [close], timeZone: zone), nextMinute)
         XCTAssertEqual(
-            MarketSessionsModel.nextRefresh(after: now, live: false, transitions: [close], timeZone: zone),
+            MarketSessionsModel.nextRefresh(after: now, live: true, transitions: [close], countdownTo: nil),
+            nextMinute
+        )
+        XCTAssertEqual(
+            MarketSessionsModel.nextRefresh(after: now, live: false, transitions: [close], countdownTo: nil),
             close.addingTimeInterval(1)
         )
         XCTAssertEqual(
-            MarketSessionsModel.nextRefresh(after: now, live: false, transitions: [], timeZone: zone),
+            MarketSessionsModel.nextRefresh(after: now, live: false, transitions: [], countdownTo: nil),
             now.addingTimeInterval(3_600)
         )
-        let lateEvening = ISO8601DateFormatter().date(from: "2026-09-30T06:30:00Z")!  // 11:30 PM PDT
+        // 24.5 minutes out: inside the countdown window, so every minute.
         XCTAssertEqual(
-            MarketSessionsModel.nextRefresh(after: lateEvening, live: false, transitions: [], timeZone: zone),
-            midnight
+            MarketSessionsModel.nextRefresh(after: now, live: false, transitions: [close], countdownTo: close),
+            nextMinute
+        )
+        // 1h 54.5m out: sleep until the countdown's first minute (59m before the close).
+        XCTAssertEqual(
+            MarketSessionsModel.nextRefresh(after: now, live: false, transitions: [laterClose], countdownTo: laterClose),
+            laterClose.addingTimeInterval(-59 * 60)
         )
     }
 

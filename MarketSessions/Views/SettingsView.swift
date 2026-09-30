@@ -75,12 +75,12 @@ struct SettingsView: View {
 
             Section {
                 Toggle(isOn: Binding(
-                    get: { model.preferences.showsMenuBarTime },
-                    set: { model.setShowsMenuBarTime($0) }
+                    get: { model.preferences.showsMenuBarCountdown },
+                    set: { model.setShowsMenuBarCountdown($0) }
                 )) {
                     SettingsRowLabel(
-                        "Show Time in Menu Bar",
-                        subtitle: "When the next market opens or closes. Off shows the market code only."
+                        "Show Countdown in Menu Bar",
+                        subtitle: "In the last hour before the next market opens or closes. Off shows the market code only."
                     )
                 }
 

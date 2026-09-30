@@ -27,8 +27,9 @@ final class FocusSessionResolverTests: XCTestCase {
         )
     }
 
-    // Menu bar: the nearest transition is London's 8:30 AM close, so a filled pill and its clock time.
-    func testMenuBarShowsFilledPillAndCloseTimeForNearestTransition() throws {
+    // Menu bar: the nearest transition is London's 8:30 AM PDT close, so a filled pill,
+    // and a countdown only inside the final 59 minutes.
+    func testMenuBarCountsDownOnlyInTheFinalHour() throws {
         let now = try makeDate(year: 2026, month: 8, day: 28, hour: 7, minute: 12)
         let resolved = SessionResolver().resolve(MarketScheduleCatalog.sessions, at: now)
         let next = try XCTUnwrap(
@@ -37,11 +38,13 @@ final class FocusSessionResolverTests: XCTestCase {
 
         XCTAssertEqual(next.id, .london)
         XCTAssertTrue(MenuBarLabel.isFilled(next))
-        XCTAssertEqual(try menuBarTime(next, now: now), "8:30\u{202F}AM")
+        XCTAssertNil(MenuBarLabel.countdown(for: next, now: now))  // 1h 18m out
+        XCTAssertEqual(MenuBarLabel.countdown(for: next, now: now.addingTimeInterval(19 * 60)), "59m")
+        XCTAssertEqual(MenuBarLabel.countdown(for: next, now: now.addingTimeInterval(77 * 60 + 30)), "1m")
     }
 
-    // Saturday: nothing trading, so an outlined pill and CME's Sunday 3:00 PM open with its weekday.
-    func testMenuBarShowsOutlinedPillAndWeekdayWhileCountingToAnOpen() throws {
+    // Saturday: nothing trading, so an outlined pill; CME's Sunday open is too far off to count down.
+    func testMenuBarShowsOutlinedPillWithoutCountdownWhileFarFromAnOpen() throws {
         let now = try makeDate(year: 2026, month: 8, day: 29, hour: 11, minute: 40)
         let resolved = SessionResolver().resolve(MarketScheduleCatalog.sessions, at: now)
         let next = try XCTUnwrap(
@@ -50,16 +53,7 @@ final class FocusSessionResolverTests: XCTestCase {
 
         XCTAssertEqual(next.id, .cmeFutures)
         XCTAssertFalse(MenuBarLabel.isFilled(next))
-        XCTAssertEqual(try menuBarTime(next, now: now), "Sun 3:00\u{202F}PM")
-    }
-
-    /// Not normalized: the menu bar keeps the system clock's narrow space (U+202F) before AM/PM.
-    private func menuBarTime(_ resolved: ResolvedSession, now: Date) throws -> String {
-        try XCTUnwrap(MenuBarLabel.time(
-            for: resolved, now: now,
-            timeZone: try XCTUnwrap(TimeZone(identifier: "America/Los_Angeles")),
-            locale: Locale(identifier: "en_US")
-        ))
+        XCTAssertNil(MenuBarLabel.countdown(for: next, now: now))
     }
 
     private func makeDate(

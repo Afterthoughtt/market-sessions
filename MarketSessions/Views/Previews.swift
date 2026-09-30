@@ -61,7 +61,7 @@ private final class PreviewNotificationCenter: NotificationCentering {
     VStack(alignment: .leading, spacing: 12) {
         ForEach(model.orderedSessions, id: \.session.id) { resolved in
             HStack(spacing: 4) {
-                MenuBarLabel(resolved: resolved, now: model.now, displayTimeZone: model.displayTimeZone, showsTime: true)
+                MenuBarLabel(resolved: resolved, now: model.now, displayTimeZone: model.displayTimeZone, showsCountdown: true)
             }
         }
     }

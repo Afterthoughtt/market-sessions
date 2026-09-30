@@ -117,7 +117,9 @@ final class MarketSessionsModel {
                     after: now,
                     live: !self.liveSurfaces.isEmpty,
                     transitions: self.orderedSessions.compactMap { $0.transition?.date },
-                    timeZone: self.displayTimeZone
+                    countdownTo: self.preferences.showsMenuBarCountdown
+                        ? self.nextTransitionSession?.transition?.date
+                        : nil
                 )
                 let delay = max(0.05, next.timeIntervalSince(now))
                 // Tolerance lets macOS coalesce this wake-up with others.
@@ -132,24 +134,25 @@ final class MarketSessionsModel {
         }
     }
 
-    /// Next minute while a surface is live. Otherwise the earliest moment the menu bar
-    /// or notification plan can change: just after a session's next transition, local
-    /// midnight (the label's weekday prefix), or an hour as a safety net.
+    /// Next minute while a surface is live or the menu bar counts down. Otherwise the
+    /// earliest moment the menu bar or notification plan can change: just after a
+    /// session's next transition, the start of the menu bar countdown, or an hour as a
+    /// safety net.
     nonisolated static func nextRefresh(
         after now: Date,
         live: Bool,
         transitions: [Date],
-        timeZone: TimeZone
+        countdownTo target: Date?
     ) -> Date {
         let nextMinute = Date(timeIntervalSince1970: (floor(now.timeIntervalSince1970 / 60) + 1) * 60)
         if live { return nextMinute }
-        var calendar = Calendar(identifier: .gregorian)
-        calendar.timeZone = timeZone
-        let midnight = calendar.nextDate(
-            after: now, matching: DateComponents(hour: 0, minute: 0, second: 0), matchingPolicy: .nextTime
-        )
-        let candidates = transitions.filter { $0 > now }.map { $0.addingTimeInterval(1) }
-            + [midnight, now.addingTimeInterval(3_600)].compactMap { $0 }
+        var candidates = transitions.filter { $0 > now }.map { $0.addingTimeInterval(1) }
+            + [now.addingTimeInterval(3_600)]
+        if let target, target > now {
+            let countdownStart = target.addingTimeInterval(-MenuBarLabel.countdownWindow)
+            if now >= countdownStart { return nextMinute }
+            candidates.append(countdownStart)
+        }
         return candidates.min() ?? nextMinute
     }
 
@@ -358,9 +361,10 @@ final class MarketSessionsModel {
         savePreferences()
     }
 
-    func setShowsMenuBarTime(_ shows: Bool) {
-        preferences.showsMenuBarTime = shows
+    func setShowsMenuBarCountdown(_ shows: Bool) {
+        preferences.showsMenuBarCountdown = shows
         savePreferences()
+        if clockTask != nil { restartClock() }
     }
 
     func setDisplayTimeZone(_ identifier: String?) {

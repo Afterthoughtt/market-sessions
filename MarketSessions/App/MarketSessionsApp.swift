@@ -21,7 +21,7 @@ struct MarketSessionsApp: App {
                 resolved: model.nextTransitionSession,
                 now: model.now,
                 displayTimeZone: model.displayTimeZone,
-                showsTime: model.preferences.showsMenuBarTime
+                showsCountdown: model.preferences.showsMenuBarCountdown
             )
                 .task {
                     model.start()

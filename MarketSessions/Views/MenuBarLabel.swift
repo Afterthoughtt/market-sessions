@@ -1,23 +1,27 @@
 import AppKit
 import SwiftUI
 
-/// The next-to-change session's code in a pill, then the clock time of that
-/// change (`[LDN] 8:30 AM`, `[TYO] Sun 5:00 PM`). A filled pill counts to a
-/// close, an outlined one to an open. Only the pill is a template image
-/// (SwiftUI shapes do not draw in a MenuBarExtra label); the time is native
-/// text so the system sets its menu bar weight and the glyph-to-title gap.
+/// The next-to-change session's code in a pill; in the final hour before that
+/// change, a countdown beside it (`[LDN] 45m`). Never a clock time, which read as a
+/// second clock next to the system's. A filled pill counts to a close, an outlined
+/// one to an open. Only the pill is a template image (SwiftUI shapes do not draw in
+/// a MenuBarExtra label); the countdown is native text so the system sets the
+/// glyph-to-title gap.
 struct MenuBarLabel: View {
     let resolved: ResolvedSession?
     let now: Date
     let displayTimeZone: TimeZone
-    let showsTime: Bool
+    let showsCountdown: Bool
+
+    /// The countdown appears once the change is at most 59 minutes away, so it never reads "1h".
+    nonisolated static let countdownWindow: TimeInterval = 59 * 60
 
     var body: some View {
         Group {
             if let resolved {
                 Image(nsImage: Self.render(code: resolved.session.code, filled: Self.isFilled(resolved)))
-                if showsTime, let time = Self.time(for: resolved, now: now, timeZone: displayTimeZone) {
-                    Text(time)
+                if showsCountdown, let countdown = Self.countdown(for: resolved, now: now) {
+                    Text(countdown)
                         .font(.system(size: 13, weight: .semibold))
                         .monospacedDigit()
                 }
@@ -37,17 +41,11 @@ struct MenuBarLabel: View {
         resolved.transition?.verb == .closes
     }
 
-    /// `8:30 AM` today, `Sun 5:00 PM` on another day; nil when there is no next transition.
-    nonisolated static func time(
-        for resolved: ResolvedSession,
-        now: Date,
-        timeZone: TimeZone,
-        locale: Locale = .autoupdatingCurrent
-    ) -> String? {
-        guard let transition = resolved.transition else { return nil }
-        return MarketDateFormatting.transitionTime(
-            transition.date, relativeTo: now, timeZone: timeZone, locale: locale
-        )
+    /// `45m` … `1m` inside the countdown window; nil further out or with no next transition.
+    nonisolated static func countdown(for resolved: ResolvedSession, now: Date) -> String? {
+        guard let date = resolved.transition?.date, date > now,
+              date.timeIntervalSince(now) <= countdownWindow else { return nil }
+        return MarketDurationFormatting.compact(minutes: FocusSessionResolver.remainingMinutes(until: date, from: now))
     }
 
     /// Twelve possible pills (six codes, filled or not); render each once.
