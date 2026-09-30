@@ -6,7 +6,7 @@ Swift 6 menu-bar-only macOS app (targets macOS 26; built with Xcode 27 on macOS 
 
 - Fully offline: no network entitlement or code, no dependencies, no telemetry, no accounts. Do not add any without being asked.
 - Personal use only; the app is never distributed. Skip distribution work (signing team, notarization, app icon, App Sandbox).
-- Exactly five market states: Open, Pre-Market, After Hours, Break, Closed. The popover is monochrome on the system material except the extended-hours row tint defined in `handoff/DESIGN.md`.
+- Exactly five market states, TradingView's set without Overnight: Open, Pre-Market, After Hours, Holiday, Closed (a lunch or maintenance pause is Closed). State colours are Apple system colours per `handoff/DESIGN.md`; everything else in the popover stays neutral on the system material.
 - Schedules and event times are defined in canonical IANA zones. Never hardcode UTC offsets or local clock times. Never generate dates from recurrence formulas.
 
 ## Where the spec lives
@@ -25,7 +25,6 @@ Swift 6 menu-bar-only macOS app (targets macOS 26; built with Xcode 27 on macOS 
 - `MarketSessionsModel` (`@MainActor @Observable`) owns the clock and every resolved snapshot. Views are dumb renderers that take a `MarketPalette`.
 - Battery: the clock ticks per minute only while the popover or Settings is live (`setLiveSurface`) or the menu bar shows its final-hour countdown; otherwise it sleeps until the next transition, the countdown start, or an hour. Put periodic work in `refresh()`.
 - The menu bar pill is a cached template image (`ImageRenderer`); SwiftUI shapes do not draw in a `MenuBarExtra` label.
-- Progress bars are decorative and `accessibilityHidden`; the value is carried in adjacent text.
 - Kind-specific knowledge (category, description) lives on `EconomicEventKind`, not in views.
 - The project file is a hand-maintained classic pbxproj with sequential IDs. Adding a file means edits in five places; follow the existing pattern.
 - Tests inject isolated preference stores and never touch the app's standard defaults.

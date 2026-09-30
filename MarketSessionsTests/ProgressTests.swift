@@ -2,50 +2,6 @@ import XCTest
 @testable import MarketSessions
 
 final class ProgressTests: XCTestCase {
-    func testBarsFillTowardTheDisplayedCloseRatherThanTheEndOfTheDay() throws {
-        let now = try makeDate(
-            year: 2026, month: 9, day: 3, hour: 18, minute: 31,
-            timeZoneIdentifier: "America/Vancouver"
-        )
-        let sessions = SessionResolver().resolve(MarketScheduleCatalog.sessions, at: now)
-        let tokyo = try XCTUnwrap(sessions.first { $0.id == .tokyo })
-        let shanghai = try XCTUnwrap(sessions.first { $0.id == .shanghai })
-        let hongKong = try XCTUnwrap(sessions.first { $0.id == .hongKong })
-        // Screenshot moment: Tokyo has 59 minutes left of its 150-minute morning.
-        XCTAssertEqual(tokyo.elapsedTradingFraction(at: now), 91.0 / 150, accuracy: 0.000_001)
-        // These markets just opened, so their bars should be nearly empty, not full.
-        XCTAssertEqual(shanghai.elapsedTradingFraction(at: now), 1.0 / 120, accuracy: 0.000_001)
-        XCTAssertEqual(hongKong.elapsedTradingFraction(at: now), 1.0 / 150, accuracy: 0.000_001)
-    }
-
-    func testBarIsNearlyFullBeforeLunchAndRestartsEmptyAtTheAfternoonOpen() throws {
-        let beforeLunch = try makeDate(
-            year: 2026, month: 8, day: 24, hour: 11, minute: 29,
-            timeZoneIdentifier: "Asia/Tokyo"
-        )
-        let resolver = SessionResolver()
-        let session = MarketScheduleCatalog.session(.tokyo)
-        let morning = resolver.resolve(session, at: beforeLunch)
-        XCTAssertEqual(morning.elapsedTradingFraction(at: beforeLunch), 149.0 / 150, accuracy: 0.000_001)
-        XCTAssertEqual(morning.elapsedTradingFraction(at: beforeLunch.addingTimeInterval(60)), 1)
-        let afterLunch = try makeDate(
-            year: 2026, month: 8, day: 24, hour: 12, minute: 30,
-            timeZoneIdentifier: "Asia/Tokyo"
-        )
-        XCTAssertEqual(resolver.resolve(session, at: afterLunch).elapsedTradingFraction(at: afterLunch), 0)
-    }
-
-    func testAuctionDoesNotResetTheBar() throws {
-        let now = try makeDate(
-            year: 2026, month: 8, day: 24, hour: 14, minute: 58,
-            timeZoneIdentifier: "Asia/Shanghai"
-        )
-        let session = SessionResolver().resolve(MarketScheduleCatalog.session(.shanghai), at: now)
-        XCTAssertEqual(session.status, .open)
-        XCTAssertEqual(session.currentOccurrence?.kind, .auction)
-        XCTAssertEqual(session.elapsedTradingFraction(at: now), 118.0 / 120, accuracy: 0.000_001)
-    }
-
     func testCompactDurationFormatting() {
         XCTAssertEqual(MarketDurationFormatting.compact(minutes: 348), "5h 48m")
         XCTAssertEqual(MarketDurationFormatting.compact(minutes: 45), "45m")

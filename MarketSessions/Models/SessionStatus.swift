@@ -1,10 +1,12 @@
 import Foundation
 
+/// TradingView's market statuses minus Overnight, which no bundled market has.
+/// A lunch recess or CME's maintenance hour is Closed, as TradingView has no pause status.
 enum SessionStatus: String, CaseIterable, Hashable, Sendable {
     case open = "Open"
     case preMarket = "Pre-Market"
     case postMarket = "After Hours"
-    case onBreak = "Break"
+    case holiday = "Holiday"
     case closed = "Closed"
 
     var isActive: Bool { self == .open }
@@ -17,20 +19,9 @@ struct ResolvedSession: Identifiable, Hashable, Sendable {
     let status: SessionStatus
     /// Occurrence containing now, of any kind.
     let currentOccurrence: SessionOccurrence?
-    /// Start of the uninterrupted trading period ending at the displayed close.
-    let activePeriodStart: Date?
     /// Start of the next active occurrence after now.
     let nextActiveStart: Date?
     let transition: SessionTransition?
 
     var id: MarketSession.ID { session.id }
-
-    /// Empty at open, full at the next close, filling leading to trailing like a
-    /// determinate progress bar (HIG Progress indicators). Adjacent auctions remain
-    /// in the same period; a lunch recess or maintenance break starts a new period.
-    func elapsedTradingFraction(at now: Date) -> Double {
-        guard status.isActive, let start = activePeriodStart,
-              let end = transition?.date, end > start else { return 0 }
-        return FocusSessionResolver.clampedProgress(now: now, start: start, end: end)
-    }
 }

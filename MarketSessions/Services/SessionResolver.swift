@@ -22,14 +22,12 @@ struct SessionResolver: Sendable {
             ?? occurrences.first(where: { $0.contains(now) })
         let nextActiveStart = activeOccurrences.first(where: { $0.start > now })?.start
 
-        let status: SessionStatus
-        var periodStart: Date?
+        var status: SessionStatus
         let transition: SessionTransition?
 
         if let current, current.kind.countsAsActive {
             status = .open
             let chain = activeChain(containing: current, in: activeOccurrences)
-            periodStart = chain.first?.start
             transition = SessionTransition(
                 verb: .closes,
                 date: chain.last?.end ?? current.end
@@ -37,7 +35,7 @@ struct SessionResolver: Sendable {
         } else if let current {
             switch current.kind {
             case .recess, .maintenance:
-                status = .onBreak
+                status = .closed
                 transition = SessionTransition(
                     verb: .opens,
                     date: nextActiveStart ?? current.end
@@ -60,11 +58,18 @@ struct SessionResolver: Sendable {
             }
         }
 
+        if status == .closed {
+            var calendar = baseCalendar
+            calendar.timeZone = session.canonicalTimeZone
+            if exceptions.exception(for: session.id, on: now, calendar: calendar)?.kind == .holiday {
+                status = .holiday
+            }
+        }
+
         return ResolvedSession(
             session: session,
             status: status,
             currentOccurrence: current,
-            activePeriodStart: periodStart,
             nextActiveStart: nextActiveStart,
             transition: transition
         )

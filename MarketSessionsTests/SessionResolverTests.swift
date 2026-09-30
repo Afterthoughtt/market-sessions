@@ -3,7 +3,7 @@ import XCTest
 
 final class SessionResolverTests: XCTestCase {
     func testMarketStateLabels() {
-        XCTAssertEqual(Set(SessionStatus.allCases.map(\.label)), ["Open", "Pre-Market", "After Hours", "Break", "Closed"])
+        XCTAssertEqual(Set(SessionStatus.allCases.map(\.label)), ["Open", "Pre-Market", "After Hours", "Holiday", "Closed"])
     }
 
     func testCMEUsesScheduledBoundaryWithoutEstimateMarker() throws {
@@ -88,7 +88,8 @@ final class SessionResolverTests: XCTestCase {
             timeZoneIdentifier: "Asia/Tokyo"
         )
         let result = SessionResolver().resolve(MarketScheduleCatalog.session(.tokyo), at: now)
-        XCTAssertEqual(result.status, .onBreak)
+        // TradingView has no pause status: the lunch recess is Closed, reopening at 12:30.
+        XCTAssertEqual(result.status, .closed)
         XCTAssertEqual(result.transition?.verb, .opens)
         XCTAssertEqual(
             result.transition?.date,
@@ -141,7 +142,7 @@ final class SessionResolverTests: XCTestCase {
 
         let maintenanceNow = try makeDate(year: 2026, month: 8, day: 24, hour: 16, minute: 30, timeZoneIdentifier: zone)
         let maintenance = SessionResolver().resolve(session, at: maintenanceNow)
-        XCTAssertEqual(maintenance.status, .onBreak)
+        XCTAssertEqual(maintenance.status, .closed)
         XCTAssertEqual(maintenance.transition?.verb, .opens)
         XCTAssertEqual(
             maintenance.transition?.date,
@@ -237,7 +238,7 @@ final class SessionResolverTests: XCTestCase {
         let now = try makeDate(year: 2026, month: 8, day: 24, hour: 12, minute: 0, timeZoneIdentifier: "America/New_York")
         let result = resolver.resolve(MarketScheduleCatalog.session(.newYorkCash), at: now)
 
-        XCTAssertEqual(result.status, .closed)
+        XCTAssertEqual(result.status, .holiday)
         // Next open is Tuesday, not later today.
         XCTAssertEqual(
             result.nextActiveStart,

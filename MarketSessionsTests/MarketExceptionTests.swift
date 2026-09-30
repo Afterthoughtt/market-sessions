@@ -35,7 +35,7 @@ final class MarketExceptionTests: XCTestCase {
         let now = try makeDate(year: 2026, month: 11, day: 26, hour: 12, minute: 0, timeZone: zone)
         let result = try bundledResolver().resolve(MarketScheduleCatalog.session(.newYorkCash), at: now)
 
-        XCTAssertEqual(result.status, .closed)
+        XCTAssertEqual(result.status, .holiday)
         XCTAssertEqual(
             result.nextActiveStart,
             try makeDate(year: 2026, month: 11, day: 27, hour: 9, minute: 30, timeZone: zone)
@@ -82,7 +82,7 @@ final class MarketExceptionTests: XCTestCase {
         let now = try makeDate(year: 2026, month: 10, day: 5, hour: 10, minute: 0, timeZone: zone)
         let result = try bundledResolver().resolve(MarketScheduleCatalog.session(.shanghai), at: now)
 
-        XCTAssertEqual(result.status, .closed)
+        XCTAssertEqual(result.status, .holiday)
         XCTAssertEqual(
             result.nextActiveStart,
             try makeDate(year: 2026, month: 10, day: 8, hour: 9, minute: 30, timeZone: zone)
@@ -109,7 +109,7 @@ final class MarketExceptionTests: XCTestCase {
         let now = try makeDate(year: 2026, month: 9, day: 21, hour: 10, minute: 0, timeZone: zone)
         let result = try bundledResolver().resolve(MarketScheduleCatalog.session(.tokyo), at: now)
 
-        XCTAssertEqual(result.status, .closed)
+        XCTAssertEqual(result.status, .holiday)
         XCTAssertEqual(
             result.nextActiveStart,
             try makeDate(year: 2026, month: 9, day: 24, hour: 9, minute: 0, timeZone: zone)

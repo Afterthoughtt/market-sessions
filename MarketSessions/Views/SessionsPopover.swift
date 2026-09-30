@@ -20,39 +20,23 @@ struct SessionsPopover: View {
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .padding(.vertical, 16)
             } else {
-                sectionHeader("Open")
+                sectionHeader(.open)
                 if openSessions.isEmpty {
                     Text("No markets open")
                         .font(.system(size: 13))
                         .foregroundStyle(palette.sec)
                         .frame(maxWidth: .infinity, minHeight: 24, alignment: .leading)
                 }
-                sessionRows(openSessions) { resolved in
-                    OpenSessionRow(
-                        resolved: resolved,
-                        now: model.now,
-                        displayTimeZone: model.displayTimeZone,
-                        palette: palette,
-                        isNext: resolved.id == model.nextTransitionSession?.id
-                    )
-                }
+                sessionRows(openSessions)
 
                 ForEach(
-                    [SessionStatus.preMarket, .postMarket, .onBreak, .closed],
+                    [SessionStatus.preMarket, .postMarket, .holiday, .closed],
                     id: \.self
                 ) { status in
                     let sessions = inactiveSessions(status)
                     if !sessions.isEmpty {
-                        sectionHeader(status.label)
-                        sessionRows(sessions) { resolved in
-                            ClosedSessionRow(
-                                resolved: resolved,
-                                now: model.now,
-                                displayTimeZone: model.displayTimeZone,
-                                palette: palette,
-                                isNext: resolved.id == model.nextTransitionSession?.id
-                            )
-                        }
+                        sectionHeader(status)
+                        sessionRows(sessions)
                     }
                 }
             }
@@ -142,23 +126,33 @@ struct SessionsPopover: View {
         }
     }
 
-    private func sectionHeader(_ title: String) -> some View {
-        Text(title)
-            .font(.system(size: 11, weight: .semibold))
-            .foregroundStyle(palette.sec)
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .padding(.top, 16)
-            .padding(.bottom, 2)
+    /// The state's color sits on a dot rather than the text: system green and
+    /// orange are too light for 11pt text on the light material.
+    private func sectionHeader(_ status: SessionStatus) -> some View {
+        HStack(spacing: 5) {
+            Circle()
+                .fill(palette.stateColor(status))
+                .frame(width: 7, height: 7)
+                .accessibilityHidden(true)
+            Text(status.label)
+                .font(.system(size: 11, weight: .semibold))
+                .foregroundStyle(palette.sec)
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(.top, 16)
+        .padding(.bottom, 2)
     }
 
     /// Rows sit together like menu items; section headers and spacing do the grouping.
-    private func sessionRows<Row: View>(
-        _ sessions: [ResolvedSession],
-        @ViewBuilder row: @escaping (ResolvedSession) -> Row
-    ) -> some View {
+    private func sessionRows(_ sessions: [ResolvedSession]) -> some View {
         VStack(spacing: 0) {
             ForEach(sessions) { resolved in
-                row(resolved)
+                SessionRow(
+                    resolved: resolved,
+                    now: model.now,
+                    displayTimeZone: model.displayTimeZone,
+                    palette: palette
+                )
             }
         }
     }
