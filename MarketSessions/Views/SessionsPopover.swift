@@ -102,7 +102,8 @@ struct SessionsPopover: View {
     }
 
     private var header: some View {
-        HStack(alignment: .top, spacing: 8) {
+        // Daily Close sits on the weekday's baseline; an overridden zone, when set, rides above it.
+        HStack(alignment: .lastTextBaseline, spacing: 8) {
             VStack(alignment: .leading, spacing: 3) {
                 Text("Market Sessions")
                     .font(.system(size: 15, weight: .semibold))
@@ -116,9 +117,12 @@ struct SessionsPopover: View {
             Spacer(minLength: 0)
 
             VStack(alignment: .trailing, spacing: 3) {
-                Text("\(model.preferences.timeZoneIdentifier == nil ? "Your time" : "Time") · \(timeZoneAbbreviation)")
-                    .font(.system(size: 10))
-                    .foregroundStyle(palette.sec)
+                // The system zone needs no label; an override does, or its times would read as local.
+                if model.preferences.timeZoneIdentifier != nil {
+                    Text("Time · \(timeZoneAbbreviation)")
+                        .font(.system(size: 10))
+                        .foregroundStyle(palette.sec)
+                }
 
                 Text(
                     "Daily Close in \(Text(MarketDurationFormatting.compact(minutes: model.utcDayRemainingMinutes)).fontWeight(.semibold).foregroundColor(palette.text))"

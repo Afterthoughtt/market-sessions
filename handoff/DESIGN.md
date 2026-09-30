@@ -8,7 +8,7 @@ Static design reference only. Data shown is a fixed snapshot (Thu 6:09 PM PDT); 
 ## Popover
 - Width 340pt. Height = content. Material: NSVisualEffectView .popover (or .glassEffect on macOS 26). No other material, card, ring, or accent colour inside.
 - Padding 14pt sides/top, 4pt bottom. Corner radius 14 (system default is fine).
-- Header: title "Market Sessions" 15 semibold; subtitle = weekday, 11 secondary. Right column, 10pt secondary: "Your time · PDT" over "Daily Close in 22h 51m" (countdown value 10 semibold primary, tabular).
+- Header: title "Market Sessions" 15 semibold; subtitle = weekday, 11 secondary. Right column, 10pt secondary: "Daily Close in 22h 51m" (countdown value 10 semibold primary, tabular) on the weekday's baseline; only when Settings overrides the zone, "Time · EST" above it (owner decision 2026-09-29: the system zone needs no label).
 - Sections: "Open" then "Closed". Section header 11 semibold secondary, 16pt above, 2pt below. Rows separated by 1pt hairline at 7% black. Sections separated by whitespace only.
 - Open row: name 13 regular primary; second line = 3pt scrubber (track 8% black, fill 50% black, radius 1.5, fill = elapsed fraction) + "Closes 7:30 PM" 11 secondary tabular. Row padding 8 top / 10 bottom, 7 between lines. Sort by soonest close.
 - Closed row: 32pt; name 13 primary left, "Opens 6:30 PM" 11 secondary tabular right. Sort by soonest open. Filter rule: a session appears in exactly one section.
@@ -50,7 +50,7 @@ Bars **drain to the close shown**: full at the start of the uninterrupted tradin
 
 ### Popover (340 wide, height fits content)
 
-1. Header — title and local weekday; `Your time · <zone>` (or `Time · <zone>` for an override); UTC "Daily Close in Xh Ym".
+1. Header — title and local weekday; `Time · <zone>` only for a Settings override; UTC "Daily Close in Xh Ym".
 2. Open — active markets ordered by nearest close, with local close time and a draining bar.
 3. Pre-Market, After Hours, Break, then Closed — ordered by nearest open, with local Opens time. Omit empty sections. Each selected market appears once. Rows are non-interactive.
 4. Upcoming Events — the next four of the selected kinds, no disclosure. Compact names (U.S. Jobs Report, FOMC Decision); full description and exact local date/time in tooltips and accessibility labels. Preserve per-event titles (Jackson Hole keynote). Inside 24 hours emphasize Today/Tomorrow + local time; while live show Live. BOJ carries no approximation marker (owner decision 2026-09-29); its stored 12:00 JST is noted only in the Settings tooltip. When nothing selected remains, say the bundled schedule has none. When a selected category's bundled dates end before the last shown row, one 11pt secondary line says so ("U.S. release dates bundled through Dec 23, 2026"); Settings rows past their category's coverage read "Not in bundled schedule".
