@@ -11,7 +11,7 @@ Swift 6 menu-bar-only macOS app (targets macOS 26; built with Xcode 27 on macOS 
 
 ## Where the spec lives
 
-- `handoff/DESIGN.md` is the product and visual spec, including the owner decisions that amend it. `handoff/popover.html` is the visual baseline. `design_handoff_market_sessions/` is older history: reference, don't edit.
+- `handoff/DESIGN.md` is the product and visual spec, including the owner decisions that amend it; check it before every UI change. `handoff/popover.html` is the visual baseline. `design_handoff_market_sessions/` is older history: reference, don't edit.
 - Apple's macOS 26 Figma kit is the authority for hover states, row metrics, type, and color tokens. Its JSON is cached at `.build/reference/figma-macos26.json` (gitignored). Query it with a short script; do not read the raw 25 MB file, and do not use the Figma MCP or REST API per node (the seat is capped). Re-pull only when the kit changes: `script/refresh_figma_kit.sh`.
 - Bundled data rules and refresh cadence: `MarketSessions/Resources/README.md`.
 - Known issues and the open work list: `handoff/OPEN_ISSUES.md`. Start there when resuming.
@@ -20,9 +20,8 @@ Swift 6 menu-bar-only macOS app (targets macOS 26; built with Xcode 27 on macOS 
 ## macOS Development skills (always)
 
 - Load `macos-development:standards` at the start of every session, before any design, code, build, or review work. Its rules, and its references `compatibility.md` (SDK and API availability) and `fetching-apple-sources.md` (reading Apple docs and HIG pages), apply throughout.
-- Then use the task's skill: `design` for new UI or interaction planning, `native-ui` when writing or changing SwiftUI/AppKit code, `build-debug` for builds, tests, crashes and performance, `design-review` and `accessibility-audit` before calling UI work done. `release-check` is out of scope (never distributed).
-- Alongside the skills, every UI change also checks `handoff/DESIGN.md` (spec and owner decisions) and traces metrics, type, colors and states to the cached Figma kit (see "Where the spec lives" for how to query it). Record resulting decisions in DESIGN.md.
-- This file, DESIGN.md owner decisions, and the Figma kit override the skills' defaults where they differ.
+- Then use the task's skill: `design` for new UI or interaction planning, `native-ui` when writing or changing SwiftUI/AppKit code, `build-debug` for builds, tests, crashes and performance, `design-review` and `accessibility-audit` before calling a change to layout, interaction, or states done. `release-check` is out of scope (never distributed).
+- This file and the spec sources above (DESIGN.md owner decisions, the Figma kit) override the skills' defaults where they differ.
 
 ## Architecture
 
