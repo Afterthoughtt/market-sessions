@@ -4,3 +4,6 @@
 xcuserdata/
 *.heic
 Screenshot *.png
+
+# SF Symbols template exports (Apple symbol outlines; source for the custom pill symbols)
+symbols export/
