@@ -37,7 +37,7 @@ final class FocusSessionResolverTests: XCTestCase {
 
         XCTAssertEqual(next.id, .london)
         XCTAssertTrue(MenuBarLabel.isFilled(next))
-        XCTAssertEqual(try menuBarTime(next, now: now), "8:30 AM")
+        XCTAssertEqual(try menuBarTime(next, now: now), "8:30\u{202F}AM")
     }
 
     // Saturday: nothing trading, so an outlined pill and CME's Sunday 3:00 PM open with its weekday.
@@ -50,10 +50,10 @@ final class FocusSessionResolverTests: XCTestCase {
 
         XCTAssertEqual(next.id, .cmeFutures)
         XCTAssertFalse(MenuBarLabel.isFilled(next))
-        XCTAssertEqual(try menuBarTime(next, now: now), "Sun 3:00 PM")
+        XCTAssertEqual(try menuBarTime(next, now: now), "Sun 3:00\u{202F}PM")
     }
 
-    /// Not normalized: the menu bar must use a full space before AM/PM, not U+202F.
+    /// Not normalized: the menu bar keeps the system clock's narrow space (U+202F) before AM/PM.
     private func menuBarTime(_ resolved: ResolvedSession, now: Date) throws -> String {
         try XCTUnwrap(MenuBarLabel.time(
             for: resolved, now: now,

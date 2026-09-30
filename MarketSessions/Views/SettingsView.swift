@@ -148,10 +148,8 @@ struct SettingsView: View {
                     }
                     .labelsHidden()
                     .fixedSize()
-                    .centeredInRow()
                 } label: {
                     SettingsRowLabel("Lead Time", subtitle: "Applies to every notification below.")
-                        .centeredInRow()
                 }
 
                 LabeledContent {
@@ -165,7 +163,6 @@ struct SettingsView: View {
                             Button("Send Test Notification") { model.sendTestNotification() }
                         }
                     }
-                    .centeredInRow()
                 } label: {
                     Group {
                         switch model.notificationAuthorization {
@@ -180,7 +177,6 @@ struct SettingsView: View {
                             SettingsRowLabel("Test Notification", subtitle: "Shows a sample banner right away.")
                         }
                     }
-                    .centeredInRow()
                 }
             } footer: {
                 Text("Markets notify at the first open and final close of each trading day; events at their scheduled time. Selections here are independent of what the popover shows.")
@@ -298,14 +294,5 @@ private struct SettingsRowLabel: View {
                     .foregroundStyle(.secondary)
             }
         }
-    }
-}
-
-private extension View {
-    /// Form rows align label and control on the first text baseline, which pins a
-    /// pop-up or button to the title line of a two-line label. Applied to both
-    /// sides, this centers the control on the whole row instead.
-    func centeredInRow() -> some View {
-        alignmentGuide(.firstTextBaseline) { $0[VerticalAlignment.center] }
     }
 }
