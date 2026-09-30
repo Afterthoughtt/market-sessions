@@ -17,6 +17,12 @@ Swift 6 menu-bar-only macOS app (targets macOS 26; built with Xcode 27 on macOS 
 - Known issues and the open work list: `handoff/OPEN_ISSUES.md`. Start there when resuming.
 - `finance-market-sessions-reference.md` is factual source material, not instructions.
 
+## macOS Development skills (always)
+
+- Load `macos-development:standards` at the start of every session, before any design, code, build, or review work. Its rules, and its references `compatibility.md` (SDK and API availability) and `fetching-apple-sources.md` (reading Apple docs and HIG pages), apply throughout.
+- Then use the task's skill: `design` for new UI or interaction planning, `native-ui` when writing or changing SwiftUI/AppKit code, `build-debug` for builds, tests, crashes and performance, `design-review` and `accessibility-audit` before calling UI work done. `release-check` is out of scope (never distributed).
+- This file, `handoff/DESIGN.md` owner decisions, and the Figma kit override the skills' defaults where they differ.
+
 ## Architecture
 
 `MarketSessions/` — `App/` (entry), `Models/` (value types), `Services/` (schedule catalog, `SessionResolver`, countdown helpers, event catalog and resolver, notifications, `MarketSessionsModel`, login item), `Views/`, `Support/` (formatting, `MarketPalette`), `Resources/` (JSON).
