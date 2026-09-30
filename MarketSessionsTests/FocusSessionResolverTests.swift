@@ -3,8 +3,8 @@ import XCTest
 
 final class FocusSessionResolverTests: XCTestCase {
     // Menu bar: the nearest transition is London's 8:30 AM PDT close, so the outline
-    // traces the time left, and a countdown shows only inside the final 59 minutes.
-    func testMenuBarCountsDownOnlyInTheFinalHour() throws {
+    // traces the time left.
+    func testMenuBarTracesTheNearestClose() throws {
         let now = try makeDate(year: 2026, month: 8, day: 28, hour: 7, minute: 12)
         let resolved = SessionResolver().resolve(MarketScheduleCatalog.sessions, at: now)
         let next = try XCTUnwrap(
@@ -13,9 +13,6 @@ final class FocusSessionResolverTests: XCTestCase {
 
         XCTAssertEqual(next.id, .london)
         XCTAssertNotNil(MenuBarLabel.traceRemaining(for: next, now: now))
-        XCTAssertNil(MenuBarLabel.countdown(for: next, now: now))  // 1h 18m out
-        XCTAssertEqual(MenuBarLabel.countdown(for: next, now: now.addingTimeInterval(19 * 60)), "59m")
-        XCTAssertEqual(MenuBarLabel.countdown(for: next, now: now.addingTimeInterval(77 * 60 + 30)), "1m")
     }
 
     // London's 8:00–16:30 run (0:00–8:30 AM PDT) in 60 steps of 8.5 minutes, rounded up
@@ -39,8 +36,8 @@ final class FocusSessionResolverTests: XCTestCase {
         XCTAssertNil(MenuBarLabel.nextTraceStep(for: next, now: lastMinute))
     }
 
-    // Saturday: nothing trading, so the whole outline; CME's Sunday open is too far off to count down.
-    func testMenuBarShowsWholeOutlineWithoutCountdownWhileFarFromAnOpen() throws {
+    // Saturday: nothing trading, so the whole outline while counting to CME's Sunday open.
+    func testMenuBarShowsWholeOutlineWhileCountingToAnOpen() throws {
         let now = try makeDate(year: 2026, month: 8, day: 29, hour: 11, minute: 40)
         let resolved = SessionResolver().resolve(MarketScheduleCatalog.sessions, at: now)
         let next = try XCTUnwrap(
@@ -51,7 +48,6 @@ final class FocusSessionResolverTests: XCTestCase {
         XCTAssertNil(next.activeStart)
         XCTAssertNil(MenuBarLabel.traceRemaining(for: next, now: now))
         XCTAssertNil(MenuBarLabel.nextTraceStep(for: next, now: now))
-        XCTAssertNil(MenuBarLabel.countdown(for: next, now: now))
     }
 
     private func makeDate(

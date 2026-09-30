@@ -64,16 +64,6 @@ struct SettingsView: View {
 
             Section {
                 Toggle(isOn: Binding(
-                    get: { model.preferences.showsMenuBarCountdown },
-                    set: { model.setShowsMenuBarCountdown($0) }
-                )) {
-                    SettingsRowLabel(
-                        "Show Countdown in Menu Bar",
-                        subtitle: "In the last hour before the next market opens or closes. Off shows the market code only."
-                    )
-                }
-
-                Toggle(isOn: Binding(
                     get: { model.loginItemState.isEnabled },
                     set: { model.setLaunchAtLogin($0) }
                 )) {

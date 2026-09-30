@@ -13,7 +13,7 @@ Out of scope (owner decision 2026-09-29, personal use only): distribution signin
 ## Unverified, check when convenient
 
 - A notification whose trigger passes while the Mac sleeps may be delivered late on wake ("Opens in 5 minutes" hours later). Owner to confirm: 5-minute lead, a market alert due within the hour, sleep through it, wake ~15 minutes later. A `BannerDelegate.willPresent` filter would not help: Apple calls it only while the app is in the foreground, which a menu-bar app rarely is. If confirmed, remove stale delivered banners from the existing wake refresh instead.
-- Not yet seen in the real menu bar: the whole and traced outlines (the 2026-09-30 owner screenshot predates the trace and showed the filled pill).
+- Menu bar pill, seen only as a traced pill in a dark bar (owner screenshots 2026-09-30). Not yet seen: the whole outline (counting to an open), a light bar, Increase Contrast, the highlighted item while the popover is open, and the item under VoiceOver or keyboard (Control-F8).
 
 ## Data refresh (December 2026)
 

@@ -20,8 +20,7 @@ struct MarketSessionsApp: App {
             MenuBarLabel(
                 resolved: model.nextTransitionSession,
                 now: model.now,
-                displayTimeZone: model.displayTimeZone,
-                showsCountdown: model.preferences.showsMenuBarCountdown
+                displayTimeZone: model.displayTimeZone
             )
                 .task {
                     model.start()

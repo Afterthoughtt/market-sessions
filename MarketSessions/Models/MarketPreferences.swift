@@ -9,8 +9,6 @@ struct MarketPreferences: Equatable {
     var notifiedMarkets: Set<MarketSession.ID> = []
     var notifiedEventKinds: Set<EconomicEventKind> = []
     var notificationLeadMinutes = 0
-    /// Off leaves only the market-code pill in the menu bar, like Battery's "Show Percentage".
-    var showsMenuBarCountdown = true
 
     var notifiesAnything: Bool { !notifiedMarkets.isEmpty || !notifiedEventKinds.isEmpty }
 
@@ -21,7 +19,6 @@ struct MarketPreferences: Equatable {
         static let notifiedMarkets = "notifiedMarkets"
         static let notifiedEvents = "notifiedEventKinds"
         static let notificationLead = "notificationLeadMinutes"
-        static let menuBarCountdown = "showsMenuBarCountdown"
     }
 
     init() {}
@@ -47,9 +44,6 @@ struct MarketPreferences: Equatable {
         if NotificationPlanner.leadOptions.contains(lead) {
             notificationLeadMinutes = lead
         }
-        if let stored = defaults.object(forKey: Key.menuBarCountdown) as? Bool {
-            showsMenuBarCountdown = stored
-        }
     }
 
     func save(to defaults: UserDefaults) {
@@ -63,7 +57,6 @@ struct MarketPreferences: Equatable {
         defaults.set(notifiedMarkets.map(\.rawValue).sorted(), forKey: Key.notifiedMarkets)
         defaults.set(notifiedEventKinds.map(\.rawValue).sorted(), forKey: Key.notifiedEvents)
         defaults.set(notificationLeadMinutes, forKey: Key.notificationLead)
-        defaults.set(showsMenuBarCountdown, forKey: Key.menuBarCountdown)
     }
 
     func displayTimeZone(system: TimeZone) -> TimeZone {

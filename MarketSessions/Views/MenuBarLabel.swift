@@ -1,20 +1,14 @@
 import AppKit
 import SwiftUI
 
-/// The next-to-change session's code in a pill; in the final hour before that
-/// change, a countdown beside it (`[LDN] 45m`). Never a clock time, which read as a
-/// second clock next to the system's. While counting to a close the outline traces
-/// the time left; while counting to an open it is whole. Only the pill is a template
-/// image (SwiftUI shapes do not draw in a MenuBarExtra label); the countdown is
-/// native text so the system sets the glyph-to-title gap.
+/// The next-to-change session's code in a pill, with no time beside it; the popover
+/// and tooltip carry the exact time. While counting to a close the outline traces the
+/// time left; while counting to an open it is whole. The pill is a template image
+/// (SwiftUI shapes do not draw in a MenuBarExtra label).
 struct MenuBarLabel: View {
     let resolved: ResolvedSession?
     let now: Date
     let displayTimeZone: TimeZone
-    let showsCountdown: Bool
-
-    /// The countdown appears once the change is at most 59 minutes away, so it never reads "1h".
-    nonisolated static let countdownWindow: TimeInterval = 59 * 60
 
     /// The trace moves in this many steps per open run, about 1.3pt of the outline
     /// each, so the clock wakes only when the trace visibly moves.
@@ -24,11 +18,6 @@ struct MenuBarLabel: View {
         Group {
             if let resolved {
                 Image(nsImage: Self.render(code: resolved.session.code, remaining: Self.traceRemaining(for: resolved, now: now)))
-                if showsCountdown, let countdown = Self.countdown(for: resolved, now: now) {
-                    Text(countdown)
-                        .font(.system(size: 13, weight: .semibold))
-                        .monospacedDigit()
-                }
             } else {
                 // Keep Settings reachable even when the user hides every market.
                 Image(systemName: "clock")
@@ -58,13 +47,6 @@ struct MenuBarLabel: View {
               let start = resolved.activeStart, transition.date > start else { return nil }
         let left = transition.date.timeIntervalSince(now) / transition.date.timeIntervalSince(start)
         return min(traceSteps, max(1, Int((left * Double(traceSteps)).rounded(.up))))
-    }
-
-    /// `45m` … `1m` inside the countdown window; nil further out or with no next transition.
-    nonisolated static func countdown(for resolved: ResolvedSession, now: Date) -> String? {
-        guard let date = resolved.transition?.date, date > now,
-              date.timeIntervalSince(now) <= countdownWindow else { return nil }
-        return MarketDurationFormatting.compact(minutes: FocusSessionResolver.remainingMinutes(until: date, from: now))
     }
 
     /// At most 61 pills per code (whole, or one of the trace steps); render each once.
@@ -138,8 +120,5 @@ private struct MenuBarPill: View {
                 }
             }
             .frame(height: 16)
-        // The system's image-to-title gap leaves ~3.5pt of ink gap; Apple's Weather
-        // item (glyph + "57°F") shows ~5pt, measured from an owner screenshot.
-        .padding(.trailing, 1.5)
     }
 }

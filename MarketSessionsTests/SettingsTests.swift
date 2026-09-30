@@ -7,7 +7,6 @@ final class SettingsTests: XCTestCase {
         XCTAssertEqual(preferences.visibleMarkets, Set(MarketSession.ID.allCases))
         XCTAssertEqual(preferences.eventKinds, Set(EconomicEventKind.allCases.filter(\.isDefault)))
         XCTAssertNil(preferences.timeZoneIdentifier)
-        XCTAssertTrue(preferences.showsMenuBarCountdown)
         let system = TimeZone(identifier: "America/Vancouver")!
         XCTAssertEqual(preferences.displayTimeZone(system: system), system)
     }
@@ -20,7 +19,6 @@ final class SettingsTests: XCTestCase {
         preferences.visibleMarkets = [.tokyo, .london]
         preferences.eventKinds = [.boj, .ecb]
         preferences.timeZoneIdentifier = "Asia/Tokyo"
-        preferences.showsMenuBarCountdown = false
         preferences.save(to: defaults)
         XCTAssertEqual(MarketPreferences(defaults: defaults), preferences)
 
@@ -135,9 +133,8 @@ final class SettingsTests: XCTestCase {
         XCTAssertEqual(model.displayTimeZone.identifier, "America/New_York")
     }
 
-    // Battery: minute ticks only while a surface is on screen or the menu bar counts
-    // down; otherwise wake just after the next transition or trace step, when the
-    // countdown starts, or within an hour.
+    // Battery: minute ticks only while a surface is on screen; otherwise wake just after
+    // the next transition or trace step, or within an hour.
     func testClockSleepsUntilTheMenuBarCanChange() {
         let now = ISO8601DateFormatter().date(from: "2026-09-29T17:05:30Z")!
         let nextMinute = ISO8601DateFormatter().date(from: "2026-09-29T17:06:00Z")!
@@ -146,30 +143,26 @@ final class SettingsTests: XCTestCase {
         let laterClose = ISO8601DateFormatter().date(from: "2026-09-29T19:00:00Z")!
 
         XCTAssertEqual(
-            MarketSessionsModel.nextRefresh(after: now, live: true, transitions: [close], traceStep: nil, countdownTo: nil),
+            MarketSessionsModel.nextRefresh(after: now, live: true, transitions: [close], traceStep: nil),
             nextMinute
         )
+        // 24.5 minutes out: no minute ticks before a close, just the close itself.
         XCTAssertEqual(
-            MarketSessionsModel.nextRefresh(after: now, live: false, transitions: [close], traceStep: nil, countdownTo: nil),
+            MarketSessionsModel.nextRefresh(after: now, live: false, transitions: [close], traceStep: nil),
             close.addingTimeInterval(1)
         )
         XCTAssertEqual(
-            MarketSessionsModel.nextRefresh(after: now, live: false, transitions: [close], traceStep: traceStep, countdownTo: nil),
+            MarketSessionsModel.nextRefresh(after: now, live: false, transitions: [close], traceStep: traceStep),
             traceStep.addingTimeInterval(1)
         )
         XCTAssertEqual(
-            MarketSessionsModel.nextRefresh(after: now, live: false, transitions: [], traceStep: nil, countdownTo: nil),
+            MarketSessionsModel.nextRefresh(after: now, live: false, transitions: [], traceStep: nil),
             now.addingTimeInterval(3_600)
         )
-        // 24.5 minutes out: inside the countdown window, so every minute.
+        // 1h 54.5m out with no trace step sooner: the hourly safety net.
         XCTAssertEqual(
-            MarketSessionsModel.nextRefresh(after: now, live: false, transitions: [close], traceStep: nil, countdownTo: close),
-            nextMinute
-        )
-        // 1h 54.5m out: sleep until the countdown's first minute (59m before the close).
-        XCTAssertEqual(
-            MarketSessionsModel.nextRefresh(after: now, live: false, transitions: [laterClose], traceStep: nil, countdownTo: laterClose),
-            laterClose.addingTimeInterval(-59 * 60)
+            MarketSessionsModel.nextRefresh(after: now, live: false, transitions: [laterClose], traceStep: nil),
+            now.addingTimeInterval(3_600)
         )
     }
 
