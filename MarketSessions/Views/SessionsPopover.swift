@@ -126,19 +126,11 @@ struct SessionsPopover: View {
         }
     }
 
-    /// The state's color sits on a dot rather than the text: system green and
-    /// orange are too light for 11pt text on the light material.
     private func sectionHeader(_ status: SessionStatus) -> some View {
-        HStack(spacing: 5) {
-            Circle()
-                .fill(palette.stateColor(status))
-                .frame(width: 7, height: 7)
-                .accessibilityHidden(true)
-            Text(status.label)
-                .font(.system(size: 11, weight: .semibold))
-                .foregroundStyle(palette.sec)
-        }
-        .frame(maxWidth: .infinity, alignment: .leading)
+        Text(status.label)
+            .font(.system(size: 11, weight: .semibold))
+            .foregroundStyle(palette.stateColor(status))
+            .frame(maxWidth: .infinity, alignment: .leading)
         .padding(.top, 16)
         .padding(.bottom, 2)
     }

@@ -6,10 +6,10 @@ Static design reference only. Data shown is a fixed snapshot (Thu 6:09 PM PDT); 
 - popover.html — the popover at 340pt and the menu-bar label, inline-styled, no dependencies. Open in a browser.
 
 ## Popover
-- Width 340pt. Height = content. Material: NSVisualEffectView .popover (or .glassEffect on macOS 26). No other material, card or ring inside; the only colour is the state dot on section headers.
+- Width 340pt. Height = content. Material: NSVisualEffectView .popover (or .glassEffect on macOS 26). No other material, card or ring inside; the only colour is the state-coloured section header text.
 - Padding 14pt sides/top, 4pt bottom. Corner radius 14 (system default is fine).
 - Header: title "Market Sessions" 15 semibold; subtitle = weekday, 13 secondary. Right column: "Daily Close in 22h 51m" 13 secondary (countdown value semibold primary, tabular) on the weekday's baseline; only when Settings overrides the zone, "Time · EST" 11 secondary above it (owner decision 2026-09-29: the system zone needs no label).
-- Sections: Open, Pre-Market, After Hours, Holiday, Closed (empty ones omitted). Section header: a 7pt dot in the state colour, 5pt gap, then the state name 11 semibold secondary (the colour sits on the dot because system green and orange are too light for 11pt text on the light material); 16pt above, 2pt below. No hairlines between rows: section headers and whitespace do the grouping (owner decision 2026-09-29).
+- Sections: Open, Pre-Market, After Hours, Holiday, Closed (empty ones omitted). Section header: the state name 11 semibold in the state colour (owner decision 2026-09-30); 16pt above, 2pt below. No hairlines between rows: section headers and whitespace do the grouping (owner decision 2026-09-29).
 - Market row, 40pt (owner decision 2026-09-30, design C "time left first"): name 13 primary over the next change 11 secondary tabular ("Closes 11:30 PM", "Opens Wed 6:30 AM", "Reopens 3:00 PM" during a lunch recess or CME maintenance); right, the time until that change as the main value: while Open "9m left" (17 semibold primary + 11 secondary "left"), otherwise "in 7h 9m" (11 secondary "in" + 17 regular, primary for Pre-Market and After Hours, secondary for Holiday and Closed). No progress bars, no row tint. Sort each section by soonest change.
 - Each selected market appears in exactly one section.
 - Upcoming events: header "Upcoming events"; always next 4, no disclosure. Row 24pt: name 13 primary, right 13 secondary date "Fri, Sep 4"; inside 24h the right side becomes "Tomorrow 7:00 AM" in semibold primary. Short names (Nonfarm Payrolls, CPI, FOMC Decision…). Which events to show is a Settings preference.
@@ -20,7 +20,7 @@ Static design reference only. Data shown is a fixed snapshot (Thu 6:09 PM PDT); 
 15 title · 13 body, trailing times, and header readouts (the kit's form and menu detail labels are 13pt; owner found 10–11pt too small, 2026-09-29) · 11 section headers, subtitles, and footnote lines. Tabular figures on every time and countdown.
 
 ## Colour
-Primary text rgba(0,0,0,0.85); secondary rgba(0,0,0,0.55); hairline rgba(0,0,0,0.07–0.08); dark mode white at 0.85 / 0.55 / 0.09. State colours are Apple system colours in TradingView's status mapping, supplied by NSColor for light, dark and Increase Contrast: Open systemGreen, Pre-Market systemOrange, After Hours systemBlue, Holiday and Closed systemGray (owner decision 2026-09-30).
+Primary text rgba(0,0,0,0.85); secondary rgba(0,0,0,0.55); hairline rgba(0,0,0,0.07–0.08); dark mode white at 0.85 / 0.55 / 0.09. State colours are Apple system colours in TradingView's status mapping: Open green, Pre-Market orange, After Hours blue, Holiday and Closed secondary. Dark mode uses NSColor systemGreen/systemOrange/systemBlue (Increase Contrast applies); light mode darkens the kit's light values just to 4.5:1 for 11pt text on the light popover: #22813A, #A85D1A, #0071D4 (kit #34C759, #FF8D28, #0088FF measure 2.1, 2.1, 3.3:1). Owner decision 2026-09-30.
 
 ## Menu-bar label (10a)
 Superseded 2026-09-29 by the owner decision under "Menu bar label" below: a code pill plus the clock time of the next change. The earlier text-only label (`LDN closes 2h 14m`) and the status dot before it were dropped.
