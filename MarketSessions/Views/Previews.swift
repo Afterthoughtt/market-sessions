@@ -6,8 +6,11 @@ import SwiftUI
 /// notification center and preferences.
 @MainActor
 enum PreviewModel {
-    static func make(day: Int = 29, hour: Int = 17, minute: Int = 30) -> MarketSessionsModel {
+    static func make(
+        day: Int = 29, hour: Int = 17, minute: Int = 30, displayZone: String = "America/New_York"
+    ) -> MarketSessionsModel {
         let newYork = TimeZone(identifier: "America/New_York")!
+        let display = TimeZone(identifier: displayZone)!
         var calendar = Calendar(identifier: .gregorian)
         calendar.timeZone = newYork
         let now = calendar.date(from: DateComponents(year: 2026, month: 9, day: day, hour: hour, minute: minute))!
@@ -15,7 +18,7 @@ enum PreviewModel {
             loginItemService: PreviewLoginItem(),
             notificationCenter: PreviewNotificationCenter(),
             nowProvider: { now },
-            displayTimeZoneProvider: { newYork }
+            displayTimeZoneProvider: { display }
         )
     }
 }
@@ -43,6 +46,11 @@ private final class PreviewNotificationCenter: NotificationCentering {
 #Preview("Popover – Asia Open") {
     // Wed 1:50 AM New York: Tokyo, Shanghai, Hong Kong and CME open; Tokyo closes in 40m.
     SessionsPopover(model: PreviewModel.make(day: 30, hour: 1, minute: 50))
+}
+
+#Preview("Popover – Owner Screenshot") {
+    // Tue 11:21 PM Los Angeles (Wed 2:21 AM New York): Tokyo closes in 9m.
+    SessionsPopover(model: PreviewModel.make(day: 30, hour: 2, minute: 21, displayZone: "America/Los_Angeles"))
 }
 
 #Preview("Settings – General") {
