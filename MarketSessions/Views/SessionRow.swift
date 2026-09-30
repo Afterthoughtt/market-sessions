@@ -17,21 +17,16 @@ struct OpenSessionRow: View {
 
                 Spacer(minLength: 6)
 
-                Text(transitionText)
-                    .font(.system(size: 11))
-                    .monospacedDigit()
-                    .foregroundStyle(palette.sec)
-                    .lineLimit(1)
-                    .fixedSize(horizontal: true, vertical: false)
+                TransitionText(label: label, palette: palette)
             }
 
             GeometryReader { proxy in
                 ZStack(alignment: .leading) {
                     Capsule().fill(palette.track)
-                    if remainingFraction > 0 {
+                    if elapsedFraction > 0 {
                         Capsule()
                             .fill(palette.ringSec)
-                            .frame(width: proxy.size.width * remainingFraction)
+                            .frame(width: proxy.size.width * elapsedFraction)
                     }
                 }
             }
@@ -42,22 +37,16 @@ struct OpenSessionRow: View {
         .padding(.bottom, 10)
         .accessibilityElement(children: .ignore)
         .accessibilityLabel(
-            "\(resolved.session.name), \(resolved.status.label), \(transitionText)"
+            "\(resolved.session.name), \(resolved.status.label), \(label.spoken)"
         )
     }
 
-    private var remainingFraction: Double {
-        resolved.remainingTradingFraction(at: now)
+    private var elapsedFraction: Double {
+        resolved.elapsedTradingFraction(at: now)
     }
 
-    private var transitionText: String {
-        guard let transition = resolved.transition else { return "" }
-        let time = MarketDateFormatting.transitionTime(
-            transition.date,
-            relativeTo: now,
-            timeZone: displayTimeZone
-        )
-        return "\(transition.verb.rawValue) \(time)"
+    private var label: TransitionLabel {
+        TransitionLabel(resolved: resolved, now: now, displayTimeZone: displayTimeZone)
     }
 }
 
@@ -80,12 +69,7 @@ struct ClosedSessionRow: View {
 
             Spacer(minLength: 6)
 
-            Text(transitionText)
-                .font(.system(size: 11))
-                .monospacedDigit()
-                .foregroundStyle(palette.sec)
-                .lineLimit(1)
-                .fixedSize(horizontal: true, vertical: false)
+            TransitionText(label: label, palette: palette)
         }
         .padding(.horizontal, 7)
         .frame(height: 24)
@@ -94,7 +78,7 @@ struct ClosedSessionRow: View {
         .padding(.vertical, 4)
         .accessibilityElement(children: .ignore)
         .accessibilityLabel(
-            "\(resolved.session.name), \(resolved.status.label), \(transitionText)"
+            "\(resolved.session.name), \(resolved.status.label), \(label.spoken)"
         )
     }
 
@@ -112,13 +96,48 @@ struct ClosedSessionRow: View {
         }
     }
 
-    private var transitionText: String {
-        guard let transition = resolved.transition else { return "" }
-        let time = MarketDateFormatting.transitionTime(
-            transition.date,
-            relativeTo: now,
-            timeZone: displayTimeZone
-        )
-        return "\(transition.verb.rawValue) \(time)"
+    private var label: TransitionLabel {
+        TransitionLabel(resolved: resolved, now: now, displayTimeZone: displayTimeZone)
+    }
+}
+
+/// A row's next change: `Closes 11:30 PM`, or inside the menu bar's countdown window
+/// `Closes in 40m`, emphasized like an imminent event.
+private struct TransitionLabel {
+    let text: String
+    let spoken: String
+    let isImminent: Bool
+
+    init(resolved: ResolvedSession, now: Date, displayTimeZone: TimeZone) {
+        guard let transition = resolved.transition else {
+            (text, spoken, isImminent) = ("", "", false)
+            return
+        }
+        let verb = transition.verb.rawValue
+        if let countdown = MenuBarLabel.countdown(for: resolved, now: now) {
+            let minutes = FocusSessionResolver.remainingMinutes(until: transition.date, from: now)
+            text = "\(verb) in \(countdown)"
+            spoken = "\(verb) in \(MarketDurationFormatting.spoken(minutes: minutes))"
+            isImminent = true
+        } else {
+            let time = MarketDateFormatting.transitionTime(transition.date, relativeTo: now, timeZone: displayTimeZone)
+            text = "\(verb) \(time)"
+            spoken = text
+            isImminent = false
+        }
+    }
+}
+
+private struct TransitionText: View {
+    let label: TransitionLabel
+    let palette: MarketPalette
+
+    var body: some View {
+        Text(label.text)
+            .font(.system(size: 13, weight: label.isImminent ? .semibold : .regular))
+            .monospacedDigit()
+            .foregroundStyle(label.isImminent ? palette.text : palette.sec)
+            .lineLimit(1)
+            .fixedSize(horizontal: true, vertical: false)
     }
 }

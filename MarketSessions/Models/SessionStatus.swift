@@ -25,11 +25,12 @@ struct ResolvedSession: Identifiable, Hashable, Sendable {
 
     var id: MarketSession.ID { session.id }
 
-    /// Full at open, empty at the next close. Adjacent auctions remain in the
-    /// same period; a lunch recess or maintenance break starts a new period.
-    func remainingTradingFraction(at now: Date) -> Double {
+    /// Empty at open, full at the next close, filling leading to trailing like a
+    /// determinate progress bar (HIG Progress indicators). Adjacent auctions remain
+    /// in the same period; a lunch recess or maintenance break starts a new period.
+    func elapsedTradingFraction(at now: Date) -> Double {
         guard status.isActive, let start = activePeriodStart,
               let end = transition?.date, end > start else { return 0 }
-        return 1 - FocusSessionResolver.clampedProgress(now: now, start: start, end: end)
+        return FocusSessionResolver.clampedProgress(now: now, start: start, end: end)
     }
 }

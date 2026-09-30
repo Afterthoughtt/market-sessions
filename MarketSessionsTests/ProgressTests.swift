@@ -2,7 +2,7 @@ import XCTest
 @testable import MarketSessions
 
 final class ProgressTests: XCTestCase {
-    func testBarsDrainToTheDisplayedCloseRatherThanTheEndOfTheDay() throws {
+    func testBarsFillTowardTheDisplayedCloseRatherThanTheEndOfTheDay() throws {
         let now = try makeDate(
             year: 2026, month: 9, day: 3, hour: 18, minute: 31,
             timeZoneIdentifier: "America/Vancouver"
@@ -12,13 +12,13 @@ final class ProgressTests: XCTestCase {
         let shanghai = try XCTUnwrap(sessions.first { $0.id == .shanghai })
         let hongKong = try XCTUnwrap(sessions.first { $0.id == .hongKong })
         // Screenshot moment: Tokyo has 59 minutes left of its 150-minute morning.
-        XCTAssertEqual(tokyo.remainingTradingFraction(at: now), 59.0 / 150, accuracy: 0.000_001)
-        // These markets just opened, so their bars should be nearly full, not empty.
-        XCTAssertEqual(shanghai.remainingTradingFraction(at: now), 119.0 / 120, accuracy: 0.000_001)
-        XCTAssertEqual(hongKong.remainingTradingFraction(at: now), 149.0 / 150, accuracy: 0.000_001)
+        XCTAssertEqual(tokyo.elapsedTradingFraction(at: now), 91.0 / 150, accuracy: 0.000_001)
+        // These markets just opened, so their bars should be nearly empty, not full.
+        XCTAssertEqual(shanghai.elapsedTradingFraction(at: now), 1.0 / 120, accuracy: 0.000_001)
+        XCTAssertEqual(hongKong.elapsedTradingFraction(at: now), 1.0 / 150, accuracy: 0.000_001)
     }
 
-    func testBarReachesZeroAtLunchAndRestartsAtTheAfternoonOpen() throws {
+    func testBarIsNearlyFullBeforeLunchAndRestartsEmptyAtTheAfternoonOpen() throws {
         let beforeLunch = try makeDate(
             year: 2026, month: 8, day: 24, hour: 11, minute: 29,
             timeZoneIdentifier: "Asia/Tokyo"
@@ -26,13 +26,13 @@ final class ProgressTests: XCTestCase {
         let resolver = SessionResolver()
         let session = MarketScheduleCatalog.session(.tokyo)
         let morning = resolver.resolve(session, at: beforeLunch)
-        XCTAssertEqual(morning.remainingTradingFraction(at: beforeLunch), 1.0 / 150, accuracy: 0.000_001)
-        XCTAssertEqual(morning.remainingTradingFraction(at: beforeLunch.addingTimeInterval(60)), 0)
+        XCTAssertEqual(morning.elapsedTradingFraction(at: beforeLunch), 149.0 / 150, accuracy: 0.000_001)
+        XCTAssertEqual(morning.elapsedTradingFraction(at: beforeLunch.addingTimeInterval(60)), 1)
         let afterLunch = try makeDate(
             year: 2026, month: 8, day: 24, hour: 12, minute: 30,
             timeZoneIdentifier: "Asia/Tokyo"
         )
-        XCTAssertEqual(resolver.resolve(session, at: afterLunch).remainingTradingFraction(at: afterLunch), 1)
+        XCTAssertEqual(resolver.resolve(session, at: afterLunch).elapsedTradingFraction(at: afterLunch), 0)
     }
 
     func testAuctionDoesNotResetTheBar() throws {
@@ -43,7 +43,7 @@ final class ProgressTests: XCTestCase {
         let session = SessionResolver().resolve(MarketScheduleCatalog.session(.shanghai), at: now)
         XCTAssertEqual(session.status, .open)
         XCTAssertEqual(session.currentOccurrence?.kind, .auction)
-        XCTAssertEqual(session.remainingTradingFraction(at: now), 2.0 / 120, accuracy: 0.000_001)
+        XCTAssertEqual(session.elapsedTradingFraction(at: now), 118.0 / 120, accuracy: 0.000_001)
     }
 
     func testCompactDurationFormatting() {

@@ -15,7 +15,7 @@ struct SessionsPopover: View {
 
             if model.orderedSessions.isEmpty {
                 Text("Choose markets in Settings.")
-                    .font(.system(size: 11))
+                    .font(.system(size: 13))
                     .foregroundStyle(palette.sec)
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .padding(.vertical, 16)
@@ -27,7 +27,8 @@ struct SessionsPopover: View {
                         .foregroundStyle(palette.sec)
                         .frame(maxWidth: .infinity, minHeight: 32, alignment: .leading)
                 }
-                sessionRows(openSessions) { resolved in
+                // Each open row's progress bar already separates it; no hairlines.
+                sessionRows(openSessions, dividers: false) { resolved in
                     OpenSessionRow(
                         resolved: resolved,
                         now: model.now,
@@ -110,7 +111,7 @@ struct SessionsPopover: View {
                     .foregroundStyle(palette.text)
 
                 Text(weekday)
-                    .font(.system(size: 11))
+                    .font(.system(size: 13))
                     .foregroundStyle(palette.sec)
             }
 
@@ -120,14 +121,14 @@ struct SessionsPopover: View {
                 // The system zone needs no label; an override does, or its times would read as local.
                 if model.preferences.timeZoneIdentifier != nil {
                     Text("Time · \(timeZoneAbbreviation)")
-                        .font(.system(size: 10))
+                        .font(.system(size: 11))
                         .foregroundStyle(palette.sec)
                 }
 
                 Text(
                     "Daily Close in \(Text(MarketDurationFormatting.compact(minutes: model.utcDayRemainingMinutes)).fontWeight(.semibold).foregroundColor(palette.text))"
                 )
-                .font(.system(size: 10))
+                .font(.system(size: 13))
                 .monospacedDigit()
                 .foregroundStyle(palette.sec)
                 .accessibilityLabel(
@@ -149,13 +150,14 @@ struct SessionsPopover: View {
 
     private func sessionRows<Row: View>(
         _ sessions: [ResolvedSession],
+        dividers: Bool = true,
         @ViewBuilder row: @escaping (ResolvedSession) -> Row
     ) -> some View {
         VStack(spacing: 0) {
             ForEach(sessions) { resolved in
                 row(resolved)
 
-                if resolved.id != sessions.last?.id {
+                if dividers, resolved.id != sessions.last?.id {
                     Rectangle()
                         .fill(palette.divider)
                         .frame(height: 1)

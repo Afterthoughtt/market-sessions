@@ -66,12 +66,12 @@ final class EconomicEventTests: XCTestCase {
     }
 
     /// A popover row is 340pt minus 14pt margins, minus 26pt of HStack spacing and
-    /// spacer, minus the widest label inside 24 hours ("Tomorrow 12:00 PM", 11pt
+    /// spacer, minus the widest label inside 24 hours ("Tomorrow 12:00 PM", 13pt
     /// semibold). Every bundled title must fit the rest at 13pt without truncating.
     func testEveryRowTitleFitsBesideTheWidestImminentLabel() throws {
         let events = try EconomicEventCatalog.loadAll(bundle: Bundle(for: Self.self))
-        let label = NSFont.monospacedDigitSystemFont(ofSize: 11, weight: .semibold)
-        let budget = 340 - 28 - 26 - ("Tomorrow 12:00 PM" as NSString).size(withAttributes: [.font: label]).width
+        let label = NSFont.monospacedDigitSystemFont(ofSize: 13, weight: .semibold)
+        let budget = 340 - 28 - 26 - ("Tomorrow 12:00\u{202F}PM" as NSString).size(withAttributes: [.font: label]).width
         let titles = Set(events.map(\.compactTitle) + EconomicEventKind.allCases.map(\.compactTitle))
         for title in titles {
             let width = (title as NSString).size(withAttributes: [.font: NSFont.systemFont(ofSize: 13)]).width

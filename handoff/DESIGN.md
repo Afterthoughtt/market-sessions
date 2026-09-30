@@ -8,16 +8,16 @@ Static design reference only. Data shown is a fixed snapshot (Thu 6:09 PM PDT); 
 ## Popover
 - Width 340pt. Height = content. Material: NSVisualEffectView .popover (or .glassEffect on macOS 26). No other material, card, ring, or accent colour inside.
 - Padding 14pt sides/top, 4pt bottom. Corner radius 14 (system default is fine).
-- Header: title "Market Sessions" 15 semibold; subtitle = weekday, 11 secondary. Right column, 10pt secondary: "Daily Close in 22h 51m" (countdown value 10 semibold primary, tabular) on the weekday's baseline; only when Settings overrides the zone, "Time · EST" above it (owner decision 2026-09-29: the system zone needs no label).
-- Sections: "Open" then "Closed". Section header 11 semibold secondary, 16pt above, 2pt below. Rows separated by 1pt hairline at 7% black. Sections separated by whitespace only.
-- Open row: name 13 regular primary; second line = 3pt scrubber (track 8% black, fill 50% black, radius 1.5, fill = elapsed fraction) + "Closes 7:30 PM" 11 secondary tabular. Row padding 8 top / 10 bottom, 7 between lines. Sort by soonest close.
-- Closed row: 32pt; name 13 primary left, "Opens 6:30 PM" 11 secondary tabular right. Sort by soonest open. Filter rule: a session appears in exactly one section.
-- Upcoming events: header "Upcoming events"; always next 4, no disclosure. Row 32pt: name 13 primary, right 11 secondary date "Fri, Sep 4"; inside 24h the right side becomes "Tomorrow 7:00 AM" in semibold primary. Short names (Nonfarm Payrolls, CPI, FOMC Decision…). Which events to show is a Settings preference.
+- Header: title "Market Sessions" 15 semibold; subtitle = weekday, 13 secondary. Right column: "Daily Close in 22h 51m" 13 secondary (countdown value semibold primary, tabular) on the weekday's baseline; only when Settings overrides the zone, "Time · EST" 11 secondary above it (owner decision 2026-09-29: the system zone needs no label).
+- Sections: "Open" then "Closed". Section header 11 semibold secondary, 16pt above, 2pt below. Rows separated by 1pt hairline at 7% black, except Open rows, whose bars already separate them. Sections separated by whitespace only.
+- Open row: name 13 regular primary; second line = 3pt scrubber (track 8% black, fill 50% black, radius 1.5, fill = elapsed fraction) + "Closes 7:30 PM" 13 secondary tabular. Row padding 8 top / 10 bottom, 7 between lines. Sort by soonest close.
+- Closed row: 32pt; name 13 primary left, "Opens 6:30 PM" 13 secondary tabular right. In the final 59 minutes either row reads "Closes in 40m" / "Opens in 25m" in 13 semibold primary, matching the menu bar countdown. Sort by soonest open. Filter rule: a session appears in exactly one section.
+- Upcoming events: header "Upcoming events"; always next 4, no disclosure. Row 32pt: name 13 primary, right 13 secondary date "Fri, Sep 4"; inside 24h the right side becomes "Tomorrow 7:00 AM" in semibold primary. Short names (Nonfarm Payrolls, CPI, FOMC Decision…). Which events to show is a Settings preference.
 - Footer: full-width hairline (8% black, bleeds to popover edge), then one 32pt row "Settings…" 13 primary. Opens a Settings window holding Launch at Login, event selection, holiday-data note, About, Quit. No other controls in the popover.
 - Warning state only: if bundled holiday data has expired, one 11pt secondary text line above the Settings hairline.
 
 ## Type (macOS scale, regular/semibold only)
-15 title · 13 body / headers-of-things · 11 meta and section headers · 10 header readouts. Tabular figures on every time and countdown.
+15 title · 13 body, trailing times, and header readouts (the kit's form and menu detail labels are 13pt; owner found 10–11pt too small, 2026-09-29) · 11 section headers, subtitles, and footnote lines. Tabular figures on every time and countdown.
 
 ## Colour
 Primary text rgba(0,0,0,0.85); secondary rgba(0,0,0,0.55); hairline rgba(0,0,0,0.07–0.08). No green, no blue, in the popover; the only color is the extended-hours row tint below. Dark mode: white at 0.92 / 0.50 / 0.09 respectively.
@@ -46,12 +46,12 @@ Five market states: **Open, Pre-Market, After Hours, Break, Closed**. Trading an
 
 ### Progress
 
-Bars **drain to the close shown**: full at the start of the uninterrupted trading period (`activePeriodStart`), empty at the next close (`transition.date`). Restart after lunch or maintenance, not at a contiguous auction. Bars have equal full-row track widths below the name/time line.
+Bars **fill toward the close shown**, leading to trailing like a determinate progress bar (HIG Progress indicators; owner decision 2026-09-29 replacing the draining bar): empty at the start of the uninterrupted trading period (`activePeriodStart`), full at the next close (`transition.date`). Restart after lunch or maintenance, not at a contiguous auction. Bars have equal full-row track widths below the name/time line.
 
 ### Popover (340 wide, height fits content)
 
 1. Header — title and local weekday; `Time · <zone>` only for a Settings override; UTC "Daily Close in Xh Ym".
-2. Open — active markets ordered by nearest close, with local close time and a draining bar.
+2. Open — active markets ordered by nearest close, with local close time and a filling bar.
 3. Pre-Market, After Hours, Break, then Closed — ordered by nearest open, with local Opens time. Omit empty sections. Each selected market appears once. Rows are non-interactive.
 4. Upcoming Events — the next four of the selected kinds, no disclosure. Compact names (U.S. Jobs Report, FOMC Decision); full description and exact local date/time in tooltips and accessibility labels. Preserve per-event titles (Jackson Hole keynote). Inside 24 hours emphasize Today/Tomorrow + local time; while live show Live. BOJ carries no approximation marker (owner decision 2026-09-29); its stored 12:00 JST is noted only in the Settings tooltip. When nothing selected remains, say the bundled schedule has none. When a selected category's bundled dates end before the last shown row, one 11pt secondary line says so ("U.S. release dates bundled through Dec 23, 2026"); Settings rows past their category's coverage read "Not in bundled schedule".
 5. Footer — holiday-data warning only when unavailable or expired, or when a shown open/close falls after the data ends ("Holiday data ends Dec 31, 2026; later times assume regular hours"), then a full-width Settings row (⌘,) with the kit's menu-item hover.

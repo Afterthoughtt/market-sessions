@@ -34,7 +34,7 @@ struct EconomicEventsSection: View {
 
             if displayedEvents.isEmpty {
                 Text("No upcoming events in the bundled schedule.")
-                    .font(.system(size: 11))
+                    .font(.system(size: 13))
                     .foregroundStyle(palette.sec)
                     .padding(.vertical, 8)
             }
@@ -62,7 +62,7 @@ struct EconomicEventsSection: View {
             Spacer(minLength: 6)
 
             Text(eventLabel(event))
-                .font(.system(size: 11, weight: isImminent(event) ? .semibold : .regular))
+                .font(.system(size: 13, weight: isImminent(event) ? .semibold : .regular))
                 .monospacedDigit()
                 .foregroundStyle(isImminent(event) ? palette.text : palette.sec)
                 .lineLimit(1)
