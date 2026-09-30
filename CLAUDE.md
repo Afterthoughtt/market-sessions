@@ -21,7 +21,8 @@ Swift 6 menu-bar-only macOS app (targets macOS 26; built with Xcode 27 on macOS 
 
 - Load `macos-development:standards` at the start of every session, before any design, code, build, or review work. Its rules, and its references `compatibility.md` (SDK and API availability) and `fetching-apple-sources.md` (reading Apple docs and HIG pages), apply throughout.
 - Then use the task's skill: `design` for new UI or interaction planning, `native-ui` when writing or changing SwiftUI/AppKit code, `build-debug` for builds, tests, crashes and performance, `design-review` and `accessibility-audit` before calling UI work done. `release-check` is out of scope (never distributed).
-- This file, `handoff/DESIGN.md` owner decisions, and the Figma kit override the skills' defaults where they differ.
+- Alongside the skills, every UI change also checks `handoff/DESIGN.md` (spec and owner decisions) and traces metrics, type, colors and states to the cached Figma kit (see "Where the spec lives" for how to query it). Record resulting decisions in DESIGN.md.
+- This file, DESIGN.md owner decisions, and the Figma kit override the skills' defaults where they differ.
 
 ## Architecture
 
