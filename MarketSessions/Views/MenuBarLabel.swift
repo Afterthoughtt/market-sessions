@@ -97,18 +97,20 @@ struct MenuBarLabel: View {
 }
 
 /// Drawn in black so the template image follows the active menu-bar tint. 15pt tall
-/// in a 16pt glyph box (owner decision; the macOS 26 battery-with-percentage badge
+/// in a 16pt glyph box (owner decision; the battery-with-percentage badge
 /// beside it measures 12pt in an owner screenshot); corners use the battery body's
 /// ratio of about 0.3 × height, measured from SF Symbols `battery.100percent` at the
-/// kit's menu-bar configuration (13pt Semibold). The outline matches that
-/// configuration's 1.3pt symbol stroke.
+/// kit's menu-bar configuration (13pt Semibold). The 1.45pt outline matches the
+/// stroke SF Symbols draw at that configuration, the macOS 27 kit's status-item
+/// weight (`circle` 1.46pt, `battery.0percent` 1.41pt, measured on macOS 27).
 private struct MenuBarPill: View {
     let code: String
     /// Fraction of the open run left, or nil for the whole outline.
     let remaining: Double?
 
     var body: some View {
-        let outline = RoundedRectangle(cornerRadius: 4.5, style: .continuous).inset(by: 0.65)
+        let outline = RoundedRectangle(cornerRadius: 4.5, style: .continuous).inset(by: 0.725)
+        let trace = StrokeStyle(lineWidth: 1.45, lineCap: .round)
 
         Text(code)
             .font(.system(size: 11, weight: .bold))
@@ -117,21 +119,20 @@ private struct MenuBarPill: View {
             .frame(height: 15)
             .overlay {
                 if let remaining {
-                    // The track takes the opacity SF Symbols' Variable Draw gives a path's
-                    // undrawn part (0.3, measured from `gauge.open` in `.draw` mode).
-                    outline.stroke(.black.opacity(0.3), lineWidth: 1.3)
+                    // The macOS 27 kit's unfilled progress track: black 85% at 10% opacity.
+                    outline.stroke(.black.opacity(0.085), lineWidth: 1.45)
                     // SwiftUI's path starts at 3 o'clock and runs clockwise, so by symmetry
                     // 12 o'clock sits at 0.75 of its length. The trace ends there, and the
-                    // elapsed gap opens clockwise from it.
+                    // elapsed gap opens clockwise from it. Round caps, like the kit's fill.
                     let from = 0.75 + (1 - remaining)
                     if from < 1 {
-                        outline.trim(from: from, to: 1).stroke(.black, lineWidth: 1.3)
-                        outline.trim(from: 0, to: 0.75).stroke(.black, lineWidth: 1.3)
+                        outline.trim(from: from, to: 1).stroke(.black, style: trace)
+                        outline.trim(from: 0, to: 0.75).stroke(.black, style: trace)
                     } else {
-                        outline.trim(from: from - 1, to: 0.75).stroke(.black, lineWidth: 1.3)
+                        outline.trim(from: from - 1, to: 0.75).stroke(.black, style: trace)
                     }
                 } else {
-                    outline.stroke(.black, lineWidth: 1.3)
+                    outline.stroke(.black, lineWidth: 1.45)
                 }
             }
             .frame(height: 16)
