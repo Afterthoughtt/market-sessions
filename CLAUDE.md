@@ -12,7 +12,7 @@ Swift 6 menu-bar-only macOS app (targets macOS 26; built with Xcode 27 on macOS 
 ## Where the spec lives
 
 - `handoff/DESIGN.md` is the product and visual spec, including the owner decisions that amend it; check it before every UI change. `handoff/popover.html` is the visual baseline. `design_handoff_market_sessions/` is older history: reference, don't edit.
-- Apple's macOS 26 Figma kit is the authority for hover states, row metrics, type, and color tokens. Its JSON is cached at `.build/reference/figma-macos26.json` (gitignored). Query it with a short script; do not read the raw 25 MB file, and do not use the Figma MCP or REST API per node (the seat is capped). Re-pull only when the kit changes: `script/refresh_figma_kit.sh`.
+- Apple's macOS 27 Figma kit (the owner's copy of the Community file) is the authority for hover states, row metrics, type, color tokens and progress indicators, alongside the HIG and the macOS Development plugin. Its JSON is cached at `.build/reference/figma-macos27.json` (gitignored). Query it with a short script; do not read the raw 44 MB file, and do not use the Figma MCP or REST API per node (the seat is capped). Re-pull only when the kit changes: `script/refresh_figma_kit.sh`.
 - Design canvas (claude.ai Design artifact): https://claude.ai/artifact/M5fVqd3m8KeL5dtamtVKKm. Kit tokens, popover anatomy, findings, menu bar and Settings boards; update the matching board when UI ships.
 - Custom SF Symbols: the San Francisco font is licensed for mock-ups only, so never bake SF Pro glyph outlines into assets. Letters come from SF Symbols template exports in `symbols export/` (gitignored).
 - Bundled data rules and refresh cadence: `MarketSessions/Resources/README.md`.
