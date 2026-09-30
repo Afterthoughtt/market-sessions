@@ -19,6 +19,9 @@ struct ResolvedSession: Identifiable, Hashable, Sendable {
     let status: SessionStatus
     /// Occurrence containing now, of any kind.
     let currentOccurrence: SessionOccurrence?
+    /// Start of the contiguous active run containing now (the open, or the reopen after
+    /// a recess); nil unless Open.
+    let activeStart: Date?
     /// Start of the next active occurrence after now.
     let nextActiveStart: Date?
     let transition: SessionTransition?

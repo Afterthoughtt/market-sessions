@@ -24,10 +24,12 @@ struct SessionResolver: Sendable {
 
         var status: SessionStatus
         let transition: SessionTransition?
+        var activeStart: Date?
 
         if let current, current.kind.countsAsActive {
             status = .open
             let chain = activeChain(containing: current, in: activeOccurrences)
+            activeStart = chain.first?.start ?? current.start
             transition = SessionTransition(
                 verb: .closes,
                 date: chain.last?.end ?? current.end
@@ -70,6 +72,7 @@ struct SessionResolver: Sendable {
             session: session,
             status: status,
             currentOccurrence: current,
+            activeStart: activeStart,
             nextActiveStart: nextActiveStart,
             transition: transition
         )

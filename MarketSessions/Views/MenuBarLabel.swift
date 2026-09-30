@@ -3,10 +3,10 @@ import SwiftUI
 
 /// The next-to-change session's code in a pill; in the final hour before that
 /// change, a countdown beside it (`[LDN] 45m`). Never a clock time, which read as a
-/// second clock next to the system's. A filled pill counts to a close, an outlined
-/// one to an open. Only the pill is a template image (SwiftUI shapes do not draw in
-/// a MenuBarExtra label); the countdown is native text so the system sets the
-/// glyph-to-title gap.
+/// second clock next to the system's. While counting to a close the outline traces
+/// the time left; while counting to an open it is whole. Only the pill is a template
+/// image (SwiftUI shapes do not draw in a MenuBarExtra label); the countdown is
+/// native text so the system sets the glyph-to-title gap.
 struct MenuBarLabel: View {
     let resolved: ResolvedSession?
     let now: Date
@@ -16,10 +16,14 @@ struct MenuBarLabel: View {
     /// The countdown appears once the change is at most 59 minutes away, so it never reads "1h".
     nonisolated static let countdownWindow: TimeInterval = 59 * 60
 
+    /// The trace moves in this many steps per open run, about 1.3pt of the outline
+    /// each, so the clock wakes only when the trace visibly moves.
+    nonisolated static let traceSteps = 60
+
     var body: some View {
         Group {
             if let resolved {
-                Image(nsImage: Self.render(code: resolved.session.code, filled: Self.isFilled(resolved)))
+                Image(nsImage: Self.render(code: resolved.session.code, remaining: Self.traceRemaining(for: resolved, now: now)))
                 if showsCountdown, let countdown = Self.countdown(for: resolved, now: now) {
                     Text(countdown)
                         .font(.system(size: 13, weight: .semibold))
@@ -35,10 +39,25 @@ struct MenuBarLabel: View {
         .help(tooltip)
     }
 
-    /// Filled while counting to a close (Open); outlined while counting to an open,
-    /// which includes After Hours (it counts to the next session's open).
-    nonisolated static func isFilled(_ resolved: ResolvedSession) -> Bool {
-        resolved.transition?.verb == .closes
+    /// Fraction of the open run left, rounded up to a trace step so it reaches zero only
+    /// at the close. Nil while counting to an open, including After Hours (it counts to
+    /// the next session's open), which keeps the whole outline.
+    nonisolated static func traceRemaining(for resolved: ResolvedSession, now: Date) -> Double? {
+        traceStep(for: resolved, now: now).map { Double($0) / Double(traceSteps) }
+    }
+
+    /// When the trace next moves; nil without a trace or when its next move is the close.
+    nonisolated static func nextTraceStep(for resolved: ResolvedSession, now: Date) -> Date? {
+        guard let step = traceStep(for: resolved, now: now), step > 1,
+              let start = resolved.activeStart, let close = resolved.transition?.date else { return nil }
+        return close.addingTimeInterval(-close.timeIntervalSince(start) * Double(step - 1) / Double(traceSteps))
+    }
+
+    private nonisolated static func traceStep(for resolved: ResolvedSession, now: Date) -> Int? {
+        guard let transition = resolved.transition, transition.verb == .closes,
+              let start = resolved.activeStart, transition.date > start else { return nil }
+        let left = transition.date.timeIntervalSince(now) / transition.date.timeIntervalSince(start)
+        return min(traceSteps, max(1, Int((left * Double(traceSteps)).rounded(.up))))
     }
 
     /// `45m` … `1m` inside the countdown window; nil further out or with no next transition.
@@ -48,15 +67,15 @@ struct MenuBarLabel: View {
         return MarketDurationFormatting.compact(minutes: FocusSessionResolver.remainingMinutes(until: date, from: now))
     }
 
-    /// Twelve possible pills (six codes, filled or not); render each once.
+    /// At most 61 pills per code (whole, or one of the trace steps); render each once.
     @MainActor private static var pillCache: [String: NSImage] = [:]
 
     @MainActor
-    private static func render(code: String, filled: Bool) -> NSImage {
+    private static func render(code: String, remaining: Double?) -> NSImage {
         let scale = max(NSScreen.screens.map(\.backingScaleFactor).max() ?? 2, 2)
-        let key = "\(code)-\(filled)-\(scale)"
+        let key = "\(code)-\(remaining.map { "\($0)" } ?? "whole")-\(scale)"
         if let cached = pillCache[key] { return cached }
-        let renderer = ImageRenderer(content: MenuBarPill(code: code, filled: filled))
+        let renderer = ImageRenderer(content: MenuBarPill(code: code, remaining: remaining))
         renderer.scale = scale
         guard let image = renderer.nsImage else { return NSImage() }
         image.isTemplate = true
@@ -77,38 +96,45 @@ struct MenuBarLabel: View {
     }
 }
 
-/// Drawn in black so the template image follows the active menu-bar tint; the
-/// filled pill knocks its code out to transparent. 15pt tall in a 16pt glyph box,
-/// which sits level with the menu bar's battery-with-percentage badge (checked by
-/// eye on screen, not measured); corners use the battery body's ratio of about
-/// 0.3 × height, measured from SF Symbols `battery.100percent` at the kit's
-/// menu-bar configuration (13pt Semibold). The outline matches that
+/// Drawn in black so the template image follows the active menu-bar tint. 15pt tall
+/// in a 16pt glyph box (owner decision; the macOS 26 battery-with-percentage badge
+/// beside it measures 12pt in an owner screenshot); corners use the battery body's
+/// ratio of about 0.3 × height, measured from SF Symbols `battery.100percent` at the
+/// kit's menu-bar configuration (13pt Semibold). The outline matches that
 /// configuration's 1.3pt symbol stroke.
 private struct MenuBarPill: View {
     let code: String
-    let filled: Bool
+    /// Fraction of the open run left, or nil for the whole outline.
+    let remaining: Double?
 
     var body: some View {
-        let shape = RoundedRectangle(cornerRadius: 4.5, style: .continuous)
-        let label = Text(code)
+        let outline = RoundedRectangle(cornerRadius: 4.5, style: .continuous).inset(by: 0.65)
+
+        Text(code)
             .font(.system(size: 11, weight: .bold))
+            .foregroundStyle(.black)
             .padding(.horizontal, 3.5)
             .frame(height: 15)
-
-        Group {
-            if filled {
-                label
-                    .foregroundStyle(.black)
-                    .blendMode(.destinationOut)
-                    .background(shape.fill(.black))
-                    .compositingGroup()
-            } else {
-                label
-                    .foregroundStyle(.black)
-                    .overlay(shape.inset(by: 0.65).stroke(.black, lineWidth: 1.3))
+            .overlay {
+                if let remaining {
+                    // The track takes the opacity SF Symbols' Variable Draw gives a path's
+                    // undrawn part (0.3, measured from `gauge.open` in `.draw` mode).
+                    outline.stroke(.black.opacity(0.3), lineWidth: 1.3)
+                    // SwiftUI's path starts at 3 o'clock and runs clockwise, so by symmetry
+                    // 12 o'clock sits at 0.75 of its length. The trace ends there, and the
+                    // elapsed gap opens clockwise from it.
+                    let from = 0.75 + (1 - remaining)
+                    if from < 1 {
+                        outline.trim(from: from, to: 1).stroke(.black, lineWidth: 1.3)
+                        outline.trim(from: 0, to: 0.75).stroke(.black, lineWidth: 1.3)
+                    } else {
+                        outline.trim(from: from - 1, to: 0.75).stroke(.black, lineWidth: 1.3)
+                    }
+                } else {
+                    outline.stroke(.black, lineWidth: 1.3)
+                }
             }
-        }
-        .frame(height: 16)
+            .frame(height: 16)
         // The system's image-to-title gap leaves ~3.5pt of ink gap; Apple's Weather
         // item (glyph + "57°F") shows ~5pt, measured from an owner screenshot.
         .padding(.trailing, 1.5)

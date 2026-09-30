@@ -2,8 +2,8 @@ import XCTest
 @testable import MarketSessions
 
 final class FocusSessionResolverTests: XCTestCase {
-    // Menu bar: the nearest transition is London's 8:30 AM PDT close, so a filled pill,
-    // and a countdown only inside the final 59 minutes.
+    // Menu bar: the nearest transition is London's 8:30 AM PDT close, so the outline
+    // traces the time left, and a countdown shows only inside the final 59 minutes.
     func testMenuBarCountsDownOnlyInTheFinalHour() throws {
         let now = try makeDate(year: 2026, month: 8, day: 28, hour: 7, minute: 12)
         let resolved = SessionResolver().resolve(MarketScheduleCatalog.sessions, at: now)
@@ -12,14 +12,35 @@ final class FocusSessionResolverTests: XCTestCase {
         )
 
         XCTAssertEqual(next.id, .london)
-        XCTAssertTrue(MenuBarLabel.isFilled(next))
+        XCTAssertNotNil(MenuBarLabel.traceRemaining(for: next, now: now))
         XCTAssertNil(MenuBarLabel.countdown(for: next, now: now))  // 1h 18m out
         XCTAssertEqual(MenuBarLabel.countdown(for: next, now: now.addingTimeInterval(19 * 60)), "59m")
         XCTAssertEqual(MenuBarLabel.countdown(for: next, now: now.addingTimeInterval(77 * 60 + 30)), "1m")
     }
 
-    // Saturday: nothing trading, so an outlined pill; CME's Sunday open is too far off to count down.
-    func testMenuBarShowsOutlinedPillWithoutCountdownWhileFarFromAnOpen() throws {
+    // London's 8:00–16:30 run (0:00–8:30 AM PDT) in 60 steps of 8.5 minutes, rounded up
+    // so the trace never empties before the close.
+    func testMenuBarTraceStepsThroughTheOpenRun() throws {
+        let now = try makeDate(year: 2026, month: 8, day: 28, hour: 7, minute: 12)
+        let open = try makeDate(year: 2026, month: 8, day: 28, hour: 0, minute: 0)
+        let close = try makeDate(year: 2026, month: 8, day: 28, hour: 8, minute: 30)
+        let london = SessionResolver().resolve(MarketScheduleCatalog.sessions, at: now)
+            .first { $0.id == .london }
+        let next = try XCTUnwrap(london)
+
+        XCTAssertEqual(next.activeStart, open)
+        XCTAssertEqual(MenuBarLabel.traceRemaining(for: next, now: open), 1)
+        // 78 of 510 minutes left: 9.2 steps, shown as 10.
+        XCTAssertEqual(MenuBarLabel.traceRemaining(for: next, now: now), 10.0 / 60)
+        XCTAssertEqual(MenuBarLabel.nextTraceStep(for: next, now: now), close.addingTimeInterval(-9 * 8.5 * 60))
+        // The final step lasts until the close, which is already a wake-up.
+        let lastMinute = close.addingTimeInterval(-30)
+        XCTAssertEqual(MenuBarLabel.traceRemaining(for: next, now: lastMinute), 1.0 / 60)
+        XCTAssertNil(MenuBarLabel.nextTraceStep(for: next, now: lastMinute))
+    }
+
+    // Saturday: nothing trading, so the whole outline; CME's Sunday open is too far off to count down.
+    func testMenuBarShowsWholeOutlineWithoutCountdownWhileFarFromAnOpen() throws {
         let now = try makeDate(year: 2026, month: 8, day: 29, hour: 11, minute: 40)
         let resolved = SessionResolver().resolve(MarketScheduleCatalog.sessions, at: now)
         let next = try XCTUnwrap(
@@ -27,7 +48,9 @@ final class FocusSessionResolverTests: XCTestCase {
         )
 
         XCTAssertEqual(next.id, .cmeFutures)
-        XCTAssertFalse(MenuBarLabel.isFilled(next))
+        XCTAssertNil(next.activeStart)
+        XCTAssertNil(MenuBarLabel.traceRemaining(for: next, now: now))
+        XCTAssertNil(MenuBarLabel.nextTraceStep(for: next, now: now))
         XCTAssertNil(MenuBarLabel.countdown(for: next, now: now))
     }
 

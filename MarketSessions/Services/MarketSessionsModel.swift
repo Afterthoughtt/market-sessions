@@ -117,6 +117,7 @@ final class MarketSessionsModel {
                     after: now,
                     live: !self.liveSurfaces.isEmpty,
                     transitions: self.orderedSessions.compactMap { $0.transition?.date },
+                    traceStep: self.nextTransitionSession.flatMap { MenuBarLabel.nextTraceStep(for: $0, now: now) },
                     countdownTo: self.preferences.showsMenuBarCountdown
                         ? self.nextTransitionSession?.transition?.date
                         : nil
@@ -136,17 +137,20 @@ final class MarketSessionsModel {
 
     /// Next minute while a surface is live or the menu bar counts down. Otherwise the
     /// earliest moment the menu bar or notification plan can change: just after a
-    /// session's next transition, the start of the menu bar countdown, or an hour as a
-    /// safety net.
+    /// session's next transition or the menu bar trace's next step, the start of the
+    /// menu bar countdown, or an hour as a safety net.
     nonisolated static func nextRefresh(
         after now: Date,
         live: Bool,
         transitions: [Date],
+        traceStep: Date?,
         countdownTo target: Date?
     ) -> Date {
         let nextMinute = Date(timeIntervalSince1970: (floor(now.timeIntervalSince1970 / 60) + 1) * 60)
         if live { return nextMinute }
-        var candidates = transitions.filter { $0 > now }.map { $0.addingTimeInterval(1) }
+        var candidates = (transitions + [traceStep].compactMap { $0 })
+            .filter { $0 > now }
+            .map { $0.addingTimeInterval(1) }
             + [now.addingTimeInterval(3_600)]
         if let target, target > now {
             let countdownStart = target.addingTimeInterval(-MenuBarLabel.countdownWindow)
