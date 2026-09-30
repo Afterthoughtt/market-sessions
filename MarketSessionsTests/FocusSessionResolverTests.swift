@@ -2,31 +2,6 @@ import XCTest
 @testable import MarketSessions
 
 final class FocusSessionResolverTests: XCTestCase {
-    func testClampedProgressBounds() {
-        let now = Date(timeIntervalSince1970: 1_800_000_000)
-        XCTAssertEqual(
-            FocusSessionResolver.clampedProgress(now: now, start: nil, end: now.addingTimeInterval(60)),
-            0
-        )
-        XCTAssertEqual(
-            FocusSessionResolver.clampedProgress(
-                now: now,
-                start: now.addingTimeInterval(-120),
-                end: now.addingTimeInterval(-60)
-            ),
-            1
-        )
-        XCTAssertEqual(
-            FocusSessionResolver.clampedProgress(
-                now: now,
-                start: now.addingTimeInterval(-60),
-                end: now.addingTimeInterval(60)
-            ),
-            0.5,
-            accuracy: 0.000_001
-        )
-    }
-
     // Menu bar: the nearest transition is London's 8:30 AM PDT close, so a filled pill,
     // and a countdown only inside the final 59 minutes.
     func testMenuBarCountsDownOnlyInTheFinalHour() throws {

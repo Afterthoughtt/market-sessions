@@ -12,17 +12,6 @@ struct SettingsView: View {
 
     enum SettingsTab: Hashable {
         case general, markets, events, notifications
-
-        /// Content height so the window fits each pane instead of a shared maximum.
-        /// Notifications lists every market and event kind, so its form scrolls.
-        var height: CGFloat {
-            switch self {
-            case .general: 340
-            case .markets: 350
-            case .events: 740
-            case .notifications: 740
-            }
-        }
     }
 
     var body: some View {
@@ -30,17 +19,17 @@ struct SettingsView: View {
             Tab("General", systemImage: "gearshape", value: .general) {
                 general
             }
-            Tab("Markets", systemImage: "globe", value: .markets) {
+            Tab("Markets", systemImage: "globe.badge.clock", value: .markets) {
                 markets
             }
-            Tab("Events", systemImage: "calendar", value: .events) {
+            Tab("Events", systemImage: "calendar.badge.clock", value: .events) {
                 events
             }
             Tab("Notifications", systemImage: "bell", value: .notifications) {
                 notifications
             }
         }
-        .frame(width: 520, height: selectedTab.height)
+        .frame(width: 520)
         .onAppear {
             model.start()
             model.setLiveSurface("settings", visible: true)
@@ -53,7 +42,7 @@ struct SettingsView: View {
             Section {
                 LabeledContent {
                     TimeZonePicker(model: model)
-                        .help("Time zone used for all market and event times")
+                        .help("Choose the time zone for market and event times")
                 } label: {
                     SettingsRowLabel(
                         "Time Zone",
@@ -90,7 +79,9 @@ struct SettingsView: View {
                 )) {
                     SettingsRowLabel(
                         "Launch at Login",
-                        subtitle: model.loginItemError.map { "Couldn’t change: \($0)" }
+                        subtitle: model.loginItemError.map {
+                            "Couldn’t change Launch at Login (\($0)). Try again, or add Market Sessions in System Settings › Login Items."
+                        }
                             ?? (model.loginItemState == .requiresApproval
                                 ? "Approve Market Sessions in System Settings › Login Items."
                                 : nil)
@@ -112,15 +103,21 @@ struct SettingsView: View {
         Form {
             Section {
                 ForEach(model.availableMarkets) { market in
-                    Toggle(isOn: Binding(
-                        get: { model.preferences.visibleMarkets.contains(market.id) },
-                        set: { model.setMarket(market.id, visible: $0) }
-                    )) {
-                        SettingsRowLabel(market.name, subtitle: marketSubtitle(market))
-                    }
+                    showAndNotifyRow(
+                        SettingsRowLabel(market.name, subtitle: marketSubtitle(market)),
+                        name: market.name,
+                        show: Binding(
+                            get: { model.preferences.visibleMarkets.contains(market.id) },
+                            set: { model.setMarket(market.id, visible: $0) }
+                        ),
+                        notify: Binding(
+                            get: { model.preferences.notifiedMarkets.contains(market.id) },
+                            set: { model.setNotifiedMarket(market.id, enabled: $0) }
+                        )
+                    )
                 }
             } footer: {
-                Text("Applies to the popover and menu-bar indicator. You can hide every market and still open Settings.")
+                Text("The switch shows a market in the popover and menu bar. Notify alerts at its first open and final close each trading day, even when it’s hidden. You can hide every market and still open Settings.\(notificationsOffNote)")
             }
         }
         .formStyle(.grouped)
@@ -149,7 +146,7 @@ struct SettingsView: View {
                     .labelsHidden()
                     .fixedSize()
                 } label: {
-                    SettingsRowLabel("Lead Time", subtitle: "Applies to every notification below.")
+                    SettingsRowLabel("Lead Time", subtitle: "Applies to every market and event notification.")
                 }
 
                 LabeledContent {
@@ -172,61 +169,37 @@ struct SettingsView: View {
                                 subtitle: "Allow Market Sessions in System Settings › Notifications."
                             )
                         case .unavailable(let reason):
-                            SettingsRowLabel("Notifications Unavailable", subtitle: "macOS refused the request: \(reason)")
+                            SettingsRowLabel(
+                                "Notifications Unavailable",
+                                subtitle: "macOS didn’t allow the request (\(reason)). Click Try Again, or check System Settings › Notifications."
+                            )
                         case .notDetermined, .authorized:
                             SettingsRowLabel("Test Notification", subtitle: "Shows a sample banner right away.")
                         }
                     }
                 }
             } footer: {
-                Text("Markets notify at the first open and final close of each trading day; events at their scheduled time. Selections here are independent of what the popover shows.")
+                Text("Choose what notifies with the Notify checkboxes in Markets and Events. Markets notify at the first open and final close of each trading day; events at their scheduled time.")
             }
-
-            Section("Markets") {
-                ForEach(model.availableMarkets) { market in
-                    Toggle(isOn: Binding(
-                        get: { model.preferences.notifiedMarkets.contains(market.id) },
-                        set: { model.setNotifiedMarket(market.id, enabled: $0) }
-                    )) {
-                        SettingsRowLabel(market.name, subtitle: marketSubtitle(market))
-                    }
-                }
-            }
-
-            eventSection("U.S. Releases", kinds: EconomicEventKind.kinds(in: .usRelease), selection: .notify)
-            eventSection("Central Banks", kinds: EconomicEventKind.kinds(in: .centralBank), selection: .notify)
         }
         .formStyle(.grouped)
     }
 
-    private enum EventSelection {
-        case show, notify
-    }
-
-    private func eventSection(
-        _ title: String,
-        kinds: [EconomicEventKind],
-        footer: String? = nil,
-        selection: EventSelection = .show
-    ) -> some View {
+    private func eventSection(_ title: String, kinds: [EconomicEventKind], footer: String? = nil) -> some View {
         Section {
             ForEach(kinds, id: \.self) { kind in
-                Toggle(isOn: Binding(
-                    get: {
-                        switch selection {
-                        case .show: model.preferences.eventKinds.contains(kind)
-                        case .notify: model.preferences.notifiedEventKinds.contains(kind)
-                        }
-                    },
-                    set: {
-                        switch selection {
-                        case .show: model.setEventKind(kind, visible: $0)
-                        case .notify: model.setNotifiedEventKind(kind, enabled: $0)
-                        }
-                    }
-                )) {
-                    SettingsRowLabel(kind.compactTitle, subtitle: nextEventSubtitle(kind))
-                }
+                showAndNotifyRow(
+                    SettingsRowLabel(kind.compactTitle, subtitle: nextEventSubtitle(kind)),
+                    name: kind.compactTitle,
+                    show: Binding(
+                        get: { model.preferences.eventKinds.contains(kind) },
+                        set: { model.setEventKind(kind, visible: $0) }
+                    ),
+                    notify: Binding(
+                        get: { model.preferences.notifiedEventKinds.contains(kind) },
+                        set: { model.setNotifiedEventKind(kind, enabled: $0) }
+                    )
+                )
                 .help(kind.detail)
             }
         } header: {
@@ -236,6 +209,36 @@ struct SettingsView: View {
                 Text(footer)
             }
         }
+    }
+
+    /// One market or event kind: a Notify checkbox, then the switch that shows it
+    /// in the popover. Each control carries the row's name for VoiceOver.
+    private func showAndNotifyRow(
+        _ label: SettingsRowLabel,
+        name: String,
+        show: Binding<Bool>,
+        notify: Binding<Bool>
+    ) -> some View {
+        LabeledContent {
+            HStack(spacing: 16) {
+                Toggle("Notify", isOn: notify)
+                    .toggleStyle(.checkbox)
+                    .accessibilityLabel("Notify for \(name)")
+                Toggle("Show \(name)", isOn: show)
+                    .toggleStyle(.switch)
+                    .labelsHidden()
+            }
+        } label: {
+            label
+        }
+    }
+
+    /// Appended to the Markets and Events footers while macOS blocks notifications,
+    /// since the Notify checkboxes would otherwise look like they work.
+    private var notificationsOffNote: String {
+        model.notificationAuthorization == .denied
+            ? " Notifications are off in System Settings; see the Notifications tab."
+            : ""
     }
 
     private func openNotificationSettings() {
@@ -262,8 +265,10 @@ struct SettingsView: View {
         let style = Date.FormatStyle(date: .abbreviated, time: .omitted, timeZone: model.displayTimeZone)
         let us = model.eventScheduleEnd(for: .usRelease).map { $0.formatted(style) } ?? "unavailable"
         let banks = model.eventScheduleEnd(for: .centralBank).map { $0.formatted(style) } ?? "unavailable"
-        return "The popover shows only the next four upcoming events. "
+        return "The switch shows an event kind in the popover, which lists the next four. "
+            + "Notify alerts at each event’s scheduled time. "
             + "Bundled dates run through \(us) for U.S. releases and \(banks) for central banks."
+            + notificationsOffNote
     }
 
     private var coverageDetail: String {

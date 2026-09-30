@@ -2,6 +2,22 @@ import XCTest
 @testable import MarketSessions
 
 final class ProgressTests: XCTestCase {
+    func testTransitionTimeShowsTheDateAWeekOrMoreOut() {
+        let zone = TimeZone(identifier: "America/Los_Angeles")!
+        let now = ISO8601DateFormatter().date(from: "2026-09-30T07:48:00Z")!  // Wed 12:48 AM PDT
+        let enUS = Locale(identifier: "en_US")
+        let tomorrow = ISO8601DateFormatter().date(from: "2026-10-01T01:30:00Z")!  // Wed 6:30 PM PDT
+        let nextWeek = ISO8601DateFormatter().date(from: "2026-10-08T01:30:00Z")!  // Wed Oct 7 6:30 PM PDT
+        XCTAssertEqual(
+            MarketDateFormatting.transitionTime(tomorrow, relativeTo: now, timeZone: zone, locale: enUS),
+            "6:30\u{202F}PM"
+        )
+        XCTAssertEqual(
+            MarketDateFormatting.transitionTime(nextWeek, relativeTo: now, timeZone: zone, locale: enUS),
+            "Oct 7 6:30\u{202F}PM"
+        )
+    }
+
     func testCompactDurationFormatting() {
         XCTAssertEqual(MarketDurationFormatting.compact(minutes: 348), "5h 48m")
         XCTAssertEqual(MarketDurationFormatting.compact(minutes: 45), "45m")

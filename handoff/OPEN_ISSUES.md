@@ -6,7 +6,9 @@ Out of scope (owner decision 2026-09-29, personal use only): distribution signin
 
 ## Next up
 
-Nothing queued; see the sections below.
+1. **Coverage line noise.** `UpcomingEconomicEvents.coverageGap` treats fewer than four events as an infinite horizon, so selecting only sparse kinds (Fed Chair) shows "Central bank dates bundled through …" permanently; coverage is also per category, not per selected kind.
+2. **Holiday eve.** `SessionResolver` marks Holiday only when now's canonical date is the holiday, so the evening before (e.g. CME Thursday after 17:00 CT before a Good-Friday-style closure) reads Closed.
+3. **Menu bar pill as custom SF Symbols.** Owner asked (2026-09-30) to rebuild `MenuBarPill` as custom symbols so the system sizes and aligns it. The San Francisco font licence allows the font only for mock-ups, so the code letters cannot be SF Pro outlines baked into an asset; the letters available as SF Symbols (`l.square.fill` and so on) are the licensed route. Waiting on the owner's choice of route; see the canvas board "Menu bar and Settings".
 
 ## Unverified, check when convenient
 

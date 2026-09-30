@@ -24,7 +24,8 @@ enum MarketDateFormatting {
         return formatter.string(from: date)
     }
 
-    /// `1:00 PM` on the same display day, `Sun 3:00 PM` otherwise.
+    /// `1:00 PM` on the same display day, `Sun 3:00 PM` within the week, and
+    /// `Oct 7 6:30 PM` a week or more out, where a bare weekday would repeat.
     static func transitionTime(
         _ date: Date,
         relativeTo now: Date,
@@ -40,11 +41,14 @@ enum MarketDateFormatting {
         if calendar.isDate(date, inSameDayAs: now) {
             prefix = sameDayPrefix
         } else {
-            let weekday = DateFormatter()
-            weekday.locale = locale
-            weekday.timeZone = timeZone
-            weekday.dateFormat = "EEE"
-            prefix = weekday.string(from: date)
+            let days = calendar.dateComponents(
+                [.day], from: calendar.startOfDay(for: now), to: calendar.startOfDay(for: date)
+            ).day ?? 0
+            let formatter = DateFormatter()
+            formatter.locale = locale
+            formatter.timeZone = timeZone
+            formatter.setLocalizedDateFormatFromTemplate(days < 7 ? "EEE" : "MMMd")
+            prefix = formatter.string(from: date)
         }
 
         let clock = time(date, timeZone: timeZone, locale: locale)
@@ -52,22 +56,6 @@ enum MarketDateFormatting {
             return "\(prefix) \(clock)"
         }
         return clock
-    }
-
-    /// Hero subtitle tail: `closes Today 1:00 PM`, `opens Sun 3:00 PM`.
-    static func subtitleTransition(
-        _ transition: SessionTransition,
-        relativeTo now: Date,
-        timeZone: TimeZone
-    ) -> String {
-        let verb = transition.verb.rawValue.lowercased()
-        let time = transitionTime(
-            transition.date,
-            relativeTo: now,
-            timeZone: timeZone,
-            sameDayPrefix: "Today"
-        )
-        return "\(verb) \(time)"
     }
 }
 

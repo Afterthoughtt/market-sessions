@@ -60,7 +60,7 @@ struct SessionsPopover: View {
 
             // The kit's menu separator: a 1pt line 5pt below the last item.
             Rectangle()
-                .fill(palette.dividerStrong)
+                .fill(palette.separator)
                 .frame(height: 1)
                 .padding(.horizontal, -14)
                 .padding(.top, 5)
@@ -73,7 +73,6 @@ struct SessionsPopover: View {
             } label: {
                 Text("Settings…")
                     .font(.system(size: 13, weight: .medium))
-                    .foregroundStyle(palette.text)
             }
             .buttonStyle(PopoverRowButtonStyle(palette: palette))
             .keyboardShortcut(",")
@@ -209,19 +208,21 @@ struct SessionsPopover: View {
 
 /// Menu-item hover highlight per Apple's macOS 26 UI kit (Menus → _Menu Item,
 /// State=Hover): 24pt row, 8pt continuous corner radius, highlight extending
-/// 7pt past the text inset on both sides, fill = Fills-Vibrant/Secondary (the
-/// separator color). Padded to the 32pt footer row from the design.
+/// 7pt past the text inset on both sides, accent fill with a white label (the
+/// kit draws #0088FF, the default accent; this follows the user's accent).
+/// Padded to the 32pt footer row from the design.
 private struct PopoverRowButtonStyle: ButtonStyle {
     let palette: MarketPalette
     @State private var isHovering = false
 
     func makeBody(configuration: Configuration) -> some View {
         configuration.label
+            .foregroundStyle(isHovering ? Color.white : palette.text)
             .frame(maxWidth: .infinity, minHeight: 24, alignment: .leading)
             .padding(.horizontal, 7)
             .background(
                 RoundedRectangle(cornerRadius: 8, style: .continuous)
-                    .fill(isHovering ? palette.divider : .clear)
+                    .fill(isHovering ? Color.accentColor : .clear)
             )
             .padding(.horizontal, -7)
             .padding(.vertical, 4)

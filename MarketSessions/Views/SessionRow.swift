@@ -29,7 +29,7 @@ struct SessionRow: View {
                 HStack(alignment: .firstTextBaseline, spacing: 4) {
                     if resolved.status.isActive {
                         Text(remaining)
-                            .font(.system(size: 17, weight: .semibold))
+                            .font(.system(size: 13, weight: .semibold))
                             .foregroundStyle(palette.text)
                         Text("left")
                             .font(.system(size: 11))
@@ -39,7 +39,7 @@ struct SessionRow: View {
                             .font(.system(size: 11))
                             .foregroundStyle(palette.sec)
                         Text(remaining)
-                            .font(.system(size: 17))
+                            .font(.system(size: 13))
                             .foregroundStyle(isExtendedHours ? palette.text : palette.sec)
                     }
                 }
