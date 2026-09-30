@@ -6,9 +6,13 @@ struct OpenSessionRow: View {
     let now: Date
     let displayTimeZone: TimeZone
     let palette: MarketPalette
+    /// The session the menu bar shows; only its countdown is emphasized.
+    let isNext: Bool
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 7) {
+        // A 24pt text line (the kit's menu item height) over the kit's Small (6pt)
+        // determinate bar.
+        VStack(alignment: .leading, spacing: 2) {
             HStack(spacing: 8) {
                 Text(resolved.session.name)
                     .font(.system(size: 13))
@@ -17,24 +21,25 @@ struct OpenSessionRow: View {
 
                 Spacer(minLength: 6)
 
-                TransitionText(label: label, palette: palette)
+                TransitionText(label: label, palette: palette, emphasized: isNext)
             }
+            .frame(height: 24)
 
             GeometryReader { proxy in
                 ZStack(alignment: .leading) {
                     Capsule().fill(palette.track)
+                    // The kit's fill never shrinks below a round dot of the bar's height.
                     if elapsedFraction > 0 {
                         Capsule()
                             .fill(palette.ringSec)
-                            .frame(width: proxy.size.width * elapsedFraction)
+                            .frame(width: max(proxy.size.height, proxy.size.width * elapsedFraction))
                     }
                 }
             }
-            .frame(height: 3)
+            .frame(height: 6)
             .accessibilityHidden(true)
         }
-        .padding(.top, 8)
-        .padding(.bottom, 10)
+        .padding(.bottom, 6)
         .accessibilityElement(children: .ignore)
         .accessibilityLabel(
             "\(resolved.session.name), \(resolved.status.label), \(label.spoken)"
@@ -59,6 +64,8 @@ struct ClosedSessionRow: View {
     let now: Date
     let displayTimeZone: TimeZone
     let palette: MarketPalette
+    /// The session the menu bar shows; only its countdown is emphasized.
+    let isNext: Bool
 
     var body: some View {
         HStack(spacing: 10) {
@@ -69,13 +76,12 @@ struct ClosedSessionRow: View {
 
             Spacer(minLength: 6)
 
-            TransitionText(label: label, palette: palette)
+            TransitionText(label: label, palette: palette, emphasized: isNext)
         }
         .padding(.horizontal, 7)
         .frame(height: 24)
         .background(tintBackground)
         .padding(.horizontal, -7)
-        .padding(.vertical, 4)
         .accessibilityElement(children: .ignore)
         .accessibilityLabel(
             "\(resolved.session.name), \(resolved.status.label), \(label.spoken)"
@@ -102,7 +108,7 @@ struct ClosedSessionRow: View {
 }
 
 /// A row's next change: `Closes 11:30 PM`, or inside the menu bar's countdown window
-/// `Closes in 40m`, emphasized like an imminent event.
+/// `Closes in 40m`.
 private struct TransitionLabel {
     let text: String
     let spoken: String
@@ -128,15 +134,18 @@ private struct TransitionLabel {
     }
 }
 
+/// Semibold primary only for the menu bar's own countdown, so one row stands out.
 private struct TransitionText: View {
     let label: TransitionLabel
     let palette: MarketPalette
+    let emphasized: Bool
 
     var body: some View {
+        let emphasis = emphasized && label.isImminent
         Text(label.text)
-            .font(.system(size: 13, weight: label.isImminent ? .semibold : .regular))
+            .font(.system(size: 13, weight: emphasis ? .semibold : .regular))
             .monospacedDigit()
-            .foregroundStyle(label.isImminent ? palette.text : palette.sec)
+            .foregroundStyle(emphasis ? palette.text : palette.sec)
             .lineLimit(1)
             .fixedSize(horizontal: true, vertical: false)
     }

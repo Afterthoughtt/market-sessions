@@ -25,15 +25,15 @@ struct SessionsPopover: View {
                     Text("No markets open")
                         .font(.system(size: 13))
                         .foregroundStyle(palette.sec)
-                        .frame(maxWidth: .infinity, minHeight: 32, alignment: .leading)
+                        .frame(maxWidth: .infinity, minHeight: 24, alignment: .leading)
                 }
-                // Each open row's progress bar already separates it; no hairlines.
-                sessionRows(openSessions, dividers: false) { resolved in
+                sessionRows(openSessions) { resolved in
                     OpenSessionRow(
                         resolved: resolved,
                         now: model.now,
                         displayTimeZone: model.displayTimeZone,
-                        palette: palette
+                        palette: palette,
+                        isNext: resolved.id == model.nextTransitionSession?.id
                     )
                 }
 
@@ -49,7 +49,8 @@ struct SessionsPopover: View {
                                 resolved: resolved,
                                 now: model.now,
                                 displayTimeZone: model.displayTimeZone,
-                                palette: palette
+                                palette: palette,
+                                isNext: resolved.id == model.nextTransitionSession?.id
                             )
                         }
                     }
@@ -73,10 +74,12 @@ struct SessionsPopover: View {
                     .padding(.vertical, 8)
             }
 
+            // The kit's menu separator: a 1pt line 5pt below the last item.
             Rectangle()
                 .fill(palette.dividerStrong)
                 .frame(height: 1)
                 .padding(.horizontal, -14)
+                .padding(.top, 5)
 
             // Agent apps are not active while the popover is up, so a bare
             // SettingsLink opens the window behind everything or not at all.
@@ -148,20 +151,14 @@ struct SessionsPopover: View {
             .padding(.bottom, 2)
     }
 
+    /// Rows sit together like menu items; section headers and spacing do the grouping.
     private func sessionRows<Row: View>(
         _ sessions: [ResolvedSession],
-        dividers: Bool = true,
         @ViewBuilder row: @escaping (ResolvedSession) -> Row
     ) -> some View {
         VStack(spacing: 0) {
             ForEach(sessions) { resolved in
                 row(resolved)
-
-                if dividers, resolved.id != sessions.last?.id {
-                    Rectangle()
-                        .fill(palette.divider)
-                        .frame(height: 1)
-                }
             }
         }
     }

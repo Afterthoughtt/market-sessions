@@ -24,12 +24,6 @@ struct EconomicEventsSection: View {
 
             ForEach(displayedEvents) { event in
                 eventRow(event)
-
-                if event.id != displayedEvents.last?.id {
-                    Rectangle()
-                        .fill(palette.divider)
-                        .frame(height: 1)
-                }
             }
 
             if displayedEvents.isEmpty {
@@ -68,7 +62,7 @@ struct EconomicEventsSection: View {
                 .lineLimit(1)
                 .fixedSize(horizontal: true, vertical: false)
         }
-        .frame(height: 32)
+        .frame(height: 24)
         .accessibilityElement(children: .ignore)
         .accessibilityLabel(eventDetails(event))
         .help(eventDetails(event))
