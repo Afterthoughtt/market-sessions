@@ -119,8 +119,10 @@ private struct MenuBarPill: View {
             .frame(height: 15)
             .overlay {
                 if let remaining {
-                    // The macOS 27 kit's unfilled progress track: black 85% at 10% opacity.
-                    outline.stroke(.black.opacity(0.085), lineWidth: 1.45)
+                    // The track takes the opacity SF Symbols' Variable Draw gives a path's
+                    // undrawn part (0.3, measured from `gauge.open` in `.draw` mode). The kit's
+                    // 8.5% progress track vanished on a dark menu bar (owner screenshot).
+                    outline.stroke(.black.opacity(0.3), lineWidth: 1.45)
                     // SwiftUI's path starts at 3 o'clock and runs clockwise, so by symmetry
                     // 12 o'clock sits at 0.75 of its length. The trace ends there, and the
                     // elapsed gap opens clockwise from it. Round caps, like the kit's fill.
