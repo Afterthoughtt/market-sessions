@@ -29,4 +29,6 @@ Per `MarketSessions/Resources/README.md`: bundle `market-exceptions-2027.json` f
 ## Housekeeping
 
 - Xcode 27 has not had "Update to Recommended Settings" accepted (`LastUpgradeCheck = 2660`). If accepted, review the pbxproj diff; the file is hand-maintained.
-- The design canvas (claude.ai artifact "Menu Bar Explorations", board H) still shows After Hours with a filled pill; the app correctly outlines it.
+- The older claude.ai artifact "Menu Bar Explorations" (board H) still shows filled pills; the app no longer draws one (traced outline since 2026-09-30). The current canvas is the one in CLAUDE.md.
+- The app's UserDefaults still hold a `showsMenuBarCountdown` key from the removed countdown toggle; nothing reads it.
+- `.build/reference/figma-macos26.json` (the old macOS 26 kit) sits beside the macOS 27 cache; delete it once nothing cites the 26 kit (the `MarketPalette` comment, the canvas heading "× Apple macOS 26 kit").
