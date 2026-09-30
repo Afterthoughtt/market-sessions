@@ -19,8 +19,8 @@ struct SettingsView: View {
             switch self {
             case .general: 340
             case .markets: 350
-            case .events: 750
-            case .notifications: 750
+            case .events: 740
+            case .notifications: 740
             }
         }
     }
