@@ -116,8 +116,7 @@ final class MarketSessionsModel {
                 let next = Self.nextRefresh(
                     after: now,
                     live: !self.liveSurfaces.isEmpty,
-                    transitions: self.orderedSessions.compactMap { $0.transition?.date },
-                    traceStep: self.nextTransitionSession.flatMap { MenuBarLabel.nextTraceStep(for: $0, now: now) }
+                    transitions: self.orderedSessions.compactMap { $0.transition?.date }
                 )
                 let delay = max(0.05, next.timeIntervalSince(now))
                 // Tolerance lets macOS coalesce this wake-up with others.
@@ -133,17 +132,16 @@ final class MarketSessionsModel {
     }
 
     /// Next minute while a surface is live. Otherwise the earliest moment the menu bar
-    /// or notification plan can change: just after a session's next transition or the
-    /// menu bar trace's next step, or an hour as a safety net.
+    /// tooltip or notification plan can change: just after a session's next transition,
+    /// or an hour as a safety net.
     nonisolated static func nextRefresh(
         after now: Date,
         live: Bool,
-        transitions: [Date],
-        traceStep: Date?
+        transitions: [Date]
     ) -> Date {
         let nextMinute = Date(timeIntervalSince1970: (floor(now.timeIntervalSince1970 / 60) + 1) * 60)
         if live { return nextMinute }
-        let candidates = (transitions + [traceStep].compactMap { $0 })
+        let candidates = transitions
             .filter { $0 > now }
             .map { $0.addingTimeInterval(1) }
             + [now.addingTimeInterval(3_600)]

@@ -134,34 +134,29 @@ final class SettingsTests: XCTestCase {
     }
 
     // Battery: minute ticks only while a surface is on screen; otherwise wake just after
-    // the next transition or trace step, or within an hour.
+    // the next transition, or within an hour.
     func testClockSleepsUntilTheMenuBarCanChange() {
         let now = ISO8601DateFormatter().date(from: "2026-09-29T17:05:30Z")!
         let nextMinute = ISO8601DateFormatter().date(from: "2026-09-29T17:06:00Z")!
-        let traceStep = ISO8601DateFormatter().date(from: "2026-09-29T17:12:00Z")!
         let close = ISO8601DateFormatter().date(from: "2026-09-29T17:30:00Z")!
         let laterClose = ISO8601DateFormatter().date(from: "2026-09-29T19:00:00Z")!
 
         XCTAssertEqual(
-            MarketSessionsModel.nextRefresh(after: now, live: true, transitions: [close], traceStep: nil),
+            MarketSessionsModel.nextRefresh(after: now, live: true, transitions: [close]),
             nextMinute
         )
         // 24.5 minutes out: no minute ticks before a close, just the close itself.
         XCTAssertEqual(
-            MarketSessionsModel.nextRefresh(after: now, live: false, transitions: [close], traceStep: nil),
+            MarketSessionsModel.nextRefresh(after: now, live: false, transitions: [close]),
             close.addingTimeInterval(1)
         )
         XCTAssertEqual(
-            MarketSessionsModel.nextRefresh(after: now, live: false, transitions: [close], traceStep: traceStep),
-            traceStep.addingTimeInterval(1)
-        )
-        XCTAssertEqual(
-            MarketSessionsModel.nextRefresh(after: now, live: false, transitions: [], traceStep: nil),
+            MarketSessionsModel.nextRefresh(after: now, live: false, transitions: []),
             now.addingTimeInterval(3_600)
         )
-        // 1h 54.5m out with no trace step sooner: the hourly safety net.
+        // 1h 54.5m out: the hourly safety net.
         XCTAssertEqual(
-            MarketSessionsModel.nextRefresh(after: now, live: false, transitions: [laterClose], traceStep: nil),
+            MarketSessionsModel.nextRefresh(after: now, live: false, transitions: [laterClose]),
             now.addingTimeInterval(3_600)
         )
     }

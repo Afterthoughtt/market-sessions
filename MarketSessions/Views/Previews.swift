@@ -71,13 +71,7 @@ private final class PreviewNotificationCenter: NotificationCentering {
 
 #Preview("Menu Bar Label") {
     let model = PreviewModel.make()
-    VStack(alignment: .leading, spacing: 12) {
-        ForEach(model.orderedSessions, id: \.session.id) { resolved in
-            HStack(spacing: 4) {
-                MenuBarLabel(resolved: resolved, now: model.now, displayTimeZone: model.displayTimeZone)
-            }
-        }
-    }
-    .padding()
+    MenuBarLabel(resolved: model.nextTransitionSession, now: model.now, displayTimeZone: model.displayTimeZone)
+        .padding()
 }
 #endif

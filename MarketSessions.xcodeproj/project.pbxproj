@@ -42,7 +42,6 @@
 		A00100000000000000000019 /* market-exceptions-2026.json in Resources */ = {isa = PBXBuildFile; fileRef = F00100000000000000000018 /* market-exceptions-2026.json */; };
 		A0010000000000000000001A /* market-exceptions-2026.json in Resources */ = {isa = PBXBuildFile; fileRef = F00100000000000000000018 /* market-exceptions-2026.json */; };
 		A00200000000000000000001 /* SessionResolverTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F00200000000000000000001 /* SessionResolverTests.swift */; };
-		A00200000000000000000002 /* FocusSessionResolverTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F00200000000000000000002 /* FocusSessionResolverTests.swift */; };
 		A00200000000000000000003 /* ProgressTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F00200000000000000000003 /* ProgressTests.swift */; };
 		A00200000000000000000004 /* EconomicEventTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F00200000000000000000004 /* EconomicEventTests.swift */; };
 		A00200000000000000000005 /* MarketExceptionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F00200000000000000000005 /* MarketExceptionTests.swift */; };
@@ -91,7 +90,6 @@
 		F00100000000000000000017 /* MarketExceptionCatalog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MarketExceptionCatalog.swift; sourceTree = "<group>"; };
 		F00100000000000000000018 /* market-exceptions-2026.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "market-exceptions-2026.json"; sourceTree = "<group>"; };
 		F00200000000000000000001 /* SessionResolverTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionResolverTests.swift; sourceTree = "<group>"; };
-		F00200000000000000000002 /* FocusSessionResolverTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FocusSessionResolverTests.swift; sourceTree = "<group>"; };
 		F00200000000000000000003 /* ProgressTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProgressTests.swift; sourceTree = "<group>"; };
 		F00200000000000000000004 /* EconomicEventTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EconomicEventTests.swift; sourceTree = "<group>"; };
 		F00200000000000000000005 /* MarketExceptionTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MarketExceptionTests.swift; sourceTree = "<group>"; };
@@ -212,7 +210,6 @@
 			isa = PBXGroup;
 			children = (
 				F00200000000000000000001 /* SessionResolverTests.swift */,
-				F00200000000000000000002 /* FocusSessionResolverTests.swift */,
 				F00200000000000000000003 /* ProgressTests.swift */,
 				F00200000000000000000004 /* EconomicEventTests.swift */,
 				F00200000000000000000005 /* MarketExceptionTests.swift */,
@@ -354,7 +351,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				A00200000000000000000001 /* SessionResolverTests.swift in Sources */,
-				A00200000000000000000002 /* FocusSessionResolverTests.swift in Sources */,
 				A00200000000000000000003 /* ProgressTests.swift in Sources */,
 				A00200000000000000000004 /* EconomicEventTests.swift in Sources */,
 				A00200000000000000000005 /* MarketExceptionTests.swift in Sources */,
