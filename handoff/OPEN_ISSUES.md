@@ -2,7 +2,7 @@
 
 Backlog from the 2026-09-29 production pass. Items name files and symbols rather than line numbers, which drift. Delete an item when it ships.
 
-Out of scope (owner decision 2026-09-29, personal use only): distribution signing and team, notarization, app icon, copyright string, App Sandbox.
+Out of scope (owner decision 2026-09-29, personal use only): distribution signing and team, notarization, copyright string, App Sandbox.
 
 ## Next up
 
@@ -16,7 +16,11 @@ Out of scope (owner decision 2026-09-29, personal use only): distribution signin
    - e. **Stale or contradictory text in DESIGN.md.** The title and intro ("Turn 7a reference + 10a label", "static design reference, fixed snapshot"). Popover › Footer says Settings holds "About", which does not exist. Type says "regular/semibold only", but Medium and Bold are used. The General tab height (374pt) predates removing the countdown row; re-measure it. The Settings… row is 32pt while citing the kit menu item (24pt); decide and record. The Files line says popover.html shows the current label; it does not. The `MarketPalette` doc comment still cites the macOS 26 kit.
    - After implementing: update the design canvas boards (Tokens, Popover anatomy, Findings) to the macOS 27 kit, and run design-review and accessibility-audit.
 
+4. **App icon.** The owner builds `AppIcon.icon` in Icon Composer from `handoff/app-icon/` (pick one weight, delete the other). Then add it to `MarketSessions/` (pbxproj: five places) and set the target's App Icon name to `AppIcon`.
+
 ## Unverified, check when convenient
+
+- The four-bar menu bar glyph has not been seen in the real bar: check its size and weight against Wi‑Fi and Battery, light and dark bars, and the highlighted state.
 
 - A notification whose trigger passes while the Mac sleeps may be delivered late on wake ("Opens in 5 minutes" hours later). Owner to confirm: 5-minute lead, a market alert due within the hour, sleep through it, wake ~15 minutes later. A `BannerDelegate.willPresent` filter would not help: Apple calls it only while the app is in the foreground, which a menu-bar app rarely is. If confirmed, remove stale delivered banners from the existing wake refresh instead.
 

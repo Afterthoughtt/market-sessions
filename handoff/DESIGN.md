@@ -23,7 +23,7 @@ Static design reference only. Data shown is a fixed snapshot (Thu 6:09 PM PDT); 
 Primary text, secondary text and the hairline are the system label, secondary label and separator colours, so they follow Increase Contrast (owner decision 2026-09-30, replacing fixed opacities). The kit's label tokens give their values: black at 0.85 / 0.50 in light, white at 0.85 / 0.55 in dark. State colours are Apple system colours in TradingView's status mapping: Open green, Pre-Market orange, After Hours blue, Holiday and Closed secondary. Dark mode uses NSColor systemGreen and systemOrange (Increase Contrast applies) and #0593FF for After Hours: the kit's dark Blue #0091FF measured 4.43:1 on the dark popover, so it is lightened just to 4.5:1 (owner decision 2026-09-30); light mode darkens the kit's light values just to 4.5:1 for 11pt text on the light popover: #22813A, #A85D1A, #0071D4 (kit #34C759, #FF8D28, #0088FF measure 2.1, 2.1, 3.3:1). Owner decision 2026-09-30.
 
 ## Menu-bar label (10a)
-Superseded by the owner decision under "Menu bar label" below: a fixed symbol.
+Superseded by the owner decision under "Menu bar label" below: a fixed glyph.
 
 ## Owner decisions (amend the sections above; these win on conflict)
 
@@ -54,7 +54,11 @@ Five market states, TradingView's statuses without Overnight (no bundled market 
 
 ### Menu bar label
 
-A fixed SF Symbol, `chart.line.uptrend.xyaxis`, as the system draws it in the menu bar (owner decision 2026-10-02: stop conveying market state in the bar). The popover carries state and times. Tooltip and accessibility label: the next-to-change session's full name, status, and "Closes 1:00 PM", or "Market Sessions — choose markets in Settings" with no markets selected. History: a status dot, then text (`LDN closes 2h 14m`), then a code pill with the clock time, then a final-hour countdown, then a pill whose outline traced the time left (2026-09-29 to 2026-10-01); all dropped.
+A fixed glyph that does not convey market state (owner decision 2026-10-02); the popover carries state and times. The glyph is four outlined bars sharing walls, drawn off one straight horizontal line through the middle: two bars hang below it (the first deeper), two rise above it (the last taller) (owner pick "Four bars, outlined" on the design canvas board "Menu bar icon: bar options", 2026-10-21). Geometry in a 16pt box: 1.2pt line with round caps and joins (owner choice; Apple's menu bar symbols measure 1.45pt), bars 3.7pt wide, ends at 14.2, 11, 5 and 1.8pt from the top. A template image so the system tints it. Tooltip and accessibility label: the next-to-change session's full name, status, and "Closes 1:00 PM", or "Market Sessions — choose markets in Settings" with no markets selected.
+
+### App icon
+
+The menu bar glyph's shape, made in Icon Composer by the owner (decision 2026-10-21). Source layers in `handoff/app-icon/`: 1024 canvas, black, no background, the glyph about 60% of the canvas width and centred (the macOS 27 kit has no app icon grid); `1-bars.svg` keeps the menu bar's line weight, `1-bars-heavy.svg` is 1.5× heavier for small sizes. Lines are filled shapes, not strokes, so Icon Composer needs no SVG stroke support.
 
 ### Settings
 

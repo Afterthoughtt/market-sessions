@@ -5,7 +5,7 @@ Swift 6 menu-bar-only macOS app (targets macOS 26; built with Xcode 27 on macOS 
 ## Non-negotiables
 
 - Fully offline: no network entitlement or code, no dependencies, no telemetry, no accounts. Do not add any without being asked.
-- Personal use only; the app is never distributed. Skip distribution work (signing team, notarization, app icon, App Sandbox).
+- Personal use only; the app is never distributed. Skip distribution work (signing team, notarization, App Sandbox). The app icon is in scope (owner decision 2026-10-21).
 - Exactly five market states, TradingView's set without Overnight: Open, Pre-Market, After Hours, Holiday, Closed (a lunch or maintenance pause is Closed). State colours are Apple system colours per `handoff/DESIGN.md`; everything else in the popover stays neutral on the system material.
 - Schedules and event times are defined in canonical IANA zones. Never hardcode UTC offsets or local clock times. Never generate dates from recurrence formulas.
 
@@ -32,7 +32,7 @@ Swift 6 menu-bar-only macOS app (targets macOS 26; built with Xcode 27 on macOS 
 - All schedule and event math is deterministic and lives outside SwiftUI. `Date`, calendar, and display zone are injected; tests never depend on the machine clock.
 - `MarketSessionsModel` (`@MainActor @Observable`) owns the clock and every resolved snapshot. Views are dumb renderers that take a `MarketPalette`.
 - Battery: the clock ticks per minute only while the popover or Settings is live (`setLiveSurface`); otherwise it sleeps until the next transition or an hour. Put periodic work in `refresh()`.
-- The menu bar label is a fixed SF Symbol (owner decision 2026-10-02); state lives in the popover and tooltip.
+- The menu bar label is a fixed four-bar glyph drawn in code as a template image (`MenuBarLabel.glyph`); state lives in the popover and tooltip. The app icon uses the same shape: source layers in `handoff/app-icon/`.
 - Kind-specific knowledge (category, description) lives on `EconomicEventKind`, not in views.
 - The project file is a hand-maintained classic pbxproj with sequential IDs. Adding a file means edits in five places; follow the existing pattern.
 - Tests inject isolated preference stores and never touch the app's standard defaults.
