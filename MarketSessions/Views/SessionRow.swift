@@ -48,6 +48,27 @@ struct SessionRow: View {
             }
         }
         .frame(height: 40)
+        .overlay(alignment: .bottom) {
+            if resolved.status.isActive {
+                // The kit's Small determinate bar: 6pt, fully rounded, filling toward the
+                // close, and never narrower than a dot of its own height.
+                GeometryReader { proxy in
+                    ZStack(alignment: .leading) {
+                        Capsule().fill(palette.track)
+                        let elapsed = resolved.elapsedFraction(at: now)
+                        if elapsed > 0 {
+                            Capsule()
+                                .fill(palette.sec)
+                                .frame(width: max(proxy.size.height, proxy.size.width * elapsed))
+                        }
+                    }
+                }
+                .frame(height: 6)
+                .offset(y: 4)
+                .accessibilityHidden(true)
+            }
+        }
+        .padding(.bottom, resolved.status.isActive ? 10 : 0)
         .accessibilityElement(children: .ignore)
         .accessibilityLabel(accessibilityText)
     }

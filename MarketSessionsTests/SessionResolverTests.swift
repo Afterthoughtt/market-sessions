@@ -82,6 +82,18 @@ final class SessionResolverTests: XCTestCase {
         )
     }
 
+    // The popover bar fills from the 9:00 open toward the 11:30 recess: 60 of 150 minutes.
+    func testOpenRowBarFillsTowardTheClose() throws {
+        let tokyo = MarketScheduleCatalog.session(.tokyo)
+        let now = try makeDate(year: 2026, month: 8, day: 24, hour: 10, minute: 0, timeZoneIdentifier: "Asia/Tokyo")
+        let result = SessionResolver().resolve(tokyo, at: now)
+        XCTAssertEqual(result.activeStart, try makeDate(year: 2026, month: 8, day: 24, hour: 9, minute: 0, timeZoneIdentifier: "Asia/Tokyo"))
+        XCTAssertEqual(result.elapsedFraction(at: now), 0.4, accuracy: 0.0001)
+
+        let lunch = try makeDate(year: 2026, month: 8, day: 24, hour: 12, minute: 0, timeZoneIdentifier: "Asia/Tokyo")
+        XCTAssertEqual(SessionResolver().resolve(tokyo, at: lunch).elapsedFraction(at: lunch), 0)
+    }
+
     func testTokyoLunchRecessResumes() throws {
         let now = try makeDate(
             year: 2026, month: 8, day: 24, hour: 12, minute: 0,

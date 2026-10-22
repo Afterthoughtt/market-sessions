@@ -19,9 +19,19 @@ struct ResolvedSession: Identifiable, Hashable, Sendable {
     let status: SessionStatus
     /// Occurrence containing now, of any kind.
     let currentOccurrence: SessionOccurrence?
+    /// Start of the contiguous active run containing now (the open, or the reopen after
+    /// a recess); nil unless Open.
+    let activeStart: Date?
     /// Start of the next active occurrence after now.
     let nextActiveStart: Date?
     let transition: SessionTransition?
 
     var id: MarketSession.ID { session.id }
+
+    /// Empty at the open, full at the close shown, filling like a determinate progress
+    /// bar (HIG Progress indicators); 0 unless Open.
+    func elapsedFraction(at now: Date) -> Double {
+        guard let start = activeStart, let end = transition?.date, end > start else { return 0 }
+        return min(1, max(0, now.timeIntervalSince(start) / end.timeIntervalSince(start)))
+    }
 }

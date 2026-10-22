@@ -11,6 +11,8 @@ struct MarketPalette {
     let preMarketText: Color
     let afterHoursText: Color
     let separator: Color
+    /// Progress bar track; the fill is `sec`.
+    let track: Color
 
     static let light = MarketPalette(
         text: Color(nsColor: .labelColor),
@@ -20,7 +22,8 @@ struct MarketPalette {
         openText: Color(red: 0x22 / 255, green: 0x81 / 255, blue: 0x3A / 255),
         preMarketText: Color(red: 0xA8 / 255, green: 0x5D / 255, blue: 0x1A / 255),
         afterHoursText: Color(red: 0x00 / 255, green: 0x71 / 255, blue: 0xD4 / 255),
-        separator: Color(nsColor: .separatorColor)
+        separator: Color(nsColor: .separatorColor),
+        track: Color.black.opacity(0.08)
     )
 
     static let dark = MarketPalette(
@@ -31,7 +34,8 @@ struct MarketPalette {
         // Kit dark Blue #0091FF measures 4.43:1 on the dark popover; lightened just to
         // 4.5:1 for 11pt text. Green and orange already clear it.
         afterHoursText: Color(red: 0x05 / 255, green: 0x93 / 255, blue: 0xFF / 255),
-        separator: Color(nsColor: .separatorColor)
+        separator: Color(nsColor: .separatorColor),
+        track: Color.white.opacity(0.08)
     )
 
     static func palette(for scheme: ColorScheme) -> MarketPalette {
