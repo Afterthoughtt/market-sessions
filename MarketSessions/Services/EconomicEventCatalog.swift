@@ -139,10 +139,24 @@ struct UpcomingEconomicEventResolver: Sendable {
         if within.count < minimumCount {
             within = Array(upcoming.prefix(minimumCount))
         }
-        let selectedCategories = Set(enabledKinds.map(\.category))
+        // Bundled files cover whole years, so a kind is covered through the end of the last
+        // year holding its dates; a category is covered only as far as its first selected
+        // kind to run out.
+        var lastYears: [EconomicEventKind: Int] = [:]
+        for event in selected where event.kind.hasPublishedSchedule {
+            var calendar = Calendar(identifier: .gregorian)
+            calendar.timeZone = event.canonicalTimeZone
+            let year = calendar.component(.year, from: event.start)
+            lastYears[event.kind] = Swift.max(lastYears[event.kind] ?? year, year)
+        }
+        var utc = Calendar(identifier: .gregorian)
+        utc.timeZone = TimeZone(identifier: "UTC") ?? .gmt
         let coverageEnds = Dictionary(
-            events.filter { selectedCategories.contains($0.kind.category) }.map { ($0.kind.category, $0.end) },
-            uniquingKeysWith: max
+            lastYears.compactMap { kind, year in
+                utc.date(from: DateComponents(year: year, month: 12, day: 31, hour: 23, minute: 59))
+                    .map { (kind.category, $0) }
+            },
+            uniquingKeysWith: min
         )
         return UpcomingEconomicEvents(events: within, coverageEnds: coverageEnds)
     }

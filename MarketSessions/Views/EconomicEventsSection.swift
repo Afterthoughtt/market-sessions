@@ -34,8 +34,10 @@ struct EconomicEventsSection: View {
             }
 
             if let gap = upcoming.coverageGap(shownCount: Self.rowCap) {
+                // Coverage ends at 23:59 UTC; format it in UTC so a zone ahead of UTC
+                // does not show the following day.
                 let date = gap.end.formatted(
-                    Date.FormatStyle(date: .abbreviated, time: .omitted, timeZone: displayTimeZone)
+                    Date.FormatStyle(date: .abbreviated, time: .omitted, timeZone: TimeZone(identifier: "UTC") ?? .gmt)
                 )
                 Text("\(gap.category.coverageLabel) dates bundled through \(date)")
                     .font(.system(size: 11))

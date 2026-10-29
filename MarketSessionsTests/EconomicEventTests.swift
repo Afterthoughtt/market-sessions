@@ -94,14 +94,20 @@ final class EconomicEventTests: XCTestCase {
     func testCoverageGapNamesTheCategoryThatRunsOutBeforeTheLastShownRow() throws {
         let events = try EconomicEventCatalog.loadAll(bundle: Bundle(for: Self.self))
         let newYork = try XCTUnwrap(TimeZone(identifier: "America/New_York"))
-        let usEnd = try XCTUnwrap(events.filter { $0.kind.category == .usRelease }.map(\.end).max())
+        let utc = try XCTUnwrap(TimeZone(identifier: "UTC"))
+        var calendar = Calendar(identifier: .gregorian)
+        calendar.timeZone = newYork
+        let usYear = calendar.component(
+            .year, from: try XCTUnwrap(events.filter { $0.kind.category == .usRelease }.map(\.start).max())
+        )
         let resolver = UpcomingEconomicEventResolver()
 
-        // Mid-December 2027: U.S. releases ran out a year earlier; only central banks remain.
+        // Mid-December 2027: U.S. releases ran out earlier; only central banks remain.
+        // Coverage runs through the last bundled year, not the last bundled release.
         let late = try makeDate(year: 2027, month: 12, day: 15, hour: 12, minute: 0, timeZone: newYork)
         let lateGap = try XCTUnwrap(resolver.resolve(events, at: late).coverageGap(shownCount: 4))
         XCTAssertEqual(lateGap.category, .usRelease)
-        XCTAssertEqual(lateGap.end, usEnd)
+        XCTAssertEqual(lateGap.end, try makeDate(year: usYear, month: 12, day: 31, hour: 23, minute: 59, timeZone: utc))
 
         // Late September 2026: four shown rows all fall inside every category's coverage.
         let now = try makeDate(year: 2026, month: 9, day: 29, hour: 12, minute: 0, timeZone: newYork)
@@ -110,6 +116,27 @@ final class EconomicEventTests: XCTestCase {
         // Central banks only: U.S. coverage is irrelevant and never reported.
         let banks = resolver.resolve(events, at: late, enabledKinds: [.ecb, .boj])
         XCTAssertNil(banks.coverageEnds[.usRelease])
+    }
+
+    func testCoverageFollowsTheSelectedKindThatRunsOutFirst() throws {
+        let events = try EconomicEventCatalog.loadAll(bundle: Bundle(for: Self.self))
+        let newYork = try XCTUnwrap(TimeZone(identifier: "America/New_York"))
+        let utc = try XCTUnwrap(TimeZone(identifier: "UTC"))
+        let resolver = UpcomingEconomicEventResolver()
+        let now = try makeDate(year: 2026, month: 12, day: 15, hour: 12, minute: 0, timeZone: newYork)
+
+        // FOMC decisions are bundled into 2027, minutes only through 2026: the rows past
+        // New Year are missing their minutes, so the line names 2026.
+        let gap = try XCTUnwrap(
+            resolver.resolve(events, at: now, enabledKinds: [.fomc, .fomcMinutes]).coverageGap(shownCount: 4)
+        )
+        XCTAssertEqual(gap.category, .centralBank)
+        XCTAssertEqual(gap.end, try makeDate(year: 2026, month: 12, day: 31, hour: 23, minute: 59, timeZone: utc))
+
+        // Fed Chair appearances have no published calendar: few or no rows, but no line.
+        for date in [now, try makeDate(year: 2027, month: 6, day: 1, hour: 12, minute: 0, timeZone: newYork)] {
+            XCTAssertNil(resolver.resolve(events, at: date, enabledKinds: [.fedSpeech]).coverageGap(shownCount: 4))
+        }
     }
 
     func testUpcomingEventsAreNeverEmptyWhileTheCatalogHasFutureEvents() throws {

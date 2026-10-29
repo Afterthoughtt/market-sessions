@@ -332,6 +332,19 @@ final class SessionResolverTests: XCTestCase {
             result.transition?.date,
             try makeDate(year: 2026, month: 8, day: 30, hour: 17, minute: 0, timeZoneIdentifier: zone)
         )
+
+        // From 17:00 Thursday the evening session that would trade into Friday is the holiday's.
+        let evening = try makeDate(year: 2026, month: 8, day: 27, hour: 18, minute: 0, timeZoneIdentifier: zone)
+        let eve = resolver.resolve(MarketScheduleCatalog.session(.cmeFutures), at: evening)
+        XCTAssertEqual(eve.status, .holiday)
+        XCTAssertEqual(
+            eve.transition?.date,
+            try makeDate(year: 2026, month: 8, day: 30, hour: 17, minute: 0, timeZoneIdentifier: zone)
+        )
+
+        // Saturday is an ordinary weekend close.
+        let saturday = try makeDate(year: 2026, month: 8, day: 29, hour: 12, minute: 0, timeZoneIdentifier: zone)
+        XCTAssertEqual(resolver.resolve(MarketScheduleCatalog.session(.cmeFutures), at: saturday).status, .closed)
     }
 
     func testHalfDayDropsTheAfternoonSessionAndAuction() throws {

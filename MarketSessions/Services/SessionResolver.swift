@@ -63,7 +63,8 @@ struct SessionResolver: Sendable {
         if status == .closed {
             var calendar = baseCalendar
             calendar.timeZone = session.canonicalTimeZone
-            if exceptions.exception(for: session.id, on: now, calendar: calendar)?.kind == .holiday {
+            if exceptions.exception(for: session.id, on: now, calendar: calendar)?.kind == .holiday
+                || holidayRemovesSession(session, at: now, calendar: calendar) {
                 status = .holiday
             }
         }
@@ -113,24 +114,9 @@ struct SessionResolver: Sendable {
             }
 
             for interval in session.intervals where interval.weekdays.contains(weekday) {
-                guard let start = date(on: anchorDate, at: interval.start, calendar: calendar),
-                      let endAnchor = calendar.date(
-                        byAdding: .day,
-                        value: interval.endDayOffset,
-                        to: anchorDate
-                      ),
-                      let end = date(on: endAnchor, at: interval.end, calendar: calendar),
-                      end > start else {
+                guard let occurrence = occurrence(of: interval, for: session, on: anchorDate, calendar: calendar) else {
                     continue
                 }
-
-                let occurrence = SessionOccurrence(
-                    sessionID: session.id,
-                    kind: interval.kind,
-                    start: start,
-                    end: end,
-                    anchorDate: anchorDate
-                )
                 if let adjusted = applyingExceptions(to: occurrence, calendar: calendar) {
                     result.append(adjusted)
                 }
@@ -151,6 +137,54 @@ struct SessionResolver: Sendable {
                 }
                 return $0.start < $1.start
             }
+    }
+
+    /// The recurring occurrence of `interval` anchored on `anchorDate`, before exceptions.
+    private func occurrence(
+        of interval: SessionInterval,
+        for session: MarketSession,
+        on anchorDate: Date,
+        calendar: Calendar
+    ) -> SessionOccurrence? {
+        guard let start = date(on: anchorDate, at: interval.start, calendar: calendar),
+              let endAnchor = calendar.date(byAdding: .day, value: interval.endDayOffset, to: anchorDate),
+              let end = date(on: endAnchor, at: interval.end, calendar: calendar),
+              end > start else {
+            return nil
+        }
+        return SessionOccurrence(
+            sessionID: session.id,
+            kind: interval.kind,
+            start: start,
+            end: end,
+            anchorDate: anchorDate
+        )
+    }
+
+    /// Whether the market would be trading now but for a holiday. CME's evening session
+    /// ends on the next day, so the evening before a closure is a holiday too.
+    private func holidayRemovesSession(_ session: MarketSession, at now: Date, calendar: Calendar) -> Bool {
+        let today = calendar.startOfDay(for: now)
+        // Intervals end at most one day after their anchor, so yesterday and today suffice.
+        for dayOffset in -1...0 {
+            guard let anchorDate = calendar.date(byAdding: .day, value: dayOffset, to: today),
+                  let weekday = Weekday(rawValue: calendar.component(.weekday, from: anchorDate)) else {
+                continue
+            }
+            for interval in session.intervals
+            where interval.weekdays.contains(weekday) && interval.kind.countsAsActive {
+                guard let occurrence = occurrence(of: interval, for: session, on: anchorDate, calendar: calendar),
+                      occurrence.contains(now) else {
+                    continue
+                }
+                if [occurrence.start, occurrence.end].contains(where: {
+                    exceptions.exception(for: session.id, on: $0, calendar: calendar)?.kind == .holiday
+                }) {
+                    return true
+                }
+            }
+        }
+        return false
     }
 
     /// Holiday: the occurrence vanishes if either its start or end falls on the

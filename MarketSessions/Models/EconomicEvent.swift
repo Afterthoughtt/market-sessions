@@ -77,6 +77,12 @@ enum EconomicEventKind: String, CaseIterable, Codable, Hashable, Sendable {
         }
     }
 
+    /// Fed Chair appearances are announced weeks ahead rather than published as a
+    /// calendar, so their bundled dates say nothing about coverage.
+    var hasPublishedSchedule: Bool {
+        self != .fedSpeech
+    }
+
     /// One-line explanation for Settings tooltips: what the release measures and who publishes it.
     var detail: String {
         switch self {
@@ -182,7 +188,8 @@ struct EconomicEvent: Identifiable, Hashable, Sendable {
 
 struct UpcomingEconomicEvents: Hashable, Sendable {
     let events: [EconomicEvent]
-    /// Last bundled end per category, for categories with a selected kind.
+    /// Per category with a selected scheduled kind: the end (23:59 UTC on Dec 31) of
+    /// the last bundled year of its earliest-ending selected kind.
     let coverageEnds: [EconomicEventKind.Category: Date]
 
     static let empty = UpcomingEconomicEvents(events: [], coverageEnds: [:])
