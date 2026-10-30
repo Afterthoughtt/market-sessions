@@ -1,20 +1,20 @@
-# Market Sessions — design handoff (Turn 7a reference + 10a label)
+# Market Sessions — design spec
 
-Static design reference only. Data shown is a fixed snapshot (Thu 6:09 PM PDT); wire real state, event feed and holiday data in code.
+The product and visual spec for the shipped app. The sections below describe the popover, type and colour; "Owner decisions" amends them and wins on conflict.
 
 ## Files
-- popover.html — the popover at 340pt and the menu-bar label, inline-styled, no dependencies. Open in a browser.
+- popover.html — the popover's visual baseline at 340pt, inline-styled, no dependencies (a fixed snapshot, Thu 6:09 PM PDT). Its menu-bar label is out of date; the label is specified under Menu bar label below.
 
 ## Popover
-- Width 340pt. Height = content. Material: NSVisualEffectView .popover (or .glassEffect on macOS 26). No other material, card or ring inside; the only colour is the state-coloured section header text.
-- Padding 14pt sides/top, 4pt bottom. Corner radius 14 (system default is fine).
+- Width 340pt. Height = content. Material and corners are the system window's (`MenuBarExtra` `.window` style, Liquid Glass with the kit's 20pt popover corners on macOS 27); the app draws no material, card or ring of its own. The only colour is the state-coloured section header text.
+- Padding 14pt sides/top, 4pt bottom.
 - Header: title "Market Sessions" 15 semibold; subtitle = weekday, 13 secondary. Right column: "Daily Close in 22h 51m" 13 secondary (countdown value semibold primary, tabular) on the weekday's baseline; only when Settings overrides the zone, "Time · EST" 11 secondary above it (owner decision 2026-09-29: the system zone needs no label).
 - Sections: Open, Pre-Market, After Hours, Holiday, Closed (empty ones omitted). Section header: the state name 11 semibold in the state colour (owner decision 2026-09-30); 16pt above, 2pt below. No hairlines between rows: section headers and whitespace do the grouping (owner decision 2026-09-29).
 - Market row, 40pt (owner decision 2026-09-30, design C "time left first"): name 13 primary over the next change 11 secondary tabular ("Closes 11:30 PM", "Opens Wed 6:30 AM", "Reopens 3:00 PM" during a lunch recess or CME maintenance); right, the time until that change as the main value: while Open "9m left" (13 semibold primary + 11 secondary "left"), otherwise "in 7h 9m" (11 secondary "in" + 13 regular, primary for Pre-Market and After Hours, secondary for Holiday and Closed). Open rows add a bar under the row (owner decision 2026-10-22, restoring the 2026-09-29 bar): the kit's Small determinate bar, 6pt tall and fully rounded, track 8% black (8% white in dark), fill the secondary label colour, filling from the start of the uninterrupted open run (`ResolvedSession.activeStart`; it restarts after a lunch recess or maintenance, not at a contiguous auction) toward the close shown, never narrower than a 6pt dot once started; 6pt below it. Other rows have no bar and no row tint. Sort each section by soonest change. The value is 13pt, the kit's detail-label size (owner decision 2026-09-30, replacing 17pt, which outsized the 15pt title).
 - Each selected market appears in exactly one section.
-- Upcoming events: header "Upcoming events"; always next 4, no disclosure. Row 24pt: name 13 primary, right 13 secondary date "Fri, Sep 4"; inside 24h the right side becomes "Tomorrow 7:00 AM" in semibold primary. Short names (Nonfarm Payrolls, CPI, FOMC Decision…). Which events to show is a Settings preference.
-- Footer: full-width hairline (system separator colour, bleeds to popover edge) 5pt below the last row (the kit's 11pt menu separator), then one 32pt row "Settings…" 13 medium primary. On hover it takes the kit's menu-item highlight: accent fill, white label, 8pt corners (owner decision 2026-09-30). Opens a Settings window holding Launch at Login, event selection, holiday-data note, About, Quit. No other controls in the popover.
-- Warning state only: if bundled holiday data has expired, one 11pt secondary text line above the Settings hairline.
+- Upcoming Events: header "Upcoming Events"; always next 4, no disclosure. Row 24pt: name 13 primary, right 13 secondary date "Fri, Sep 4"; inside 24h the right side becomes "Tomorrow 7:00 AM" in semibold primary. Short names (Nonfarm Payrolls, CPI, FOMC Decision…). Which events to show is a Settings preference.
+- Footer: full-width hairline (system separator colour, bleeds to popover edge) 5pt below the last row (the kit's 11pt menu separator), then one 32pt row "Settings…" 13 medium primary: the kit's 24pt menu item (its hover highlight is 24pt tall) with 4pt above and below, so the last item clears the popover's rounded bottom. On hover it takes the kit's menu-item highlight: accent fill, white label, 8pt corners (owner decision 2026-09-30). Opens the Settings window (see Settings). No other controls in the popover.
+- Warning line: one 11pt secondary line above the Settings hairline, only in the cases listed under Popover › Footer below.
 
 ## Type
 macOS text styles (HIG Typography, macOS built-in styles), so sizes come from the system rather than the code: Title 3 Semibold (15) for the popover title · Body (13) for names, trailing times, header readouts and the Settings… row (Medium) · Subheadline (11) for section headers (Semibold), row subtitles and footnote lines. The kit's form and menu detail labels are 13pt (owner found 10–11pt too small, 2026-09-29). Settings form rows keep fixed 13/11pt Medium from the kit's Forms page, since no text style is Medium at those sizes. Weights in use: Regular, Medium, Semibold. Tabular figures (`.monospacedDigit()`) on every time and countdown.
@@ -29,9 +29,6 @@ Primary text, secondary text and the hairline are the system label, secondary la
 | After Hours | #0071D4 (4.5:1) | #0593FF (4.5:1) | #00539E (7.1:1) | #77BBFF (7.0:1) |
 
 Normal values are the kit's light Green #34C759, Orange #FF8D28 and Blue #0088FF darkened just to 4.5:1, and in dark the kit's Green and Orange with Blue #0091FF lightened from 4.43 to 4.5:1. Increase Contrast versions move the same hue toward black (light) or white (dark) until 7:1. Ratios are against the measured popover greys.
-
-## Menu-bar label (10a)
-Superseded by the owner decision under "Menu bar label" below: a fixed glyph.
 
 ## Owner decisions (amend the sections above; these win on conflict)
 

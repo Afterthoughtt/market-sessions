@@ -280,11 +280,10 @@ struct SessionsPopover: View {
     }
 }
 
-/// Menu-item hover highlight per Apple's macOS 26 UI kit (Menus → _Menu Item,
-/// State=Hover): 24pt row, 8pt continuous corner radius, highlight extending
-/// 7pt past the text inset on both sides, accent fill with a white label (the
-/// kit draws #0088FF, the default accent; this follows the user's accent).
-/// Padded to the 32pt footer row from the design.
+/// Menu-item hover highlight per Apple's macOS 27 UI kit (Menus, menu item in its
+/// Hover state): 24pt row, 8pt continuous corner radius, highlight extending 7pt
+/// past the text inset on both sides, accent fill with a white label (the kit draws
+/// the default accent; this follows the user's). Padded to the 32pt footer row.
 private struct PopoverRowButtonStyle: ButtonStyle {
     let palette: MarketPalette
     @State private var isHovering = false
