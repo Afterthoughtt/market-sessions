@@ -7,7 +7,6 @@ Out of scope (owner decision 2026-09-29, personal use only): distribution signin
 ## Next up
 
 1. **Real-screen checks**, by the owner. Computer use can click the menu bar icon but cannot grant this menu-bar-only app, so it cannot click inside the popover or type into it, and its screenshots hide the popover (`screencapture -x` shows it):
-   - ⌘, opens Settings while the popover is open.
    - The Settings… highlight shows under keyboard focus (System Settings › Keyboard › Keyboard navigation), and whether the system focus ring also draws.
    - VoiceOver moves between section headings.
    - The Christmas-week popover (856pt with all six markets, measured from a render) fits a 13-inch screen; if not, cap the height and scroll the middle.
