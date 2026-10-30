@@ -41,6 +41,10 @@ struct SessionsPopover: View {
                 }
             }
 
+            if !model.upcomingClosures.closures.isEmpty {
+                closuresSection
+            }
+
             if !model.preferences.eventKinds.isEmpty {
                 EconomicEventsSection(
                     upcoming: model.upcomingEvents,
@@ -125,6 +129,76 @@ struct SessionsPopover: View {
         }
     }
 
+    /// Holidays and early closes in the coming week, in the Upcoming Events row style.
+    /// Holidays are calendar days in the market's own zone; early closes are instants
+    /// shown in the display zone like every other time.
+    private var closuresSection: some View {
+        VStack(alignment: .leading, spacing: 0) {
+            Text("Closures")
+                .font(.subheadline.weight(.semibold))
+                .foregroundStyle(palette.sec)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .padding(.top, 16)
+                .padding(.bottom, 2)
+
+            ForEach(model.upcomingClosures.closures.prefix(Self.closureRowCap)) { closure in
+                let label = closureLabel(closure)
+                let day = closureDay(closure)
+                HStack(spacing: 10) {
+                    Text(label)
+                        .font(.body)
+                        .foregroundStyle(palette.text)
+                        .lineLimit(1)
+                        .truncationMode(.tail)
+                    Spacer(minLength: 6)
+                    Text(day)
+                        .font(.body)
+                        .monospacedDigit()
+                        .foregroundStyle(palette.sec)
+                        .lineLimit(1)
+                        .fixedSize(horizontal: true, vertical: false)
+                }
+                .frame(height: 24)
+                .accessibilityElement(children: .ignore)
+                .accessibilityLabel(closureDetails(closure))
+                .help(closureDetails(closure))
+            }
+        }
+    }
+
+    /// Like Upcoming Events: the nearest four, so Christmas week stays a short list.
+    static let closureRowCap = 4
+
+    private func closureLabel(_ closure: MarketClosure) -> String {
+        switch closure.exception.kind {
+        case .holiday:
+            "\(closure.session.name) · \(closure.exception.name ?? "closed")"
+        case .earlyClose:
+            "\(closure.session.name) · closes \(MarketDateFormatting.time(closure.date, timeZone: model.displayTimeZone))"
+        }
+    }
+
+    private func closureDay(_ closure: MarketClosure) -> String {
+        let formatter = DateFormatter()
+        formatter.locale = .autoupdatingCurrent
+        formatter.timeZone = closure.exception.kind == .holiday
+            ? closure.session.canonicalTimeZone
+            : model.displayTimeZone
+        formatter.dateFormat = "EEE, MMM d"
+        return formatter.string(from: closure.date)
+    }
+
+    private func closureDetails(_ closure: MarketClosure) -> String {
+        switch closure.exception.kind {
+        case .holiday:
+            let name = closure.exception.name.map { " for \($0)" } ?? ""
+            return "\(closure.session.name) closed\(name), \(closureDay(closure))"
+        case .earlyClose:
+            let when = MarketDateFormatting.dateTime(closure.date, dateStyle: .full, timeZone: model.displayTimeZone)
+            return "\(closure.session.name) closes early, \(when)"
+        }
+    }
+
     private func sectionHeader(_ status: SessionStatus) -> some View {
         Text(status.label)
             .font(.subheadline.weight(.semibold))
@@ -199,7 +273,7 @@ struct SessionsPopover: View {
         if model.now > coverage {
             return "Holiday data ended \(date)"
         }
-        if model.transitionsPassHolidayCoverage {
+        if model.transitionsPassHolidayCoverage || model.upcomingClosures.passesCoverage {
             return "Holiday data ends \(date); later times assume regular hours"
         }
         return nil

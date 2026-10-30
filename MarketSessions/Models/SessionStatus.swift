@@ -25,6 +25,8 @@ struct ResolvedSession: Identifiable, Hashable, Sendable {
     /// Start of the next active occurrence after now.
     let nextActiveStart: Date?
     let transition: SessionTransition?
+    /// The close shown is a bundled early close, so the row says ", early".
+    var closesEarly = false
 
     var id: MarketSession.ID { session.id }
 

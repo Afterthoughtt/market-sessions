@@ -1,3 +1,4 @@
+import AppKit
 import XCTest
 @testable import MarketSessions
 
@@ -16,6 +17,87 @@ final class MarketExceptionTests: XCTestCase {
             calendar.dateComponents([.year, .month, .day], from: coverage),
             DateComponents(year: 2026, month: 12, day: 31)
         )
+    }
+
+    /// The approved mock: Wednesday before Thanksgiving, 5:30 PM in New York.
+    func testClosuresListTheComingWeekButNotToday() throws {
+        let index = try MarketExceptionCatalog.loadIndex(bundle: Bundle(for: Self.self))
+        let zone = "America/New_York"
+        let now = try makeDate(year: 2026, month: 11, day: 25, hour: 17, minute: 30, timeZone: zone)
+        let newYork = try XCTUnwrap(TimeZone(identifier: zone))
+        let sessions = [MarketScheduleCatalog.session(.newYorkCash), MarketScheduleCatalog.session(.cmeFutures)]
+        let result = UpcomingClosureResolver().resolve(index, sessions: sessions, at: now, displayTimeZone: newYork)
+
+        XCTAssertEqual(result.closures.map(\.id), [
+            "newYorkCash-2026-11-26", "cmeFutures-2026-11-26", "newYorkCash-2026-11-27", "cmeFutures-2026-11-27",
+        ])
+        XCTAssertEqual(result.closures.first?.exception.name, "Thanksgiving")
+        // Holidays sort from the start of their own day; early closes at the close.
+        XCTAssertEqual(result.closures[1].date, try makeDate(year: 2026, month: 11, day: 26, hour: 13, minute: 0, timeZone: zone))
+        XCTAssertFalse(result.passesCoverage)
+
+        // On Thanksgiving itself the holiday is today's Holiday section, not a closure row.
+        let thanksgiving = try makeDate(year: 2026, month: 11, day: 26, hour: 10, minute: 0, timeZone: zone)
+        XCTAssertFalse(UpcomingClosureResolver().resolve(index, sessions: sessions, at: thanksgiving, displayTimeZone: newYork)
+            .closures.contains { $0.id == "newYorkCash-2026-11-26" })
+    }
+
+    func testClosuresUseEachMarketsOwnDayAndFlagMissingCoverage() throws {
+        let index = try MarketExceptionCatalog.loadIndex(bundle: Bundle(for: Self.self))
+        // Wed Dec 30 noon in New York is 5 PM in London but already Thu Dec 31 in Tokyo,
+        // so Tokyo's year-end holiday is today there while London's half day is still ahead.
+        let now = try makeDate(year: 2026, month: 12, day: 30, hour: 12, minute: 0, timeZone: "America/New_York")
+        let result = UpcomingClosureResolver().resolve(
+            index, sessions: [MarketScheduleCatalog.session(.tokyo), MarketScheduleCatalog.session(.london)], at: now,
+            displayTimeZone: try XCTUnwrap(TimeZone(identifier: "America/New_York"))
+        )
+        XCTAssertEqual(result.closures.map(\.id), ["london-2026-12-31"])
+        XCTAssertTrue(result.passesCoverage, "The week runs past Dec 31, where the bundled data ends")
+    }
+
+    /// Christmas week in New York: Hong Kong's Dec 25 holiday starts on Dec 24 in New York
+    /// but still lists after the Dec 24 early closes, by the day each row shows.
+    func testClosuresSortByTheDayTheyShow() throws {
+        let index = try MarketExceptionCatalog.loadIndex(bundle: Bundle(for: Self.self))
+        let now = try makeDate(year: 2026, month: 12, day: 22, hour: 19, minute: 0, timeZone: "America/New_York")
+        let result = UpcomingClosureResolver().resolve(
+            index, sessions: MarketScheduleCatalog.sessions, at: now,
+            displayTimeZone: try XCTUnwrap(TimeZone(identifier: "America/New_York"))
+        )
+        XCTAssertEqual(result.closures.map(\.id), [
+            "hongKong-2026-12-24", "london-2026-12-24", "newYorkCash-2026-12-24", "cmeFutures-2026-12-24",
+            "newYorkCash-2026-12-25", "cmeFutures-2026-12-25", "london-2026-12-25", "hongKong-2026-12-25",
+            "london-2026-12-28",
+        ])
+    }
+
+    func testCloseShownIsFlaggedEarlyOnlyAtABundledEarlyClose() throws {
+        let zone = "America/New_York"
+        let resolver = try bundledResolver()
+        let newYork = MarketScheduleCatalog.session(.newYorkCash)
+        let cme = MarketScheduleCatalog.session(.cmeFutures)
+        // Wednesday evening after CME's maintenance hour: its session runs to Thursday's 12:00 CT halt.
+        let wednesday = try makeDate(year: 2026, month: 11, day: 25, hour: 19, minute: 0, timeZone: zone)
+        XCTAssertTrue(resolver.resolve(cme, at: wednesday).closesEarly)
+        XCTAssertFalse(resolver.resolve(newYork, at: wednesday).closesEarly, "After Hours shows an open, not a close")
+
+        let friday = try makeDate(year: 2026, month: 11, day: 27, hour: 10, minute: 0, timeZone: zone)
+        XCTAssertTrue(resolver.resolve(newYork, at: friday).closesEarly)
+        let regular = try makeDate(year: 2026, month: 11, day: 24, hour: 10, minute: 0, timeZone: zone)
+        XCTAssertFalse(resolver.resolve(newYork, at: regular).closesEarly)
+    }
+
+    /// Closure rows share the event rows' 24pt layout beside the widest date ("Wed, Sep 30").
+    func testEveryHolidayNameFitsAClosureRow() throws {
+        let index = try MarketExceptionCatalog.loadIndex(bundle: Bundle(for: Self.self))
+        let font = NSFont.systemFont(ofSize: 13)
+        let budget = 340 - 28 - 26 - ("Wed, Sep 30" as NSString).size(withAttributes: [.font: font]).width
+        for exception in index.all where exception.kind == .holiday {
+            let name = try XCTUnwrap(exception.name, "\(exception.dateKey) needs a name")
+            let session = MarketScheduleCatalog.session(exception.market)
+            let width = ("\(session.name) · \(name)" as NSString).size(withAttributes: [.font: font]).width
+            XCTAssertLessThanOrEqual(width, budget, "\(name) truncates in the popover")
+        }
     }
 
     func testNYSEClosesAtOneOnDayAfterThanksgiving() throws {

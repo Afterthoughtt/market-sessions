@@ -7,13 +7,13 @@ import SwiftUI
 @MainActor
 enum PreviewModel {
     static func make(
-        day: Int = 29, hour: Int = 17, minute: Int = 30, displayZone: String = "America/New_York"
+        month: Int = 9, day: Int = 29, hour: Int = 17, minute: Int = 30, displayZone: String = "America/New_York"
     ) -> MarketSessionsModel {
         let newYork = TimeZone(identifier: "America/New_York")!
         let display = TimeZone(identifier: displayZone)!
         var calendar = Calendar(identifier: .gregorian)
         calendar.timeZone = newYork
-        let now = calendar.date(from: DateComponents(year: 2026, month: 9, day: day, hour: hour, minute: minute))!
+        let now = calendar.date(from: DateComponents(year: 2026, month: month, day: day, hour: hour, minute: minute))!
         return MarketSessionsModel(
             loginItemService: PreviewLoginItem(),
             notificationCenter: PreviewNotificationCenter(),
@@ -51,6 +51,12 @@ private final class PreviewNotificationCenter: NotificationCentering {
 #Preview("Popover – Owner Screenshot") {
     // Tue 11:21 PM Los Angeles (Wed 2:21 AM New York): Tokyo closes in 9m.
     SessionsPopover(model: PreviewModel.make(day: 30, hour: 2, minute: 21, displayZone: "America/Los_Angeles"))
+}
+
+#Preview("Popover – Thanksgiving Week") {
+    // Wed Nov 25 7:00 PM New York: Closures lists Thanksgiving and Friday's early closes,
+    // and CME's close reads "early".
+    SessionsPopover(model: PreviewModel.make(month: 11, day: 25, hour: 19, minute: 0))
 }
 
 #Preview("Settings – General") {

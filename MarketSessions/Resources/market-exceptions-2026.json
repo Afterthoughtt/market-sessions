@@ -23,12 +23,14 @@
       "market": "NY",
       "date": "2026-09-07",
       "type": "holiday",
+      "name": "Labor Day",
       "note": "Labor Day"
     },
     {
       "market": "NY",
       "date": "2026-11-26",
       "type": "holiday",
+      "name": "Thanksgiving",
       "note": "Thanksgiving Day"
     },
     {
@@ -49,6 +51,7 @@
       "market": "NY",
       "date": "2026-12-25",
       "type": "holiday",
+      "name": "Christmas",
       "note": "Christmas Day"
     },
     {
@@ -83,12 +86,14 @@
       "market": "CME",
       "date": "2026-12-25",
       "type": "holiday",
+      "name": "Christmas",
       "note": "Christmas Day \u2014 next open Sun Dec 27 17:00 CT"
     },
     {
       "market": "LDN",
       "date": "2026-08-31",
       "type": "holiday",
+      "name": "Summer Bank Holiday",
       "note": "Summer Bank Holiday"
     },
     {
@@ -102,12 +107,14 @@
       "market": "LDN",
       "date": "2026-12-25",
       "type": "holiday",
+      "name": "Christmas",
       "note": "Christmas Day"
     },
     {
       "market": "LDN",
       "date": "2026-12-28",
       "type": "holiday",
+      "name": "Boxing Day",
       "note": "Boxing Day (substitute)"
     },
     {
@@ -121,54 +128,63 @@
       "market": "TYO",
       "date": "2026-09-21",
       "type": "holiday",
+      "name": "Respect for the Aged Day",
       "note": "Respect for the Aged Day"
     },
     {
       "market": "TYO",
       "date": "2026-09-22",
       "type": "holiday",
+      "name": "Citizens' Holiday",
       "note": "Citizens' Holiday (bridge day)"
     },
     {
       "market": "TYO",
       "date": "2026-09-23",
       "type": "holiday",
+      "name": "Autumnal Equinox Day",
       "note": "Autumnal Equinox Day"
     },
     {
       "market": "TYO",
       "date": "2026-10-12",
       "type": "holiday",
+      "name": "Sports Day",
       "note": "Sports Day"
     },
     {
       "market": "TYO",
       "date": "2026-11-03",
       "type": "holiday",
+      "name": "Culture Day",
       "note": "Culture Day"
     },
     {
       "market": "TYO",
       "date": "2026-11-23",
       "type": "holiday",
+      "name": "Labor Thanksgiving Day",
       "note": "Labor Thanksgiving Day"
     },
     {
       "market": "TYO",
       "date": "2026-12-31",
       "type": "holiday",
+      "name": "Year-End Holiday",
       "note": "Year-end holiday (last 2026 trading day Dec 30)"
     },
     {
       "market": "HKG",
       "date": "2026-10-01",
       "type": "holiday",
+      "name": "National Day",
       "note": "National Day"
     },
     {
       "market": "HKG",
       "date": "2026-10-19",
       "type": "holiday",
+      "name": "Chung Yeung",
       "note": "Day following Chung Yeung Festival"
     },
     {
@@ -182,6 +198,7 @@
       "market": "HKG",
       "date": "2026-12-25",
       "type": "holiday",
+      "name": "Christmas",
       "note": "Christmas Day"
     },
     {
@@ -195,36 +212,42 @@
       "market": "SHG",
       "date": "2026-09-25",
       "type": "holiday",
+      "name": "Mid-Autumn Festival",
       "note": "Mid-Autumn Festival"
     },
     {
       "market": "SHG",
       "date": "2026-10-01",
       "type": "holiday",
+      "name": "Golden Week",
       "note": "National Day Golden Week"
     },
     {
       "market": "SHG",
       "date": "2026-10-02",
       "type": "holiday",
+      "name": "Golden Week",
       "note": "National Day Golden Week"
     },
     {
       "market": "SHG",
       "date": "2026-10-05",
       "type": "holiday",
+      "name": "Golden Week",
       "note": "National Day Golden Week"
     },
     {
       "market": "SHG",
       "date": "2026-10-06",
       "type": "holiday",
+      "name": "Golden Week",
       "note": "National Day Golden Week"
     },
     {
       "market": "SHG",
       "date": "2026-10-07",
       "type": "holiday",
+      "name": "Golden Week",
       "note": "National Day Golden Week (reopens Oct 8)"
     }
   ]

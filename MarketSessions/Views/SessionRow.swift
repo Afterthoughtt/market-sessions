@@ -89,7 +89,7 @@ struct SessionRow: View {
     private var detail: String {
         guard let transition = resolved.transition else { return "" }
         let time = MarketDateFormatting.transitionTime(transition.date, relativeTo: now, timeZone: displayTimeZone)
-        return "\(verb) \(time)"
+        return "\(verb) \(time)\(resolved.closesEarly ? ", early" : "")"
     }
 
     private var remainingMinutes: Int? {

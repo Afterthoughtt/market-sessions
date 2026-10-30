@@ -75,8 +75,20 @@ struct SessionResolver: Sendable {
             currentOccurrence: current,
             activeStart: activeStart,
             nextActiveStart: nextActiveStart,
-            transition: transition
+            transition: transition,
+            closesEarly: transition.map { isEarlyClose($0, for: session) } ?? false
         )
+    }
+
+    /// A close that lands exactly on a bundled early-close time.
+    private func isEarlyClose(_ transition: SessionTransition, for session: MarketSession) -> Bool {
+        guard transition.verb == .closes else { return false }
+        var calendar = baseCalendar
+        calendar.timeZone = session.canonicalTimeZone
+        guard let exception = exceptions.exception(for: session.id, on: transition.date, calendar: calendar),
+              exception.kind == .earlyClose, let close = exception.close else { return false }
+        let time = calendar.dateComponents([.hour, .minute], from: transition.date)
+        return time.hour == close.hour && time.minute == close.minute
     }
 
     func resolve(_ sessions: [MarketSession], at now: Date) -> [ResolvedSession] {

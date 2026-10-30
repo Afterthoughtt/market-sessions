@@ -15,6 +15,7 @@ final class MarketSessionsModel {
     private(set) var utcDayRemainingFraction: Double = 0
     private(set) var utcDayRemainingMinutes = 0
     private(set) var upcomingEvents: UpcomingEconomicEvents = .empty
+    private(set) var upcomingClosures: UpcomingClosures = .empty
     private(set) var loginItemState: LoginItemState = .disabled
     /// Why the last Launch at Login change failed; cleared by the next success.
     private(set) var loginItemError: String?
@@ -180,6 +181,15 @@ final class MarketSessionsModel {
             orderedSessions.contains { ($0.transition?.date ?? .distantPast) > end }
         } ?? false
 
+        // A close already on a row ("Closes Thu 1:00 PM, early") is not repeated below.
+        let shownCloses = Set(orderedSessions.filter(\.closesEarly).compactMap { $0.transition?.date })
+        let closures = UpcomingClosureResolver().resolve(
+            marketExceptions, sessions: visibleCatalog, at: snapshot, displayTimeZone: timeZone
+        )
+        upcomingClosures = UpcomingClosures(
+            closures: closures.closures.filter { !shownCloses.contains($0.date) },
+            passesCoverage: closures.passesCoverage
+        )
         upcomingEvents = upcomingEventResolver.resolve(
             economicEvents, at: snapshot, enabledKinds: preferences.eventKinds
         )

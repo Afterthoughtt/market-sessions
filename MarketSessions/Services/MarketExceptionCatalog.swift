@@ -21,6 +21,7 @@ enum MarketExceptionCatalog {
         let date: String
         let type: MarketException.Kind
         let close: String?
+        let name: String?
         let note: String?
     }
 
@@ -80,6 +81,7 @@ enum MarketExceptionCatalog {
             day: parts[2],
             kind: bundled.type,
             close: close,
+            name: bundled.name,
             note: bundled.note
         )
     }
@@ -90,5 +92,75 @@ enum MarketExceptionCatalog {
             throw MarketExceptionCatalogError.invalidDate(value)
         }
         return parts.map { Int($0)! }
+    }
+}
+
+/// A holiday or early close coming up for a shown market, for the popover's Closures rows.
+struct MarketClosure: Identifiable, Hashable, Sendable {
+    let session: MarketSession
+    let exception: MarketException
+    /// Holiday: the start of its canonical-zone day. Early close: the close instant.
+    let date: Date
+
+    var id: String { "\(session.id.rawValue)-\(exception.dateKey)" }
+}
+
+struct UpcomingClosures: Hashable, Sendable {
+    let closures: [MarketClosure]
+    /// The look-ahead window runs past the bundled holiday data, so later closures may be missing.
+    let passesCoverage: Bool
+
+    static let empty = UpcomingClosures(closures: [], passesCoverage: false)
+}
+
+/// Holidays and early closes in each market's next `days` canonical-zone days, not
+/// counting today: today's holiday is the Holiday section and today's early close is
+/// on the row's close time. Rows sort by the day they show: a holiday's own date, an
+/// early close's date in the display zone.
+struct UpcomingClosureResolver: Sendable {
+    func resolve(
+        _ index: MarketExceptionIndex,
+        sessions: [MarketSession],
+        at now: Date,
+        displayTimeZone: TimeZone,
+        days: Int = 7
+    ) -> UpcomingClosures {
+        guard !sessions.isEmpty else { return .empty }
+        var closures: [(day: String, closure: MarketClosure)] = []
+        var display = Calendar(identifier: .gregorian)
+        display.timeZone = displayTimeZone
+        for session in sessions {
+            var calendar = Calendar(identifier: .gregorian)
+            calendar.timeZone = session.canonicalTimeZone
+            let today = calendar.startOfDay(for: now)
+            guard let last = calendar.date(byAdding: .day, value: days, to: today) else { continue }
+            for exception in index.all where exception.market == session.id {
+                guard let day = calendar.date(from: DateComponents(
+                    year: exception.year, month: exception.month, day: exception.day
+                )), day > today, day <= last else { continue }
+                var date = day
+                var shownDay = exception.dateKey
+                if exception.kind == .earlyClose, let close = exception.close,
+                   let closeDate = calendar.date(bySettingHour: close.hour, minute: close.minute, second: 0, of: day) {
+                    date = closeDate
+                    shownDay = MarketExceptionIndex.key(for: closeDate, calendar: display)
+                }
+                closures.append((shownDay, MarketClosure(session: session, exception: exception, date: date)))
+            }
+        }
+        closures.sort { lhs, rhs in
+            if lhs.day != rhs.day { return lhs.day < rhs.day }
+            // Same day: holidays first, then early closes by time; ties by market priority.
+            let lhsHoliday = lhs.closure.exception.kind == .holiday
+            let rhsHoliday = rhs.closure.exception.kind == .holiday
+            if lhsHoliday != rhsHoliday { return lhsHoliday }
+            if !lhsHoliday, lhs.closure.date != rhs.closure.date { return lhs.closure.date < rhs.closure.date }
+            return lhs.closure.session.focusPriority < rhs.closure.session.focusPriority
+        }
+        let horizon = now.addingTimeInterval(TimeInterval(days + 1) * 86_400)
+        return UpcomingClosures(
+            closures: closures.map(\.closure),
+            passesCoverage: index.coverageEnd.map { $0 < horizon } ?? false
+        )
     }
 }

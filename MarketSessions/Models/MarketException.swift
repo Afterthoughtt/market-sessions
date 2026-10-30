@@ -15,6 +15,8 @@ struct MarketException: Hashable, Sendable {
     let kind: Kind
     /// Trading stops at this local time — required for `earlyClose`.
     let close: LocalTime?
+    /// Short holiday name for the popover's Closures rows ("Thanksgiving").
+    var name: String? = nil
     let note: String?
 
     var dateKey: String {
@@ -25,6 +27,7 @@ struct MarketException: Hashable, Sendable {
 /// Fast lookup of exceptions by market and canonical-zone calendar date.
 struct MarketExceptionIndex: Sendable {
     private let byMarketDate: [MarketSession.ID: [String: MarketException]]
+    let all: [MarketException]
     /// Last date the bundled exception data covers — for staleness display.
     let coverageEnd: Date?
 
@@ -36,6 +39,7 @@ struct MarketExceptionIndex: Sendable {
             index[exception.market, default: [:]][exception.dateKey] = exception
         }
         self.byMarketDate = index
+        self.all = exceptions
         self.coverageEnd = coverageEnd
     }
 
