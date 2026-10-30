@@ -6,7 +6,7 @@ Out of scope (owner decision 2026-09-29, personal use only): distribution signin
 
 ## Next up
 
-1. **Design checks not yet run.** The `macos-development` plugin (design-review, accessibility-audit) is not installed on this Mac; run both on the popover, Closures and Settings once it is.
+1. **Design checks not yet run.** Run `impeccable` `critique` and `audit` (see CLAUDE.md, Skills and checks) on the popover, Closures and Settings.
 
 ## Unverified, check when convenient
 

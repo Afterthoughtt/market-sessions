@@ -1,0 +1,35 @@
+{
+  "extraKnownMarketplaces": {
+    "impeccable": {
+      "source": {
+        "source": "github",
+        "repo": "pbakaus/impeccable"
+      },
+      "autoUpdate": true
+    },
+    "emil-kowalski": {
+      "source": {
+        "source": "settings",
+        "name": "emil-kowalski",
+        "plugins": [
+          {
+            "name": "emil-skills",
+            "source": {
+              "source": "github",
+              "repo": "emilkowalski/skills"
+            },
+            "description": "Emil Kowalski's design-engineering skills, tracking github.com/emilkowalski/skills"
+          }
+        ],
+        "owner": {
+          "name": "Emil Kowalski"
+        }
+      },
+      "autoUpdate": true
+    }
+  },
+  "enabledPlugins": {
+    "impeccable@impeccable": true,
+    "emil-skills@emil-kowalski": true
+  }
+}

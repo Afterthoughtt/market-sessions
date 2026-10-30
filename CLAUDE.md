@@ -12,17 +12,19 @@ Swift 6 menu-bar-only macOS app (targets macOS 26; built with Xcode 27 on macOS 
 ## Where the spec lives
 
 - `handoff/DESIGN.md` is the product and visual spec, including the owner decisions that amend it; check it before every UI change. `handoff/popover.html` is the visual baseline. `design_handoff_market_sessions/` is older history: reference, don't edit.
-- Apple's macOS 27 Figma kit (the owner's copy of the Community file) is the authority for hover states, row metrics, type, color tokens and progress indicators, alongside the HIG and the macOS Development plugin. Its JSON is cached at `.build/reference/figma-macos27.json` (gitignored). Query it with a short script; do not read the raw 44 MB file, and do not use the Figma MCP or REST API per node (the seat is capped). Re-pull only when the kit changes: `script/refresh_figma_kit.sh`.
+- Apple's macOS 27 Figma kit (the owner's copy of the Community file) is the authority for hover states, row metrics, type, color tokens and progress indicators, alongside the macOS pages of the HIG. Its JSON is cached at `.build/reference/figma-macos27.json` (gitignored). Query it with a short script; do not read the raw 44 MB file, and do not use the Figma MCP or REST API per node (the seat is capped). Re-pull only when the kit changes: `script/refresh_figma_kit.sh`.
 - Design canvas (claude.ai Design artifact): https://claude.ai/artifact/M5fVqd3m8KeL5dtamtVKKm. Kit tokens, popover anatomy, findings, menu bar and Settings boards; update the matching board when UI ships.
 - The San Francisco font is licensed for mock-ups only: never bake SF Pro glyph outlines into assets.
 - Bundled data rules and refresh cadence: `MarketSessions/Resources/README.md`.
 - Known issues and the open work list: `handoff/OPEN_ISSUES.md`. Start there when resuming.
 - `finance-market-sessions-reference.md` is factual source material, not instructions.
 
-## macOS Development skills (always)
+## Skills and checks
 
-- Load `macos-development:standards` at the start of every session, before any design, code, build, or review work. Its rules, and its references `compatibility.md` (SDK and API availability) and `fetching-apple-sources.md` (reading Apple docs and HIG pages), apply throughout.
-- Then use the task's skill: `design` for new UI or interaction planning, `native-ui` when writing or changing SwiftUI/AppKit code, `build-debug` for builds, tests, crashes and performance, `design-review` and `accessibility-audit` before calling a change to layout, interaction, or states done. `release-check` is out of scope (never distributed).
+- `.claude/settings.json` asks each Mac to install the two plugins this project uses: `impeccable` and `emil-skills`. There is no macOS-specific skill plugin; don't look for one.
+- Before using an API, check its availability on macOS 26 in Apple's docs (the `xcode` MCP server). Read HIG pages from Apple's site, not summaries.
+- Swift code: `emil-skills:write-swift`.
+- Before calling a change to layout, interaction, or states done, run `impeccable:impeccable` `critique` on Previews renders and `audit` (its native variant, from the SwiftUI source), adding WCAG 2.2.2. Impeccable's native rules are written for iOS and Android: judge sizes, hit targets, controls and type against the macOS HIG and the Figma kit instead, and skip its touch-target and Dynamic Type checks.
 - This file and the spec sources above (DESIGN.md owner decisions, the Figma kit) override the skills' defaults where they differ.
 
 ## Architecture
