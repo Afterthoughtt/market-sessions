@@ -70,7 +70,6 @@ struct SessionsPopover: View {
                     .font(.body.weight(.medium))
             }
             .buttonStyle(PopoverRowButtonStyle(palette: palette))
-            .keyboardShortcut(",")
         }
         .padding(.top, 14)
         .padding(.horizontal, 14)
