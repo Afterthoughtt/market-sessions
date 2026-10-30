@@ -6,14 +6,22 @@ Out of scope (owner decision 2026-09-29, personal use only): distribution signin
 
 ## Next up
 
-1. **Check on the real screen** (needs a local session on the Mini with Computer use, or owner screenshots): ⌘, opens Settings while the popover is open; the Settings… highlight shows under keyboard focus (System Settings › Keyboard › Keyboard navigation) and whether the system focus ring also draws; VoiceOver jumps between section headings; the Christmas-week popover (856pt with all six markets, measured from a render) fits a 13-inch screen, or needs a height cap with scrolling.
-2. **Low-priority review findings:** the progress track's fixed 8% black/white ignores Increase Contrast; the notification plan is rebuilt every minute while the popover is open, and `DateFormatter`s are made in view bodies.
+1. **Real-screen checks**, for a local session on the Mini with Computer use (SSH sessions there have no screen access), or owner screenshots:
+   - ⌘, opens Settings while the popover is open.
+   - The Settings… highlight shows under keyboard focus (System Settings › Keyboard › Keyboard navigation), and whether the system focus ring also draws.
+   - VoiceOver moves between section headings.
+   - The Christmas-week popover (856pt with all six markets, measured from a render) fits a 13-inch screen; if not, cap the height and scroll the middle.
+   - The three-candle menu bar glyph beside Wi‑Fi and Battery: size and weight in light and dark bars, and in the highlighted state.
+   - Increase Contrast state colours (`Assets.xcassets`): the compiled catalog holds the high-contrast versions, but a command-line check cannot switch appearance. Check the popover in light and dark with System Settings › Accessibility › Display › Increase Contrast on.
+2. **Weekly update follow-ups (code review 2026-10-30):**
+   - Census returned HTTP 500 to the app's User-Agent once during the review, though the app's first run read it fine. Recheck; if it keeps refusing, treat it as a block (CLAUDE.md) and leave retail sales bundled.
+   - A launch before the network is up counts every source as failed, so the next try is a day later. Treat "no connection" as not attempted.
+   - Up to eight GETs run one after another with 30-second timeouts, so a stalled network can hold a run for about 4 minutes.
+   - Fetched rows are not checked for duplicate IDs, unlike `EconomicEventCatalog.loadAll`. No current page repeats a meeting.
+   - The popover's coverage line still reads "U.S. release dates bundled through …" (`EconomicEventsSection`), while Settings now says "Dates run through".
+3. **Low priority:** the progress track's fixed 8% black/white ignores Increase Contrast; the notification plan is rebuilt every minute while the popover is open, and `DateFormatter`s are made in view bodies.
 
 ## Unverified, check when convenient
-
-- Increase Contrast state colours (`Assets.xcassets`): the compiled catalog holds the high-contrast versions, but a command-line check cannot switch appearance; confirm with owner screenshots of the popover in light and dark with System Settings › Accessibility › Display › Increase Contrast on.
-
-- The three-candle menu bar glyph has not been seen in the real bar: check its size and weight against Wi‑Fi and Battery, light and dark bars, and the highlighted state.
 
 - A notification whose trigger passes while the Mac sleeps may be delivered late on wake ("Opens in 5 minutes" hours later). Owner to confirm: 5-minute lead, a market alert due within the hour, sleep through it, wake ~15 minutes later. A `BannerDelegate.willPresent` filter would not help: Apple calls it only while the app is in the foreground, which a menu-bar app rarely is. If confirmed, remove stale delivered banners from the existing wake refresh instead.
 
