@@ -16,7 +16,7 @@ struct EconomicEventsSection: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
             Text("Upcoming Events")
-                .font(.system(size: 11, weight: .semibold))
+                .font(.subheadline.weight(.semibold))
                 .foregroundStyle(palette.sec)
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .padding(.top, 16)
@@ -28,7 +28,7 @@ struct EconomicEventsSection: View {
 
             if displayedEvents.isEmpty {
                 Text("No upcoming events in the bundled schedule.")
-                    .font(.system(size: 13))
+                    .font(.body)
                     .foregroundStyle(palette.sec)
                     .padding(.vertical, 8)
             }
@@ -40,7 +40,7 @@ struct EconomicEventsSection: View {
                     Date.FormatStyle(date: .abbreviated, time: .omitted, timeZone: TimeZone(identifier: "UTC") ?? .gmt)
                 )
                 Text("\(gap.category.coverageLabel) dates bundled through \(date)")
-                    .font(.system(size: 11))
+                    .font(.subheadline)
                     .foregroundStyle(palette.sec)
                     .padding(.vertical, 8)
             }
@@ -50,7 +50,7 @@ struct EconomicEventsSection: View {
     private func eventRow(_ event: EconomicEvent) -> some View {
         HStack(spacing: 10) {
             Text(event.compactTitle)
-                .font(.system(size: 13))
+                .font(.body)
                 .foregroundStyle(palette.text)
                 .lineLimit(1)
                 .truncationMode(.tail)
@@ -58,7 +58,7 @@ struct EconomicEventsSection: View {
             Spacer(minLength: 6)
 
             Text(eventLabel(event))
-                .font(.system(size: 13, weight: isImminent(event) ? .semibold : .regular))
+                .font(.body.weight(isImminent(event) ? .semibold : .regular))
                 .monospacedDigit()
                 .foregroundStyle(isImminent(event) ? palette.text : palette.sec)
                 .lineLimit(1)

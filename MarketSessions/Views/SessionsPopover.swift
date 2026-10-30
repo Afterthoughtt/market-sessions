@@ -15,7 +15,7 @@ struct SessionsPopover: View {
 
             if model.orderedSessions.isEmpty {
                 Text("Choose markets in Settings.")
-                    .font(.system(size: 13))
+                    .font(.body)
                     .foregroundStyle(palette.sec)
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .padding(.vertical, 16)
@@ -23,7 +23,7 @@ struct SessionsPopover: View {
                 sectionHeader(.open)
                 if openSessions.isEmpty {
                     Text("No markets open")
-                        .font(.system(size: 13))
+                        .font(.body)
                         .foregroundStyle(palette.sec)
                         .frame(maxWidth: .infinity, minHeight: 24, alignment: .leading)
                 }
@@ -52,7 +52,7 @@ struct SessionsPopover: View {
 
             if let hoursWarning {
                 Text(hoursWarning)
-                    .font(.system(size: 11))
+                    .font(.subheadline)
                     .foregroundStyle(palette.sec)
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .padding(.vertical, 8)
@@ -72,7 +72,7 @@ struct SessionsPopover: View {
                 openSettings()
             } label: {
                 Text("Settings…")
-                    .font(.system(size: 13, weight: .medium))
+                    .font(.body.weight(.medium))
             }
             .buttonStyle(PopoverRowButtonStyle(palette: palette))
             .keyboardShortcut(",")
@@ -93,11 +93,11 @@ struct SessionsPopover: View {
         HStack(alignment: .lastTextBaseline, spacing: 8) {
             VStack(alignment: .leading, spacing: 3) {
                 Text("Market Sessions")
-                    .font(.system(size: 15, weight: .semibold))
+                    .font(.title3.weight(.semibold))
                     .foregroundStyle(palette.text)
 
                 Text(weekday)
-                    .font(.system(size: 13))
+                    .font(.body)
                     .foregroundStyle(palette.sec)
             }
 
@@ -107,14 +107,14 @@ struct SessionsPopover: View {
                 // The system zone needs no label; an override does, or its times would read as local.
                 if model.preferences.timeZoneIdentifier != nil {
                     Text("Time · \(timeZoneAbbreviation)")
-                        .font(.system(size: 11))
+                        .font(.subheadline)
                         .foregroundStyle(palette.sec)
                 }
 
                 Text(
                     "Daily Close in \(Text(MarketDurationFormatting.compact(minutes: model.utcDayRemainingMinutes)).fontWeight(.semibold).foregroundColor(palette.text))"
                 )
-                .font(.system(size: 13))
+                .font(.body)
                 .monospacedDigit()
                 .foregroundStyle(palette.sec)
                 .accessibilityLabel(
@@ -127,7 +127,7 @@ struct SessionsPopover: View {
 
     private func sectionHeader(_ status: SessionStatus) -> some View {
         Text(status.label)
-            .font(.system(size: 11, weight: .semibold))
+            .font(.subheadline.weight(.semibold))
             .foregroundStyle(palette.stateColor(status))
             .frame(maxWidth: .infinity, alignment: .leading)
         .padding(.top, 16)

@@ -268,8 +268,9 @@ struct SettingsView: View {
     }
 }
 
-/// Form row label per Apple's macOS 26 kit (Examples › Form, "Leading
-/// Accessories"): 13pt Medium title over an 11pt Medium secondary subtitle, 2pt apart.
+/// Form row label per Apple's macOS 27 kit (Forms page): 13pt Medium title over an
+/// 11pt Medium secondary subtitle, 2pt apart. Fixed sizes because no macOS text
+/// style is Medium at 13 or 11pt.
 private struct SettingsRowLabel: View {
     let title: String
     let subtitle: String?

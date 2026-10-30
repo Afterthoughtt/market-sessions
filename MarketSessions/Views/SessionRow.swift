@@ -13,11 +13,11 @@ struct SessionRow: View {
         HStack(spacing: 10) {
             VStack(alignment: .leading, spacing: 1) {
                 Text(resolved.session.name)
-                    .font(.system(size: 13))
+                    .font(.body)
                     .foregroundStyle(palette.text)
                     .lineLimit(1)
                 Text(detail)
-                    .font(.system(size: 11))
+                    .font(.subheadline)
                     .monospacedDigit()
                     .foregroundStyle(palette.sec)
                     .lineLimit(1)
@@ -29,17 +29,17 @@ struct SessionRow: View {
                 HStack(alignment: .firstTextBaseline, spacing: 4) {
                     if resolved.status.isActive {
                         Text(remaining)
-                            .font(.system(size: 13, weight: .semibold))
+                            .font(.body.weight(.semibold))
                             .foregroundStyle(palette.text)
                         Text("left")
-                            .font(.system(size: 11))
+                            .font(.subheadline)
                             .foregroundStyle(palette.sec)
                     } else {
                         Text("in")
-                            .font(.system(size: 11))
+                            .font(.subheadline)
                             .foregroundStyle(palette.sec)
                         Text(remaining)
-                            .font(.system(size: 13))
+                            .font(.body)
                             .foregroundStyle(isExtendedHours ? palette.text : palette.sec)
                     }
                 }
