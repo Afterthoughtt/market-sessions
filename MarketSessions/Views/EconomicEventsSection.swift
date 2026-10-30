@@ -40,7 +40,7 @@ struct EconomicEventsSection: View {
                 let date = gap.end.formatted(
                     Date.FormatStyle(date: .abbreviated, time: .omitted, timeZone: TimeZone(identifier: "UTC") ?? .gmt)
                 )
-                Text("\(gap.category.coverageLabel) dates bundled through \(date)")
+                Text("\(gap.category.coverageLabel) dates run through \(date)")
                     .font(.subheadline)
                     .foregroundStyle(palette.sec)
                     .padding(.vertical, 8)
@@ -93,11 +93,7 @@ struct EconomicEventsSection: View {
                       calendar.isDate(event.start, inSameDayAs: tomorrow) {
                 day = "Tomorrow"
             } else {
-                let formatter = DateFormatter()
-                formatter.locale = .autoupdatingCurrent
-                formatter.timeZone = displayTimeZone
-                formatter.dateFormat = "EEE"
-                day = formatter.string(from: event.start)
+                day = event.start.formatted(Date.FormatStyle(timeZone: displayTimeZone).weekday(.abbreviated))
             }
             return "\(day) \(MarketDateFormatting.time(event.start, timeZone: displayTimeZone))"
         }

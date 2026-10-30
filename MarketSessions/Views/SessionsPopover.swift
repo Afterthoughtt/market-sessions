@@ -224,11 +224,7 @@ struct SessionsPopover: View {
     }
 
     private var weekday: String {
-        let formatter = DateFormatter()
-        formatter.locale = .autoupdatingCurrent
-        formatter.timeZone = model.displayTimeZone
-        formatter.dateFormat = "EEEE"
-        return formatter.string(from: model.now)
+        model.now.formatted(Date.FormatStyle(timeZone: model.displayTimeZone).weekday(.wide))
     }
 
     private var timeZoneAbbreviation: String {
@@ -244,12 +240,9 @@ struct SessionsPopover: View {
         }
         // Coverage is the file's last date at 23:59 UTC; format it in UTC so a zone
         // ahead of UTC does not show the following day.
-        let formatter = DateFormatter()
-        formatter.locale = .autoupdatingCurrent
-        formatter.timeZone = TimeZone(identifier: "UTC") ?? .gmt
-        formatter.dateStyle = .medium
-        formatter.timeStyle = .none
-        let date = formatter.string(from: coverage)
+        let date = coverage.formatted(
+            Date.FormatStyle(date: .abbreviated, time: .omitted, timeZone: TimeZone(identifier: "UTC") ?? .gmt)
+        )
         if model.now > coverage {
             return "Holiday data ended \(date)"
         }

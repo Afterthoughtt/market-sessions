@@ -307,10 +307,21 @@ struct LiveEventRefresher: Sendable {
     }
 
     /// `bundled` is the shipped schedule, which each page's rows must account for.
+    /// Sources are read side by side, so a stalled network holds a run for one
+    /// timeout per Fed minutes page rather than one per GET. A run in which no source
+    /// reached its server (the Mac is offline) is not an attempt: `previous` comes
+    /// back unsaved and stays due.
     func run(at now: Date, previous: LiveEventCache, bundled: [EconomicEvent]) async -> LiveEventCache {
+        let outcomes = await withTaskGroup(of: (LiveEventSource, Outcome).self) { group in
+            for source in LiveEventSource.allCases {
+                group.addTask { (source, await fetch(source, at: now, bundled: bundled)) }
+            }
+            return await group.reduce(into: [:]) { $0[$1.0] = $1.1 }
+        }
+        guard outcomes.values.contains(where: { $0 != .offline }) else { return previous }
         var cache = LiveEventCache(attemptedAt: now)
         for source in LiveEventSource.allCases {
-            if let result = await fetch(source, at: now, bundled: bundled) {
+            if case .read(let result) = outcomes[source] {
                 cache.results.append(result)
             } else {
                 cache.failures.append(source)
@@ -323,17 +334,31 @@ struct LiveEventRefresher: Sendable {
         return cache
     }
 
-    /// nil when a page fails, reads as too few dates, or misses a bundled date. A
-    /// minutes page that is not published yet (404) or lists no minutes covers
-    /// nothing, so its month keeps the bundled dates.
-    private func fetch(_ source: LiveEventSource, at now: Date, bundled: [EconomicEvent]) async -> LiveSourceResult? {
+    private enum Outcome: Equatable, Sendable {
+        case read(LiveSourceResult)
+        case failed
+        /// The first GET found no connection.
+        case offline
+    }
+
+    /// Failed when a page fails, reads as too few dates, misses a bundled date, or
+    /// repeats an ID. A minutes page that is not published yet (404) or lists no
+    /// minutes covers nothing, so its month keeps the bundled dates.
+    private func fetch(_ source: LiveEventSource, at now: Date, bundled: [EconomicEvent]) async -> Outcome {
         var events: [BundledEvent] = []
         var ranges: [LiveSourceResult.DayRange] = []
-        for url in source.urls(at: now) {
-            guard let response = try? await fetcher.fetch(url) else { return nil }
+        for (index, url) in source.urls(at: now).enumerated() {
+            let response: (Data, Int)
+            do {
+                response = try await fetcher.fetch(url)
+            } catch let error as URLError where index == 0 && Self.offlineCodes.contains(error.code) {
+                return .offline
+            } catch {
+                return .failed
+            }
             let (data, status) = response
             if source.readsMonthlyPages, status == 404 { continue }
-            guard status == 200 else { return nil }
+            guard status == 200 else { return .failed }
             let rows = source.parse(data)
             let range: LiveSourceResult.DayRange
             if source.readsMonthlyPages {
@@ -341,16 +366,22 @@ struct LiveEventRefresher: Sendable {
                 range = .init(first: "\(month)-01", last: "\(month)-31")
             } else {
                 guard rows.count >= source.minimumCount,
-                      let first = rows.map(\.date).min(), let last = rows.map(\.date).max() else { return nil }
+                      let first = rows.map(\.date).min(), let last = rows.map(\.date).max() else { return .failed }
                 range = .init(first: first, last: last)
             }
-            guard Self.rows(rows, accountFor: bundled.filter { $0.kind == source.kind }, in: range) else { return nil }
+            guard Self.rows(rows, accountFor: bundled.filter { $0.kind == source.kind }, in: range) else { return .failed }
             ranges.append(range)
             events += rows
         }
-        guard !source.readsMonthlyPages || !events.isEmpty else { return nil }
-        return LiveSourceResult(source: source, events: events, ranges: ranges)
+        guard !source.readsMonthlyPages || !events.isEmpty,
+              Set(events.map(\.id)).count == events.count else { return .failed }
+        return .read(LiveSourceResult(source: source, events: events, ranges: ranges))
     }
+
+    /// Errors that mean this Mac has no connection rather than that a publisher failed.
+    private static let offlineCodes: Set<URLError.Code> = [
+        .notConnectedToInternet, .networkConnectionLost, .cannotFindHost, .dnsLookupFailed,
+    ]
 
     /// Inside its range a page replaces the bundled dates, so each bundled date needs a
     /// fetched one within two weeks. One missing means a row the parser skipped (the

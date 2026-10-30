@@ -61,7 +61,7 @@ enum EconomicEventKind: String, CaseIterable, Codable, Hashable, Sendable {
         case usRelease
         case centralBank
 
-        /// Leads the popover's coverage line: "U.S. release dates bundled through …".
+        /// Leads the popover's coverage line: "U.S. release dates run through …".
         var coverageLabel: String {
             switch self {
             case .usRelease: "U.S. release"

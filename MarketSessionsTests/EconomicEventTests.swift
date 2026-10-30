@@ -431,6 +431,34 @@ final class LiveEventTests: XCTestCase {
         XCTAssertTrue(missing.merged(into: bundled).contains { $0.id == "2027-06-09-fomc" })
     }
 
+    /// Two panels listing the same meeting mean the page changed; the duplicate IDs
+    /// would clash in the popover and in notifications.
+    func testAPageRepeatingAnIDCountsAsUnread() async throws {
+        let directory = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+        defer { try? FileManager.default.removeItem(at: directory) }
+        let bundled = try EconomicEventCatalog.loadAll(bundle: Bundle(for: Self.self))
+        let now = try XCTUnwrap(ISO8601DateFormatter().date(from: "2026-10-29T16:00:00Z"))
+        let cache = await LiveEventRefresher(fetcher: StubFetcher(repeatsPanel: true),
+                                             cacheURL: directory.appendingPathComponent("live-events.json"))
+            .run(at: now, previous: LiveEventCache(), bundled: bundled)
+        XCTAssertTrue(cache.failures.contains(.fedMeetings))
+    }
+
+    /// A launch before the network is up must not wait a day for the next try.
+    func testAnOfflineRunIsNotAnAttempt() async throws {
+        let directory = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+        defer { try? FileManager.default.removeItem(at: directory) }
+        let bundled = try EconomicEventCatalog.loadAll(bundle: Bundle(for: Self.self))
+        let now = try XCTUnwrap(ISO8601DateFormatter().date(from: "2026-10-29T16:00:00Z"))
+        let previous = LiveEventCache(attemptedAt: now.addingTimeInterval(-8 * 86_400))
+        let refresher = LiveEventRefresher(fetcher: OfflineFetcher(),
+                                           cacheURL: directory.appendingPathComponent("live-events.json"))
+        let cache = await refresher.run(at: now, previous: previous, bundled: bundled)
+        XCTAssertEqual(cache, previous)
+        XCTAssertTrue(cache.isDue(at: now))
+        XCTAssertEqual(refresher.loadCache(), LiveEventCache(), "Nothing saved")
+    }
+
     func testFetchedDatesReplaceBundledOnesOnlyInsideTheirRange() throws {
         let bundled = try EconomicEventCatalog.loadAll(bundle: Bundle(for: Self.self))
         let moved = BundledEvent(id: "2026-12-18-ecb", kind: .ecb, title: nil, date: "2026-12-18",
@@ -527,6 +555,8 @@ extension LiveEventTests {
 private struct StubFetcher: EventFetching {
     /// A 2027 FOMC month left off the calendar page, as if the parser skipped its row.
     var droppedMeeting: String?
+    /// The 2027 panel appears twice, as if the page repeated it.
+    var repeatsPanel = false
 
     func fetch(_ url: URL) async throws -> (Data, Int) {
         switch url.absoluteString {
@@ -552,13 +582,18 @@ private struct StubFetcher: EventFetching {
                 <div class="fomc-meeting__date">\(days)</div>
                 """
             }.joined()
-            return (Data("<h4><a id=\"1\">2027 FOMC Meetings</a></h4>\(rows)".utf8), 200)
+            let panel = "<h4><a id=\"1\">2027 FOMC Meetings</a></h4>\(rows)"
+            return (Data((repeatsPanel ? panel + panel : panel).utf8), 200)
         case let path where path.contains("ecb.europa.eu"):
             return (Data("Access Denied".utf8), 403)
         default:
             throw URLError(.cannotConnectToHost)
         }
     }
+}
+
+private struct OfflineFetcher: EventFetching {
+    func fetch(_ url: URL) async throws -> (Data, Int) { throw URLError(.notConnectedToInternet) }
 }
 
 @MainActor

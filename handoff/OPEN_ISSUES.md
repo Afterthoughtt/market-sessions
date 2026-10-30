@@ -13,13 +13,7 @@ Out of scope (owner decision 2026-09-29, personal use only): distribution signin
    - The Christmas-week popover (856pt with all six markets, measured from a render) fits a 13-inch screen; if not, cap the height and scroll the middle.
    - The three-candle menu bar glyph beside Wi‑Fi and Battery: size and weight in light and dark bars, and in the highlighted state.
    - Increase Contrast state colours (`Assets.xcassets`): the compiled catalog holds the high-contrast versions, but a command-line check cannot switch appearance. Check the popover in light and dark with System Settings › Accessibility › Display › Increase Contrast on.
-2. **Weekly update follow-ups (code review 2026-10-30):**
-   - Census returned HTTP 500 to the app's User-Agent once during the review, though the app's first run read it fine. Recheck; if it keeps refusing, treat it as a block (CLAUDE.md) and leave retail sales bundled.
-   - A launch before the network is up counts every source as failed, so the next try is a day later. Treat "no connection" as not attempted.
-   - Up to eight GETs run one after another with 30-second timeouts, so a stalled network can hold a run for about 4 minutes.
-   - Fetched rows are not checked for duplicate IDs, unlike `EconomicEventCatalog.loadAll`. No current page repeats a meeting.
-   - The popover's coverage line still reads "U.S. release dates bundled through …" (`EconomicEventsSection`), while Settings now says "Dates run through".
-3. **Low priority:** the progress track's fixed 8% black/white ignores Increase Contrast; the notification plan is rebuilt every minute while the popover is open, and `DateFormatter`s are made in view bodies.
+2. **Low priority:** the progress track's fixed 8% black/white (`MarketPalette.track`) ignores Increase Contrast. AppKit's `secondarySystemFill` is black or white at 7.8%; switching to it would let the system handle Increase Contrast, but a command-line check can't confirm it changes there, and the kit cache (`.build/reference/`) is missing, so the kit's token name is unchecked.
 
 ## Unverified, check when convenient
 
