@@ -20,7 +20,15 @@ Static design reference only. Data shown is a fixed snapshot (Thu 6:09 PM PDT); 
 15 title · 13 body, trailing times, and header readouts (the kit's form and menu detail labels are 13pt; owner found 10–11pt too small, 2026-09-29) · 11 section headers, subtitles, and footnote lines. Tabular figures on every time and countdown.
 
 ## Colour
-Primary text, secondary text and the hairline are the system label, secondary label and separator colours, so they follow Increase Contrast (owner decision 2026-09-30, replacing fixed opacities). The kit's label tokens give their values: black at 0.85 / 0.50 in light, white at 0.85 / 0.55 in dark. State colours are Apple system colours in TradingView's status mapping: Open green, Pre-Market orange, After Hours blue, Holiday and Closed secondary. Dark mode uses NSColor systemGreen and systemOrange (Increase Contrast applies) and #0593FF for After Hours: the kit's dark Blue #0091FF measured 4.43:1 on the dark popover, so it is lightened just to 4.5:1 (owner decision 2026-09-30); light mode darkens the kit's light values just to 4.5:1 for 11pt text on the light popover: #22813A, #A85D1A, #0071D4 (kit #34C759, #FF8D28, #0088FF measure 2.1, 2.1, 3.3:1). Owner decision 2026-09-30.
+Primary text, secondary text and the hairline are the system label, secondary label and separator colours, so they follow Increase Contrast (owner decision 2026-09-30, replacing fixed opacities). The kit's label tokens give their values: black at 0.85 / 0.50 in light, white at 0.85 / 0.55 in dark. State colours follow TradingView's status mapping: Open green, Pre-Market orange, After Hours blue, Holiday and Closed secondary. They are named colours in `Resources/Assets.xcassets` (`OpenText`, `PreMarketText`, `AfterHoursText`), the kit's accents adjusted to read as 11pt text on the popover (owner decisions 2026-09-30 and 2026-10-29). Plain system colours fall to 2.0–3.3:1 in light mode, so they are not used.
+
+| State | Light | Dark | Light, Increase Contrast | Dark, Increase Contrast |
+| --- | --- | --- | --- | --- |
+| Open | #22813A (4.5:1) | #30D158 (7.1:1) | #175F29 (7.1:1) | #30D158 |
+| Pre-Market | #A85D1A (4.5:1) | #FF9230 (6.4:1) | #7D4310 (7.2:1) | #FF9F4E (7.0:1) |
+| After Hours | #0071D4 (4.5:1) | #0593FF (4.5:1) | #00539E (7.1:1) | #77BBFF (7.0:1) |
+
+Normal values are the kit's light Green #34C759, Orange #FF8D28 and Blue #0088FF darkened just to 4.5:1, and in dark the kit's Green and Orange with Blue #0091FF lightened from 4.43 to 4.5:1. Increase Contrast versions move the same hue toward black (light) or white (dark) until 7:1. Ratios are against the measured popover greys.
 
 ## Menu-bar label (10a)
 Superseded by the owner decision under "Menu bar label" below: a fixed glyph.

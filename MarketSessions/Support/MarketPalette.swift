@@ -1,9 +1,9 @@
 import SwiftUI
 
 /// Shared colors. Neutral text and the separator are the system label and
-/// separator colors, which the macOS 26 UI kit's label tokens describe (black 85%
-/// and 50% light, white 85% and 55% dark) and which follow Increase Contrast;
-/// state colors are system colors (`stateColor`).
+/// separator colors, which the macOS 27 UI kit's label tokens describe (black 85%
+/// and 50% light, white 85% and 55% dark) and which follow Increase Contrast.
+/// State colors are named colors in `Assets.xcassets` (`stateColor`).
 struct MarketPalette {
     let text: Color
     let sec: Color
@@ -17,11 +17,9 @@ struct MarketPalette {
     static let light = MarketPalette(
         text: Color(nsColor: .labelColor),
         sec: Color(nsColor: .secondaryLabelColor),
-        // Kit light Green #34C759, Orange #FF8D28 and Blue #0088FF measure 2.1, 2.1
-        // and 3.3:1 on the light popover; each is darkened just to 4.5:1 for 11pt text.
-        openText: Color(red: 0x22 / 255, green: 0x81 / 255, blue: 0x3A / 255),
-        preMarketText: Color(red: 0xA8 / 255, green: 0x5D / 255, blue: 0x1A / 255),
-        afterHoursText: Color(red: 0x00 / 255, green: 0x71 / 255, blue: 0xD4 / 255),
+        openText: Color("OpenText"),
+        preMarketText: Color("PreMarketText"),
+        afterHoursText: Color("AfterHoursText"),
         separator: Color(nsColor: .separatorColor),
         track: Color.black.opacity(0.08)
     )
@@ -29,11 +27,9 @@ struct MarketPalette {
     static let dark = MarketPalette(
         text: Color(nsColor: .labelColor),
         sec: Color(nsColor: .secondaryLabelColor),
-        openText: Color(nsColor: .systemGreen),
-        preMarketText: Color(nsColor: .systemOrange),
-        // Kit dark Blue #0091FF measures 4.43:1 on the dark popover; lightened just to
-        // 4.5:1 for 11pt text. Green and orange already clear it.
-        afterHoursText: Color(red: 0x05 / 255, green: 0x93 / 255, blue: 0xFF / 255),
+        openText: Color("OpenText"),
+        preMarketText: Color("PreMarketText"),
+        afterHoursText: Color("AfterHoursText"),
         separator: Color(nsColor: .separatorColor),
         track: Color.white.opacity(0.08)
     )
@@ -42,9 +38,10 @@ struct MarketPalette {
         scheme == .dark ? .dark : .light
     }
 
-    /// Section-header text per state: Apple system colors in TradingView's status
-    /// mapping (green open, orange pre-market, blue post-market); Holiday and
-    /// Closed stay secondary.
+    /// Section-header text per state in TradingView's status mapping (green open,
+    /// orange pre-market, blue post-market); Holiday and Closed stay secondary.
+    /// Each named color is the kit's accent, adjusted where needed to reach 4.5:1 on
+    /// the popover and 7:1 with Increase Contrast; values are in DESIGN.md › Colour.
     func stateColor(_ status: SessionStatus) -> Color {
         switch status {
         case .open: openText
