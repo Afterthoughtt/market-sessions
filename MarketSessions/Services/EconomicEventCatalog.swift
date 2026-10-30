@@ -9,19 +9,20 @@ enum EconomicEventCatalogError: Error, Equatable {
     case duplicateID(String)
 }
 
+/// One row of an `events-<year>.json` file, also the shape of fetched rows.
+struct BundledEvent: Codable, Equatable, Sendable {
+    let id: String
+    let kind: EconomicEventKind
+    let title: String?
+    let date: String
+    let time: String
+    let durationMinutes: Int
+    let timeZone: String
+}
+
 enum EconomicEventCatalog {
     private struct FileContents: Decodable {
         let events: [BundledEvent]
-    }
-
-    private struct BundledEvent: Decodable {
-        let id: String
-        let kind: EconomicEventKind
-        let title: String?
-        let date: String
-        let time: String
-        let durationMinutes: Int
-        let timeZone: String
     }
 
     static func loadAll(bundle: Bundle = .main) throws -> [EconomicEvent] {
@@ -45,7 +46,7 @@ enum EconomicEventCatalog {
         return try contents.events.map(resolve)
     }
 
-    private static func resolve(_ bundled: BundledEvent) throws -> EconomicEvent {
+    static func resolve(_ bundled: BundledEvent) throws -> EconomicEvent {
         let dateParts = try integers(in: bundled.date, separatedBy: "-", count: 3)
         let timeParts = try integers(in: bundled.time, separatedBy: ":", count: 2)
         guard bundled.durationMinutes > 0 else {
@@ -99,7 +100,7 @@ enum EconomicEventCatalog {
         return parts.map { Int($0)! }
     }
 
-    private static func eventOrder(_ lhs: EconomicEvent, _ rhs: EconomicEvent) -> Bool {
+    static func eventOrder(_ lhs: EconomicEvent, _ rhs: EconomicEvent) -> Bool {
         if lhs.start != rhs.start {
             return lhs.start < rhs.start
         }

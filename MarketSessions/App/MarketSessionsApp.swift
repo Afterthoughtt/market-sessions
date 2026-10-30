@@ -7,10 +7,10 @@ struct MarketSessionsApp: App {
     /// and away from the real preferences, login item and notification queue.
     #if DEBUG
     private static let isPreviewHost = ProcessInfo.processInfo.environment["XCODE_RUNNING_FOR_PREVIEWS"] == "1"
-    @State private var model = isPreviewHost ? PreviewModel.make() : MarketSessionsModel(preferencesStore: .standard)
+    @State private var model = isPreviewHost ? PreviewModel.make() : MarketSessionsModel(liveEvents: .standard(), preferencesStore: .standard)
     #else
     private static let isPreviewHost = false
-    @State private var model = MarketSessionsModel(preferencesStore: .standard)
+    @State private var model = MarketSessionsModel(liveEvents: .standard(), preferencesStore: .standard)
     #endif
 
     var body: some Scene {

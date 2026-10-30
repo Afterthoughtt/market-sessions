@@ -63,6 +63,21 @@ struct SettingsView: View {
             }
 
             Section {
+                LabeledContent {
+                    Toggle("Update Dates Weekly", isOn: Binding(
+                        get: { model.preferences.refreshesEventDates },
+                        set: { model.setRefreshesEventDates($0) }
+                    ))
+                    .toggleStyle(.switch)
+                    .labelsHidden()
+                } label: {
+                    SettingsRowLabel("Update Dates Weekly", subtitle: liveEventStatus)
+                }
+            } footer: {
+                Text("Reads FOMC, minutes, PCE, retail sales, ECB and BOJ dates from the Federal Reserve, BEA, Census Bureau, ECB and Bank of Japan websites. CPI, jobs, PPI, GDP and Fed Chair dates and market holidays stay bundled. This product uses the Bureau of Economic Analysis (BEA) Data API but is not endorsed or certified by BEA.")
+            }
+
+            Section {
                 Toggle(isOn: Binding(
                     get: { model.loginItemState.isEnabled },
                     set: { model.setLaunchAtLogin($0) }
@@ -251,13 +266,27 @@ struct SettingsView: View {
         return MarketDateFormatting.dateTime(next.start, dateStyle: .medium, timeZone: model.displayTimeZone)
     }
 
+    /// When the weekly update last ran, or which site failed and what happens next.
+    private var liveEventStatus: String {
+        guard model.preferences.refreshesEventDates else {
+            return "Off. Event dates come only from the bundled schedule."
+        }
+        guard let cache = model.liveEventCache, let attempted = cache.attemptedAt else {
+            return "Checks official schedules once a week."
+        }
+        let date = attempted.formatted(Date.FormatStyle(date: .abbreviated, time: .omitted, timeZone: model.displayTimeZone))
+        guard !cache.failures.isEmpty else { return "Updated \(date)." }
+        let hosts = Set(cache.failures.map(\.host)).sorted().joined(separator: ", ")
+        return "Checked \(date). Couldn’t read \(hosts), so those dates stay as they were; tries again in a day."
+    }
+
     private var eventCoverageFooter: String {
         let style = Date.FormatStyle(date: .abbreviated, time: .omitted, timeZone: model.displayTimeZone)
         let us = model.eventScheduleEnd(for: .usRelease).map { $0.formatted(style) } ?? "unavailable"
         let banks = model.eventScheduleEnd(for: .centralBank).map { $0.formatted(style) } ?? "unavailable"
         return "The switch shows an event kind in the popover, which lists the next four. "
             + "Notify alerts at each event’s scheduled time. "
-            + "Bundled dates run through \(us) for U.S. releases and \(banks) for central banks."
+            + "Dates run through \(us) for U.S. releases and \(banks) for central banks."
             + notificationsOffNote
     }
 

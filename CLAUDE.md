@@ -4,7 +4,7 @@ Swift 6 menu-bar-only macOS app (targets macOS 26; built with Xcode 27 on macOS 
 
 ## Non-negotiables
 
-- Fully offline: no network entitlement or code, no dependencies, no telemetry, no accounts. Do not add any without being asked.
+- Network: only the weekly event-date update in `Services/LiveEventRefresh.swift` (owner decision 2026-10-29, on by default, switch in Settings › General). It reads the Fed, BEA, Census, ECB and BOJ pages listed there with plain GETs and an honest User-Agent that carries no personal details. Never work around a block (403, bot check) and never add a source whose terms forbid automated access; BLS and every exchange stay bundled. The bundled JSON is always the fallback. Still no dependencies, telemetry or accounts; do not add any, or other network use, without being asked.
 - Personal use only; the app is never distributed. Skip distribution work (signing team, notarization, App Sandbox). The app icon is in scope (owner decision 2026-10-21).
 - Exactly five market states, TradingView's set without Overnight: Open, Pre-Market, After Hours, Holiday, Closed (a lunch or maintenance pause is Closed). State colours are Apple system colours per `handoff/DESIGN.md`; everything else in the popover stays neutral on the system material.
 - Schedules and event times are defined in canonical IANA zones. Never hardcode UTC offsets or local clock times. Never generate dates from recurrence formulas.

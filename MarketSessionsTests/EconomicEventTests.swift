@@ -288,3 +288,228 @@ final class EconomicEventTests: XCTestCase {
         )))
     }
 }
+
+/// Weekly updates from official pages. Fixtures are trimmed copies of the pages as
+/// served on 2026-10-29; no test reaches the network.
+final class LiveEventTests: XCTestCase {
+    func testFedMeetingsReadSecondDaysAcrossMonthsAndSkipNotationVotes() {
+        let page = """
+        <div class="panel panel-default"><div class="panel-heading"><h4><a id="45694">2027 FOMC Meetings</a></h4></div>
+            <div class="fomc-meeting__month col-xs-5 col-sm-3 col-md-2"><strong>January</strong></div>
+
+            <div class="fomc-meeting__date col-xs-4 col-sm-9 col-md-10 col-lg-1">26-27</div>
+            <div class="fomc-meeting--shaded fomc-meeting__month col-xs-5 col-sm-3 col-md-2"><strong>March</strong></div>
+            <div class="fomc-meeting__date col-xs-4 col-sm-9 col-md-10 col-lg-1">16-17*</div>
+        <div class="panel panel-default"><div class="panel-heading"><h4><a id="36495">2023 FOMC Meetings</a></h4></div>
+            <div class="fomc-meeting__month col-xs-5 col-sm-3 col-md-2"><strong>Jan/Feb</strong></div>
+
+            <div class="fomc-meeting__date col-xs-4 col-sm-9 col-md-10 col-lg-1">31-1</div>
+            <div class="fomc-meeting__month col-xs-5 col-sm-3 col-md-2"><strong>August</strong></div>
+            <div class="fomc-meeting__date col-xs-4 col-sm-9 col-md-10 col-lg-2">22 (notation vote)</div>
+        """
+        let rows = LiveEventParser.fomcMeetings(page)
+        XCTAssertEqual(rows.map(\.id), ["2027-01-27-fomc", "2027-03-17-fomc", "2023-02-01-fomc"])
+        XCTAssertEqual(rows.first?.time, "14:00")
+        XCTAssertEqual(rows.first?.durationMinutes, 90)
+    }
+
+    func testFedMinutesComeFromTheMonthlyCalendarPage() {
+        let page = """
+            <title>Federal Reserve Board - Calendar: November 2026 </title>
+                                <div class="col-xs-2">
+                                    <p>2:00 p.m.</p>
+                                </div>
+                                <div class="col-xs-7">
+                                    <p>FOMC Minutes</p>
+                                    <p><p>Meeting of October 27-28</p></p>
+                                </div>
+                                <div class="col-xs-3">
+                                    <p>18</p>
+                                </div>
+        """
+        XCTAssertEqual(LiveEventParser.fomcMinutes(page).map(\.id), ["2026-11-18-fomc-minutes"])
+    }
+
+    func testPersonalIncomeKeepsBEAsOwnTimesInNewYork() throws {
+        let data = Data("""
+        {"Gross Domestic Product": {"release_dates": ["2026-10-29T12:30:00+00:00"]},
+         "Personal Income and Outlays": {"release_dates": ["2026-01-22T15:00:00+00:00", "2026-12-23T13:30:00+00:00"]},
+         "file_last_updated": "2026-10-22T14:01:12.123456"}
+        """.utf8)
+        let rows = LiveEventParser.personalIncome(data)
+        XCTAssertEqual(rows.map(\.id), ["2026-01-22-pce", "2026-12-23-pce"])
+        XCTAssertEqual(rows.map(\.time), ["10:00", "08:30"])
+    }
+
+    func testRetailSalesReadOnlyTheAdvanceTable() {
+        let page = """
+        <td style="text-align:center"><strong>Release Date at 8:30 am</strong></td>
+        <td style="text-align:center">September 2026</td>
+        <td style="text-align:center">October 15, 2026</td>
+        <td style="text-align:center">December 2026</td>
+        <td style="text-align:center">January 15, 2027</td>
+        </tbody></table>
+        <td style="text-align:center"><strong>Release Date at 8:30 am for sales and<br />
+        <td style="text-align:center">March 2, 2027</td>
+        """
+        XCTAssertEqual(LiveEventParser.retailSales(page).map(\.id), ["2026-10-15-retail-sales", "2027-01-15-retail-sales"])
+    }
+
+    func testECBDecisionsAreTheSecondMeetingDays() {
+        let page = """
+        <dt>
+        28/10/2026
+        </dt>
+        <dd>
+        Governing Council of the ECB: monetary policy meeting in Frankfurt (Day 1)<br>
+        </dd>
+        <dt>
+        29/10/2026
+        </dt>
+        <dd>
+        Governing Council of the ECB: monetary policy meeting in Frankfurt (Day 2), followed by press conference<br>
+        </dd>
+        <dt>
+        12/11/2026
+        </dt>
+        <dd>
+        Governing Council of the ECB: non-monetary policy meeting<br>
+        </dd>
+        """
+        let rows = LiveEventParser.ecb(page)
+        XCTAssertEqual(rows.map(\.id), ["2026-10-29-ecb"])
+        XCTAssertEqual(rows.first?.timeZone, "Europe/Berlin")
+    }
+
+    func testBOJMeetingsReadAcrossLineBreaksAndMonths() {
+        let page = """
+        <caption class="non-caption">Table : 2027</caption>
+        <tbody>
+        <tr>
+          <td>Jan. 21 (Thurs.), 22 (Fri.)</td>
+          <td>Jan. 22 (Fri.)</td>
+         </tr>
+         <tr>
+          <td>Sept. 21
+          (Tues.), 22 (Wed.)</td>
+          <td>-</td>
+         </tr>
+         <tr>
+          <td>Apr. 30 (Fri.), May 1 (Sat.)</td>
+         </tr>
+        </tbody>
+        </table>
+        """
+        XCTAssertEqual(LiveEventParser.boj(page).map(\.id), ["2027-01-22-boj", "2027-09-22-boj", "2027-05-01-boj"])
+    }
+
+    func testFetchedDatesReplaceBundledOnesOnlyInsideTheirRange() throws {
+        let bundled = try EconomicEventCatalog.loadAll(bundle: Bundle(for: Self.self))
+        let moved = BundledEvent(id: "2026-12-18-ecb", kind: .ecb, title: nil, date: "2026-12-18",
+                                 time: "14:15", durationMinutes: 90, timeZone: "Europe/Berlin")
+        let cache = LiveEventCache(attemptedAt: Date(), results: [LiveSourceResult(
+            source: .ecb, fetchedAt: Date(), events: [moved],
+            ranges: [.init(first: "2026-12-01", last: "2026-12-31")]
+        )])
+        let merged = cache.merged(into: bundled).filter { $0.kind == .ecb }.map(\.id)
+        XCTAssertTrue(merged.contains("2026-12-18-ecb"))
+        XCTAssertFalse(merged.contains("2026-12-17-ecb"), "The bundled December date is replaced")
+        XCTAssertTrue(merged.contains("2027-02-04-ecb"), "Dates outside the fetched range stay bundled")
+    }
+
+    func testAFailingSourceKeepsItsLastResultAndRetriesDaily() async throws {
+        let directory = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+        defer { try? FileManager.default.removeItem(at: directory) }
+        let refresher = LiveEventRefresher(
+            fetcher: StubFetcher(),
+            cacheURL: directory.appendingPathComponent("live-events.json")
+        )
+        let now = try XCTUnwrap(ISO8601DateFormatter().date(from: "2026-10-29T16:00:00Z"))
+        let old = LiveSourceResult(source: .ecb, fetchedAt: now.addingTimeInterval(-8 * 86_400), events: [], ranges: [])
+        let cache = await refresher.run(at: now, previous: LiveEventCache(results: [old]))
+
+        XCTAssertEqual(Set(cache.failures), [.ecb, .boj, .censusRetail, .beaPersonalIncome])
+        XCTAssertEqual(cache.results.first { $0.source == .ecb }, old, "The 403 keeps the earlier result")
+        XCTAssertEqual(cache.results.first { $0.source == .fedMinutes }?.events.map(\.id), ["2026-11-19-fomc-minutes"],
+                       "Not-yet-published months (404) are skipped, not failures")
+        XCTAssertEqual(refresher.loadCache(), cache, "Saved to disk")
+        XCTAssertFalse(cache.isDue(at: now.addingTimeInterval(3_600)))
+        XCTAssertTrue(cache.isDue(at: now.addingTimeInterval(86_400)), "Daily while a source fails")
+        XCTAssertFalse(LiveEventCache(attemptedAt: now).isDue(at: now.addingTimeInterval(6 * 86_400)))
+        XCTAssertTrue(LiveEventCache(attemptedAt: now).isDue(at: now.addingTimeInterval(7 * 86_400)))
+    }
+
+    @MainActor
+    func testModelUsesFetchedDatesOnlyWhileUpdatesAreOn() async throws {
+        let directory = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+        defer { try? FileManager.default.removeItem(at: directory) }
+        let suite = "MarketSessionsTests.\(UUID().uuidString)"
+        let defaults = try XCTUnwrap(UserDefaults(suiteName: suite))
+        defer { defaults.removePersistentDomain(forName: suite) }
+        let now = try XCTUnwrap(ISO8601DateFormatter().date(from: "2026-10-29T16:00:00Z"))
+        let model = MarketSessionsModel(
+            loginItemService: LiveLoginItemStub(),
+            notificationCenter: LiveNotificationCenterStub(),
+            liveEvents: LiveEventRefresher(fetcher: StubFetcher(), cacheURL: directory.appendingPathComponent("live.json")),
+            nowProvider: { now },
+            preferencesStore: defaults
+        )
+        await model.liveEventUpdate?.value
+        XCTAssertEqual(model.nextEvent(of: .fomcMinutes)?.id, "2026-11-19-fomc-minutes", "The fetched date wins")
+        XCTAssertNotNil(model.liveEventCache?.attemptedAt)
+
+        model.setRefreshesEventDates(false)
+        XCTAssertFalse(MarketPreferences(defaults: defaults).refreshesEventDates)
+        XCTAssertEqual(model.nextEvent(of: .fomcMinutes)?.id, "2026-11-18-fomc-minutes", "Off means bundled dates only")
+    }
+}
+
+/// The Fed answers; November's minutes page lists Nov 19 (bundled: Nov 18) and later months are not
+/// published; ECB returns 403; BOJ, BEA and Census fail to connect.
+private struct StubFetcher: EventFetching {
+    func fetch(_ url: URL) async throws -> (Data, Int) {
+        switch url.absoluteString {
+        case let path where path.hasSuffix("2026-october.htm"):
+            return (Data("<title>Calendar: October 2026 </title>".utf8), 200)
+        case let path where path.hasSuffix("2026-november.htm"):
+            return (Data("""
+            <title>Federal Reserve Board - Calendar: November 2026 </title>
+            <p>FOMC Minutes</p>
+            </div>
+            <div class="col-xs-3">
+                <p>19</p>
+            """.utf8), 200)
+        case let path where path.contains("/newsevents/"):
+            return (Data(), 404)
+        case let path where path.hasSuffix("fomccalendars.htm"):
+            let months = ["January", "March", "April", "June", "July", "September", "October", "December"]
+            let rows = months.map { month in
+                """
+                <div class="fomc-meeting__month"><strong>\(month)</strong></div>
+                <div class="fomc-meeting__date">\(10)-\(11)</div>
+                """
+            }.joined()
+            return (Data("<h4><a id=\"1\">2027 FOMC Meetings</a></h4>\(rows)".utf8), 200)
+        case let path where path.contains("ecb.europa.eu"):
+            return (Data("Access Denied".utf8), 403)
+        default:
+            throw URLError(.cannotConnectToHost)
+        }
+    }
+}
+
+@MainActor
+private final class LiveLoginItemStub: LoginItemServicing {
+    var state: LoginItemState = .disabled
+    func setEnabled(_ enabled: Bool) throws { state = enabled ? .enabled : .disabled }
+}
+
+@MainActor
+private final class LiveNotificationCenterStub: NotificationCentering {
+    func activate() {}
+    func authorizationStatus() async -> NotificationAuthorizationState { .notDetermined }
+    func requestAuthorization() async -> NotificationAuthorizationState { .notDetermined }
+    func add(_ notifications: [PlannedNotification]) async -> Set<String> { [] }
+    func removePending(identifiers: [String]) {}
+    func removeAllPending() {}
+}

@@ -161,6 +161,13 @@ struct EconomicEvent: Identifiable, Hashable, Sendable {
         return timeZone
     }
 
+    /// "yyyy-MM-dd" in the publisher's zone.
+    var canonicalDateKey: String {
+        var calendar = Calendar(identifier: .gregorian)
+        calendar.timeZone = canonicalTimeZone
+        return MarketExceptionIndex.key(for: start, calendar: calendar)
+    }
+
     func phase(at date: Date) -> Phase {
         if date < start {
             .upcoming

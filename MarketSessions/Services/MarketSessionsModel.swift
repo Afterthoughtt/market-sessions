@@ -32,7 +32,14 @@ final class MarketSessionsModel {
 
     private let catalog: [MarketSession]
     private let marketExceptions: MarketExceptionIndex
-    private let economicEvents: [EconomicEvent]
+    /// Bundled events, with fetched dates merged in while weekly updates are on.
+    private var economicEvents: [EconomicEvent]
+    private let bundledEvents: [EconomicEvent]
+    private let liveEvents: LiveEventRefresher?
+    /// Last weekly update; nil without a refresher (tests and previews stay offline).
+    private(set) var liveEventCache: LiveEventCache?
+    /// In-flight weekly update; tests await it.
+    private(set) var liveEventUpdate: Task<Void, Never>?
     private let upcomingEventResolver = UpcomingEconomicEventResolver()
     private let loginItemService: any LoginItemServicing
     private let notificationCenter: any NotificationCentering
@@ -66,6 +73,7 @@ final class MarketSessionsModel {
         economicEvents: [EconomicEvent]? = nil,
         loginItemService: any LoginItemServicing = LoginItemService(),
         notificationCenter: any NotificationCentering = NotificationCenterService(),
+        liveEvents: LiveEventRefresher? = nil,
         nowProvider: @escaping @Sendable () -> Date = Date.init,
         displayTimeZoneProvider: @escaping @Sendable () -> TimeZone = { .autoupdatingCurrent },
         preferencesStore: UserDefaults? = nil
@@ -73,13 +81,17 @@ final class MarketSessionsModel {
         self.catalog = catalog
         self.marketExceptions = marketExceptions
             ?? ((try? MarketExceptionCatalog.loadIndex()) ?? .empty)
-        self.economicEvents = economicEvents ?? ((try? EconomicEventCatalog.loadAll()) ?? [])
+        self.bundledEvents = economicEvents ?? ((try? EconomicEventCatalog.loadAll()) ?? [])
+        self.economicEvents = bundledEvents
+        self.liveEvents = liveEvents
+        self.liveEventCache = liveEvents?.loadCache()
         self.loginItemService = loginItemService
         self.notificationCenter = notificationCenter
         self.nowProvider = nowProvider
         self.displayTimeZoneProvider = displayTimeZoneProvider
         self.preferencesStore = preferencesStore
         self.preferences = preferencesStore.map(MarketPreferences.init(defaults:)) ?? MarketPreferences()
+        applyLiveEvents()
         refresh()
     }
 
@@ -194,6 +206,7 @@ final class MarketSessionsModel {
             economicEvents, at: snapshot, enabledKinds: preferences.eventKinds
         )
         updateUTCDay(at: snapshot)
+        updateLiveEventsIfDue(at: snapshot)
         loginItemState = loginItemService.state
         syncNotifications(at: snapshot, resolver: resolver)
     }
@@ -321,6 +334,34 @@ final class MarketSessionsModel {
         }
         notificationAuthorizationRequest = request
         return request
+    }
+
+    /// Weekly while on (daily while a source fails), in the background; the merged
+    /// dates replace the bundled ones for the popover, Settings and notifications.
+    private func updateLiveEventsIfDue(at now: Date) {
+        guard preferences.refreshesEventDates, let liveEvents, liveEventUpdate == nil,
+              (liveEventCache ?? LiveEventCache()).isDue(at: now) else { return }
+        let previous = liveEventCache ?? LiveEventCache()
+        liveEventUpdate = Task { @MainActor [weak self] in
+            let cache = await liveEvents.run(at: now, previous: previous)
+            guard let self else { return }
+            self.liveEventCache = cache
+            self.liveEventUpdate = nil
+            self.applyLiveEvents()
+            self.refresh()
+        }
+    }
+
+    private func applyLiveEvents() {
+        economicEvents = preferences.refreshesEventDates
+            ? (liveEventCache?.merged(into: bundledEvents) ?? bundledEvents)
+            : bundledEvents
+    }
+
+    func setRefreshesEventDates(_ enabled: Bool) {
+        preferences.refreshesEventDates = enabled
+        applyLiveEvents()
+        savePreferences()
     }
 
     /// Next bundled occurrence of a kind that has not yet ended, for Settings rows.

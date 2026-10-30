@@ -9,6 +9,8 @@ struct MarketPreferences: Equatable {
     var notifiedMarkets: Set<MarketSession.ID> = []
     var notifiedEventKinds: Set<EconomicEventKind> = []
     var notificationLeadMinutes = 0
+    /// Weekly reads of the Fed, BEA, Census, ECB and BOJ schedules (owner decision 2026-10-29: on by default).
+    var refreshesEventDates = true
 
     var notifiesAnything: Bool { !notifiedMarkets.isEmpty || !notifiedEventKinds.isEmpty }
 
@@ -19,6 +21,7 @@ struct MarketPreferences: Equatable {
         static let notifiedMarkets = "notifiedMarkets"
         static let notifiedEvents = "notifiedEventKinds"
         static let notificationLead = "notificationLeadMinutes"
+        static let refreshesEventDates = "refreshesEventDates"
     }
 
     init() {}
@@ -44,6 +47,9 @@ struct MarketPreferences: Equatable {
         if NotificationPlanner.leadOptions.contains(lead) {
             notificationLeadMinutes = lead
         }
+        if defaults.object(forKey: Key.refreshesEventDates) != nil {
+            refreshesEventDates = defaults.bool(forKey: Key.refreshesEventDates)
+        }
     }
 
     func save(to defaults: UserDefaults) {
@@ -57,6 +63,7 @@ struct MarketPreferences: Equatable {
         defaults.set(notifiedMarkets.map(\.rawValue).sorted(), forKey: Key.notifiedMarkets)
         defaults.set(notifiedEventKinds.map(\.rawValue).sorted(), forKey: Key.notifiedEvents)
         defaults.set(notificationLeadMinutes, forKey: Key.notificationLead)
+        defaults.set(refreshesEventDates, forKey: Key.refreshesEventDates)
     }
 
     func displayTimeZone(system: TimeZone) -> TimeZone {
