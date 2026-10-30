@@ -113,10 +113,11 @@ struct UpcomingClosures: Hashable, Sendable {
     static let empty = UpcomingClosures(closures: [], passesCoverage: false)
 }
 
-/// Holidays and early closes in each market's next `days` canonical-zone days, not
-/// counting today: today's holiday is the Holiday section and today's early close is
-/// on the row's close time. Rows sort by the day they show: a holiday's own date, an
-/// early close's date in the display zone.
+/// Holidays and early closes in each market's next `days` canonical-zone days. Today's
+/// holiday is left out (it is the Holiday section); today's early close stays until it
+/// passes, since the row shows it only once the market is open (the model drops it then).
+/// Rows sort by the day they show: a holiday's own date, an early close's date in the
+/// display zone.
 struct UpcomingClosureResolver: Sendable {
     func resolve(
         _ index: MarketExceptionIndex,
@@ -137,13 +138,16 @@ struct UpcomingClosureResolver: Sendable {
             for exception in index.all where exception.market == session.id {
                 guard let day = calendar.date(from: DateComponents(
                     year: exception.year, month: exception.month, day: exception.day
-                )), day > today, day <= last else { continue }
+                )), day >= today, day <= last else { continue }
                 var date = day
                 var shownDay = exception.dateKey
                 if exception.kind == .earlyClose, let close = exception.close,
                    let closeDate = calendar.date(bySettingHour: close.hour, minute: close.minute, second: 0, of: day) {
+                    guard closeDate > now else { continue }
                     date = closeDate
                     shownDay = MarketExceptionIndex.key(for: closeDate, calendar: display)
+                } else if day == today {
+                    continue
                 }
                 closures.append((shownDay, MarketClosure(session: session, exception: exception, date: date)))
             }

@@ -42,6 +42,33 @@ final class MarketExceptionTests: XCTestCase {
             .closures.contains { $0.id == "newYorkCash-2026-11-26" })
     }
 
+    /// Black Friday: before New York opens its row reads "Opens", so the 1:00 PM early
+    /// close stays in Closures; once open, the row shows it and Closures drops it.
+    @MainActor
+    func testTodaysEarlyCloseListsUntilTheRowShowsIt() throws {
+        let index = try MarketExceptionCatalog.loadIndex(bundle: Bundle(for: Self.self))
+        let zone = "America/New_York"
+        let newYork = try XCTUnwrap(TimeZone(identifier: zone))
+        let sessions = [MarketScheduleCatalog.session(.newYorkCash)]
+        let early = try makeDate(year: 2026, month: 11, day: 27, hour: 8, minute: 0, timeZone: zone)
+        XCTAssertEqual(UpcomingClosureResolver().resolve(index, sessions: sessions, at: early, displayTimeZone: newYork)
+            .closures.first?.id, "newYorkCash-2026-11-27")
+        let afterClose = try makeDate(year: 2026, month: 11, day: 27, hour: 14, minute: 0, timeZone: zone)
+        XCTAssertFalse(UpcomingClosureResolver().resolve(index, sessions: sessions, at: afterClose, displayTimeZone: newYork)
+            .closures.contains { $0.id == "newYorkCash-2026-11-27" })
+
+        func model(at date: Date) -> MarketSessionsModel {
+            MarketSessionsModel(
+                loginItemService: ClosureLoginItemStub(),
+                nowProvider: { date },
+                displayTimeZoneProvider: { newYork }
+            )
+        }
+        XCTAssertTrue(model(at: early).upcomingClosures.closures.contains { $0.id == "newYorkCash-2026-11-27" })
+        let open = try makeDate(year: 2026, month: 11, day: 27, hour: 10, minute: 0, timeZone: zone)
+        XCTAssertFalse(model(at: open).upcomingClosures.closures.contains { $0.id == "newYorkCash-2026-11-27" })
+    }
+
     func testClosuresUseEachMarketsOwnDayAndFlagMissingCoverage() throws {
         let index = try MarketExceptionCatalog.loadIndex(bundle: Bundle(for: Self.self))
         // Wed Dec 30 noon in New York is 5 PM in London but already Thu Dec 31 in Tokyo,
@@ -214,4 +241,10 @@ final class MarketExceptionTests: XCTestCase {
         )
         return try XCTUnwrap(calendar.date(from: components))
     }
+}
+
+@MainActor
+private final class ClosureLoginItemStub: LoginItemServicing {
+    var state: LoginItemState = .disabled
+    func setEnabled(_ enabled: Bool) throws { state = enabled ? .enabled : .disabled }
 }

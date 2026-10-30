@@ -176,7 +176,9 @@ enum LiveEventParser {
 
     /// Second meeting days from each "Table : 2027" schedule: first cells like
     /// "Mar. 17 (Wed.), 18 (Thurs.)" or "Apr. 30 (Thu.), May 1 (Fri.)", with line
-    /// breaks inside cells. The decision time is not published; 12:00 JST is stored.
+    /// breaks inside cells. Meetings already held link to their statement
+    /// ("<a …>Jan. 22 (Thurs.), 23 (Fri.) [PDF 171KB]</a>"), so tags and the bracketed
+    /// size are dropped. The decision time is not published; 12:00 JST is stored.
     static func boj(_ page: String) -> [BundledEvent] {
         let captions = page.matches(of: #/Table : (\d{4})</caption>/#)
         var events: [BundledEvent] = []
@@ -184,8 +186,9 @@ enum LiveEventParser {
             guard let year = Int(caption.output.1),
                   let tableEnd = page.range(of: "</table>", range: caption.range.upperBound..<page.endIndex) else { continue }
             let table = page[caption.range.upperBound..<tableEnd.lowerBound]
-            for row in table.matches(of: #/<tr>\s*<td>([^<]*)</td>/#) {
-                let cell = row.output.1.split(whereSeparator: \.isWhitespace).joined(separator: " ")
+            for row in table.matches(of: #/<tr>\s*<td>([\s\S]*?)</td>/#) {
+                let cell = row.output.1.replacing(#/<[^>]*>|\[[^\]]*\]/#, with: "")
+                    .split(whereSeparator: \.isWhitespace).joined(separator: " ")
                 guard let match = cell.wholeMatch(of: #/([A-Z][a-z]+)\.? (\d{1,2}) \([A-Za-z.]+\), (?:([A-Z][a-z]+)\.? )?(\d{1,2}) \([A-Za-z.]+\)/#),
                       let firstMonth = month(match.output.1), let day = Int(match.output.4) else { continue }
                 let lastMonth = match.output.3.flatMap { month($0) } ?? firstMonth
@@ -300,10 +303,11 @@ struct LiveEventRefresher: Sendable {
             ?? LiveEventCache()
     }
 
-    func run(at now: Date, previous: LiveEventCache) async -> LiveEventCache {
+    /// `bundled` is the shipped schedule, which each page's rows must account for.
+    func run(at now: Date, previous: LiveEventCache, bundled: [EconomicEvent]) async -> LiveEventCache {
         var cache = LiveEventCache(attemptedAt: now)
         for source in LiveEventSource.allCases {
-            if let result = await fetch(source, at: now) {
+            if let result = await fetch(source, at: now, bundled: bundled) {
                 cache.results.append(result)
             } else {
                 cache.failures.append(source)
@@ -316,10 +320,10 @@ struct LiveEventRefresher: Sendable {
         return cache
     }
 
-    /// nil when a page fails or reads as too few dates. A minutes page that is not
-    /// published yet (404) or lists no minutes covers nothing, so its month keeps
-    /// the bundled dates.
-    private func fetch(_ source: LiveEventSource, at now: Date) async -> LiveSourceResult? {
+    /// nil when a page fails, reads as too few dates, or misses a bundled date. A
+    /// minutes page that is not published yet (404) or lists no minutes covers
+    /// nothing, so its month keeps the bundled dates.
+    private func fetch(_ source: LiveEventSource, at now: Date, bundled: [EconomicEvent]) async -> LiveSourceResult? {
         var events: [BundledEvent] = []
         var ranges: [LiveSourceResult.DayRange] = []
         for url in source.urls(at: now) {
@@ -328,18 +332,36 @@ struct LiveEventRefresher: Sendable {
             if source == .fedMinutes, status == 404 { continue }
             guard status == 200 else { return nil }
             let rows = source.parse(data)
+            let range: LiveSourceResult.DayRange
             if source == .fedMinutes {
                 guard let month = rows.first.map({ String($0.date.prefix(7)) }) else { continue }
-                ranges.append(.init(first: "\(month)-01", last: "\(month)-31"))
+                range = .init(first: "\(month)-01", last: "\(month)-31")
             } else {
                 guard rows.count >= source.minimumCount,
                       let first = rows.map(\.date).min(), let last = rows.map(\.date).max() else { return nil }
-                ranges.append(.init(first: first, last: last))
+                range = .init(first: first, last: last)
             }
+            guard Self.rows(rows, accountFor: bundled.filter { $0.kind == source.kind }, in: range) else { return nil }
+            ranges.append(range)
             events += rows
         }
         guard source != .fedMinutes || !events.isEmpty else { return nil }
         return LiveSourceResult(source: source, fetchedAt: now, events: events, ranges: ranges)
+    }
+
+    /// Inside its range a page replaces the bundled dates, so each bundled date needs a
+    /// fetched one within two weeks. One missing means a row the parser skipped (the
+    /// page changed), not a cancelled release; publishers move dates by days, not weeks.
+    private static func rows(_ rows: [BundledEvent], accountFor bundled: [EconomicEvent],
+                             in range: LiveSourceResult.DayRange) -> Bool {
+        let parser = ISO8601DateFormatter()
+        parser.formatOptions = [.withFullDate]
+        let fetched = rows.compactMap { parser.date(from: $0.date) }
+        return bundled.allSatisfy { event in
+            let key = event.canonicalDateKey
+            guard range.first <= key, key <= range.last, let day = parser.date(from: key) else { return true }
+            return fetched.contains { abs($0.timeIntervalSince(day)) <= 14 * 86_400 }
+        }
     }
 
     private func save(_ cache: LiveEventCache) {

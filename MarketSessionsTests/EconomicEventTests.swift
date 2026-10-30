@@ -401,6 +401,34 @@ final class LiveEventTests: XCTestCase {
         </table>
         """
         XCTAssertEqual(LiveEventParser.boj(page).map(\.id), ["2027-01-22-boj", "2027-09-22-boj", "2027-05-01-boj"])
+
+        // Meetings already held link to their statement PDF.
+        let held = """
+        <caption class="non-caption">Table : 2026</caption>
+        <tr>
+          <td><a href="/en/mopo/mpmdeci/mpr_2026/k260123a.pdf">Jan. 22 (Thurs.), 23 (Fri.) <span class="adjust-pdf">[PDF 171KB]</span></a></td>
+        </tr>
+        </table>
+        """
+        XCTAssertEqual(LiveEventParser.boj(held).map(\.id), ["2026-01-23-boj"])
+    }
+
+    /// Inside its range a page replaces bundled dates, so one the parser skipped would
+    /// vanish; the page counts as unread instead and the bundled date stays.
+    func testAPageMissingABundledDateCountsAsUnread() async throws {
+        let directory = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+        defer { try? FileManager.default.removeItem(at: directory) }
+        let bundled = try EconomicEventCatalog.loadAll(bundle: Bundle(for: Self.self))
+        let now = try XCTUnwrap(ISO8601DateFormatter().date(from: "2026-10-29T16:00:00Z"))
+        let cacheURL = directory.appendingPathComponent("live-events.json")
+        let complete = await LiveEventRefresher(fetcher: StubFetcher(), cacheURL: cacheURL)
+            .run(at: now, previous: LiveEventCache(), bundled: bundled)
+        XCTAssertFalse(complete.failures.contains(.fedMeetings))
+
+        let missing = await LiveEventRefresher(fetcher: StubFetcher(droppedMeeting: "June"), cacheURL: cacheURL)
+            .run(at: now, previous: LiveEventCache(), bundled: bundled)
+        XCTAssertTrue(missing.failures.contains(.fedMeetings))
+        XCTAssertTrue(missing.merged(into: bundled).contains { $0.id == "2027-06-09-fomc" })
     }
 
     func testFetchedDatesReplaceBundledOnesOnlyInsideTheirRange() throws {
@@ -426,7 +454,8 @@ final class LiveEventTests: XCTestCase {
         )
         let now = try XCTUnwrap(ISO8601DateFormatter().date(from: "2026-10-29T16:00:00Z"))
         let old = LiveSourceResult(source: .ecb, fetchedAt: now.addingTimeInterval(-8 * 86_400), events: [], ranges: [])
-        let cache = await refresher.run(at: now, previous: LiveEventCache(results: [old]))
+        let bundled = try EconomicEventCatalog.loadAll(bundle: Bundle(for: Self.self))
+        let cache = await refresher.run(at: now, previous: LiveEventCache(results: [old]), bundled: bundled)
 
         XCTAssertEqual(Set(cache.failures), [.ecb, .boj, .censusRetail, .beaPersonalIncome])
         XCTAssertEqual(cache.results.first { $0.source == .ecb }, old, "The 403 keeps the earlier result")
@@ -496,6 +525,9 @@ extension LiveEventTests {
 /// The Fed answers; November's minutes page lists Nov 19 (bundled: Nov 18) and later months are not
 /// published; ECB returns 403; BOJ, BEA and Census fail to connect.
 private struct StubFetcher: EventFetching {
+    /// A 2027 FOMC month left off the calendar page, as if the parser skipped its row.
+    var droppedMeeting: String?
+
     func fetch(_ url: URL) async throws -> (Data, Int) {
         switch url.absoluteString {
         case let path where path.hasSuffix("2026-october.htm"):
@@ -511,11 +543,13 @@ private struct StubFetcher: EventFetching {
         case let path where path.contains("/newsevents/"):
             return (Data(), 404)
         case let path where path.hasSuffix("fomccalendars.htm"):
-            let months = ["January", "March", "April", "June", "July", "September", "October", "December"]
-            let rows = months.map { month in
+            // The bundled 2027 meetings, less any the test drops.
+            let meetings = [("January", "26-27"), ("March", "16-17"), ("April", "27-28"), ("June", "8-9"),
+                            ("July", "27-28"), ("September", "14-15"), ("October", "26-27"), ("December", "7-8")]
+            let rows = meetings.filter { $0.0 != droppedMeeting }.map { month, days in
                 """
                 <div class="fomc-meeting__month"><strong>\(month)</strong></div>
-                <div class="fomc-meeting__date">\(10)-\(11)</div>
+                <div class="fomc-meeting__date">\(days)</div>
                 """
             }.joined()
             return (Data("<h4><a id=\"1\">2027 FOMC Meetings</a></h4>\(rows)".utf8), 200)
