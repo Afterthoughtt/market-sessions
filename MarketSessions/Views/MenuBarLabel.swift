@@ -7,29 +7,28 @@ struct MenuBarLabel: View {
     let now: Date
     let displayTimeZone: TimeZone
 
-    /// Four outlined bars off one straight middle line, two hanging below and two rising
-    /// above (owner decision 2026-10-21). Drawn per backing scale as a template image so
-    /// the system tints it; `handoff/app-icon/` holds the same shape for the app icon.
+    /// Three solid candles rising left to right, the app icon's motif (owner pick "Blue
+    /// Glass", 2026-10-29). Drawn per backing scale as a template image so the system
+    /// tints it; `MarketSessions/Resources/AppIcon.icon` holds the full-size icon.
     private static let glyph: NSImage = {
         let image = NSImage(size: NSSize(width: 16, height: 16), flipped: true) { _ in
-            let stroke: CGFloat = 1.2
-            let inset = stroke / 2
-            let barWidth = (16 - stroke) / 4
-            let path = NSBezierPath()
-            path.move(to: NSPoint(x: inset, y: 8))
-            path.line(to: NSPoint(x: 16 - inset, y: 8))
-            for (index, end) in [14.2, 11, 5, 1.8].enumerated() {
-                let left = inset + CGFloat(index) * barWidth
-                path.move(to: NSPoint(x: left, y: 8))
-                path.line(to: NSPoint(x: left, y: end))
-                path.line(to: NSPoint(x: left + barWidth, y: end))
-                path.line(to: NSPoint(x: left + barWidth, y: 8))
+            let bodyWidth: CGFloat = 4.2
+            NSColor.black.set()
+            // (centre x, wick top, body top, body bottom, wick bottom), y from the top.
+            for (x, wickTop, top, bottom, wickBottom) in [
+                (2.5, 5.4, 7.0, 13.4, 15.0),
+                (8.0, 3.2, 4.8, 11.2, 12.8),
+                (13.5, 1.0, 2.6, 9.0, 10.6),
+            ] as [(CGFloat, CGFloat, CGFloat, CGFloat, CGFloat)] {
+                let wick = NSBezierPath()
+                wick.move(to: NSPoint(x: x, y: wickTop))
+                wick.line(to: NSPoint(x: x, y: wickBottom))
+                wick.lineWidth = 1.5
+                wick.lineCapStyle = .round
+                wick.stroke()
+                let body = NSRect(x: x - bodyWidth / 2, y: top, width: bodyWidth, height: bottom - top)
+                NSBezierPath(roundedRect: body, xRadius: bodyWidth * 0.3, yRadius: bodyWidth * 0.3).fill()
             }
-            path.lineWidth = stroke
-            path.lineCapStyle = .round
-            path.lineJoinStyle = .round
-            NSColor.black.setStroke()
-            path.stroke()
             return true
         }
         image.isTemplate = true

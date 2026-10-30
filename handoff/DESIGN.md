@@ -56,11 +56,11 @@ A popover, not a menu (owner decision 2026-10-29): the HIG's menu bar extras gui
 
 ### Menu bar label
 
-A fixed glyph that does not convey market state (owner decision 2026-10-02); the popover carries state and times. The glyph is four outlined bars sharing walls, drawn off one straight horizontal line through the middle: two bars hang below it (the first deeper), two rise above it (the last taller) (owner pick "Four bars, outlined" on the design canvas board "Menu bar icon: bar options", 2026-10-21). Geometry in a 16pt box: 1.2pt line with round caps and joins (owner choice; Apple's menu bar symbols measure 1.45pt), bars 3.7pt wide, ends at 14.2, 11, 5 and 1.8pt from the top. A template image so the system tints it. Tooltip and accessibility label: the next-to-change session's full name, status, and "Closes 1:00 PM", or "Market Sessions — choose markets in Settings" with no markets selected.
+A fixed glyph that does not convey market state (owner decision 2026-10-02); the popover carries state and times. The glyph is three solid candlesticks rising left to right, the app icon's motif drawn heavier so it matches Wi‑Fi's weight (owner pick "Blue Glass", 2026-10-29). Geometry in a 16pt box, y from the top: bodies 4.2pt wide with corners at 30% of the width, centred at x 2.5, 8 and 13.5; bodies span 7–13.4, 4.8–11.2 and 2.6–9pt; 1.5pt wicks with round caps run 1.6pt past each body end. A template image so the system tints it. Tooltip and accessibility label: the next-to-change session's full name, status, and "Closes 1:00 PM", or "Market Sessions — choose markets in Settings" with no markets selected.
 
 ### App icon
 
-The menu bar glyph's shape, made in Icon Composer by the owner (decision 2026-10-21). Source layers in `handoff/app-icon/`: 1024 canvas, black, no background, the glyph about 60% of the canvas width and centred (the macOS 27 kit has no app icon grid); `1-bars.svg` keeps the menu bar's line weight, `1-bars-heavy.svg` is 1.5× heavier for small sizes. Lines are filled shapes, not strokes, so Icon Composer needs no SVG stroke support.
+`MarketSessions/Resources/AppIcon.icon`, an Icon Composer document (owner pick "Blue Glass", 2026-10-29): three white candlesticks rising on an automatic gradient from #1E7BF2, one glass layer per candle, flat SVG fills so Icon Composer supplies the glass, light and shadow. Candles on one grid in the 1024 canvas: bodies 168 wide with 50 corners, wicks 36 wide, centres 277, 512 and 747. In dark mode macOS drops the background and tints the candles blue. Edit it in Icon Composer (Xcode › Open Developer Tool); `ictool` inside Icon Composer.app renders previews from the command line.
 
 ### Settings
 

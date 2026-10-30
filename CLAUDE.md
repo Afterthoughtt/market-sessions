@@ -32,7 +32,7 @@ Swift 6 menu-bar-only macOS app (targets macOS 26; built with Xcode 27 on macOS 
 - All schedule and event math is deterministic and lives outside SwiftUI. `Date`, calendar, and display zone are injected; tests never depend on the machine clock.
 - `MarketSessionsModel` (`@MainActor @Observable`) owns the clock and every resolved snapshot. Views are dumb renderers that take a `MarketPalette`.
 - Battery: the clock ticks per minute only while the popover or Settings is live (`setLiveSurface`); otherwise it sleeps until the next transition or an hour. Put periodic work in `refresh()`.
-- The menu bar label is a fixed four-bar glyph drawn in code as a template image (`MenuBarLabel.glyph`); state lives in the popover and tooltip. The app icon uses the same shape: source layers in `handoff/app-icon/`.
+- The menu bar label is a fixed three-candle glyph drawn in code as a template image (`MenuBarLabel.glyph`); state lives in the popover and tooltip. The app icon is `Resources/AppIcon.icon` (Icon Composer) with the same motif.
 - Kind-specific knowledge (category, description) lives on `EconomicEventKind`, not in views.
 - The project file is a hand-maintained classic pbxproj with sequential IDs. Adding a file means edits in five places; follow the existing pattern.
 - Tests inject isolated preference stores and never touch the app's standard defaults.
