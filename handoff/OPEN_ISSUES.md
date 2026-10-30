@@ -6,12 +6,8 @@ Out of scope (owner decision 2026-09-29, personal use only): distribution signin
 
 ## Next up
 
-1. **Findings from the impeccable critique and audit (2026-10-30), awaiting the owner's pick.** No P0/P1.
-   - Accessibility: section headers (`sectionHeader`, "Closures", "Upcoming Events") lack `.accessibilityAddTraits(.isHeader)`. `PopoverRowButtonStyle` highlights on hover only, not on press or keyboard focus. Check that ⌘, fires while the popover is open. 11pt `secondaryLabelColor` text is about 3.9:1 in light mode (DESIGN.md chose it; Increase Contrast fixes it). The progress track is a fixed `black.opacity(0.08)` that ignores Increase Contrast.
-   - Layout: the popover's `VStack` has no height cap or scrolling, so with every section showing it may run past a small or scaled screen (estimated, not measured).
-   - What changes next: Pre-Market, After Hours and Closed rows show the next regular open (`SessionResolver`), not the earlier change (After Hours ending, Pre-Market starting), as DESIGN.md specifies; the critique suggests adding the earlier change.
-   - Closures: the four-row cap can hide every full-day closure (Christmas week); see the open A/B/C layout question.
-   - Smaller: a green "Open" header over "No markets open"; "Daily Close" has no tooltip saying midnight UTC; early closes shown in the display zone can land on a surprising date (add market-local time to the tooltip); the notification plan is rebuilt every minute and `DateFormatter`s are made in view bodies.
+1. **Check on the real screen** (needs a local session on the Mini with Computer use, or owner screenshots): ⌘, opens Settings while the popover is open; the Settings… highlight shows under keyboard focus (System Settings › Keyboard › Keyboard navigation) and whether the system focus ring also draws; VoiceOver jumps between section headings; the Christmas-week popover (856pt with all six markets, measured from a render) fits a 13-inch screen, or needs a height cap with scrolling.
+2. **Remaining review findings (2026-10-30), each kept or skipped by owner decision:** rows show the next regular open, not an earlier Pre-Market or After Hours edge (owner: keep); 11pt `secondaryLabelColor` is about 3.9:1 in light mode (owner: keep Apple's colour; Increase Contrast fixes it). Still open, low priority: the progress track's fixed 8% black/white ignores Increase Contrast; the notification plan is rebuilt every minute while the popover is open, and `DateFormatter`s are made in view bodies.
 
 ## Unverified, check when convenient
 
