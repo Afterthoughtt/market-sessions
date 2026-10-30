@@ -464,6 +464,35 @@ final class LiveEventTests: XCTestCase {
     }
 }
 
+extension LiveEventTests {
+    /// Fetched PCE dates run into 2027, but CPI, jobs and PPI are bundled only through
+    /// 2026, so Settings must not claim U.S. release dates run through 2027.
+    @MainActor
+    func testCoverageFollowsTheKindThatEndsFirst() throws {
+        let directory = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+        defer { try? FileManager.default.removeItem(at: directory) }
+        let cacheURL = directory.appendingPathComponent("live.json")
+        let now = try XCTUnwrap(ISO8601DateFormatter().date(from: "2026-10-29T16:00:00Z"))
+        let pce = BundledEvent(id: "2027-06-25-pce", kind: .pce, title: nil, date: "2027-06-25",
+                               time: "08:30", durationMinutes: 1, timeZone: "America/New_York")
+        let cache = LiveEventCache(attemptedAt: now, results: [LiveSourceResult(
+            source: .beaPersonalIncome, fetchedAt: now, events: [pce],
+            ranges: [.init(first: "2027-06-25", last: "2027-06-25")]
+        )])
+        try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+        try JSONEncoder().encode(cache).write(to: cacheURL)
+        let model = MarketSessionsModel(
+            loginItemService: LiveLoginItemStub(),
+            notificationCenter: LiveNotificationCenterStub(),
+            liveEvents: LiveEventRefresher(fetcher: StubFetcher(), cacheURL: cacheURL),
+            nowProvider: { now }
+        )
+        XCTAssertNil(model.liveEventUpdate, "A fresh cache is not refetched")
+        let usEnd = try XCTUnwrap(model.eventScheduleEnd(for: .usRelease))
+        XCTAssertLessThan(usEnd, try XCTUnwrap(ISO8601DateFormatter().date(from: "2027-01-01T00:00:00Z")))
+    }
+}
+
 /// The Fed answers; November's minutes page lists Nov 19 (bundled: Nov 18) and later months are not
 /// published; ECB returns 403; BOJ, BEA and Census fail to connect.
 private struct StubFetcher: EventFetching {

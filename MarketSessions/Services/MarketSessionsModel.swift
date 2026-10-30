@@ -371,9 +371,16 @@ final class MarketSessionsModel {
             .events.first
     }
 
-    /// Latest bundled end date in a category, for coverage readouts.
+    /// How far a category's dates run: the last date of its earliest-ending scheduled
+    /// kind, so fetched PCE dates in 2027 don't hide that CPI stops in 2026.
     func eventScheduleEnd(for category: EconomicEventKind.Category) -> Date? {
-        economicEvents.filter { $0.kind.category == category }.map(\.end).max()
+        let lastPerKind = Dictionary(
+            economicEvents
+                .filter { $0.kind.category == category && $0.kind.hasPublishedSchedule }
+                .map { ($0.kind, $0.end) },
+            uniquingKeysWith: max
+        )
+        return lastPerKind.values.min()
     }
 
     func setLaunchAtLogin(_ enabled: Bool) {
