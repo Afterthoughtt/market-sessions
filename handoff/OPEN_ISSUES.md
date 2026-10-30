@@ -7,7 +7,7 @@ Out of scope (owner decision 2026-09-29, personal use only): distribution signin
 ## Next up
 
 1. **Check on the real screen** (needs a local session on the Mini with Computer use, or owner screenshots): ⌘, opens Settings while the popover is open; the Settings… highlight shows under keyboard focus (System Settings › Keyboard › Keyboard navigation) and whether the system focus ring also draws; VoiceOver jumps between section headings; the Christmas-week popover (856pt with all six markets, measured from a render) fits a 13-inch screen, or needs a height cap with scrolling.
-2. **Remaining review findings (2026-10-30), each kept or skipped by owner decision:** rows show the next regular open, not an earlier Pre-Market or After Hours edge (owner: keep); 11pt `secondaryLabelColor` is about 3.9:1 in light mode (owner: keep Apple's colour; Increase Contrast fixes it). Still open, low priority: the progress track's fixed 8% black/white ignores Increase Contrast; the notification plan is rebuilt every minute while the popover is open, and `DateFormatter`s are made in view bodies.
+2. **Low-priority review findings:** the progress track's fixed 8% black/white ignores Increase Contrast; the notification plan is rebuilt every minute while the popover is open, and `DateFormatter`s are made in view bodies.
 
 ## Unverified, check when convenient
 
