@@ -24,7 +24,7 @@ Swift 6 menu-bar-only macOS app (targets macOS 26; built with Xcode 27 on macOS 
 - `.claude/settings.json` asks each Mac to install the two plugins this project uses: `impeccable` and `emil-skills`. There is no macOS-specific skill plugin; don't look for one.
 - Before using an API, check its availability on macOS 26 in Apple's docs (the `xcode` MCP server). Read HIG pages from Apple's site, not summaries.
 - Swift code: `emil-skills:write-swift`.
-- Before calling a change to layout, interaction, or states done, run `impeccable:impeccable` `critique` on Previews renders and `audit` (its native variant, from the SwiftUI source), adding WCAG 2.2.2. Impeccable's native rules are written for iOS and Android: judge sizes, hit targets, controls and type against the macOS HIG and the Figma kit instead, and skip its touch-target and Dynamic Type checks.
+- Before calling a change to layout, interaction, or states done, run `impeccable:impeccable` `critique` on Previews renders and `audit` (its native variant, from the SwiftUI source), adding WCAG 2.2.2. Impeccable's native rules are written for iOS and Android: judge sizes, hit targets, controls and type against the macOS HIG and the Figma kit instead, and skip its touch-target and Dynamic Type checks. It finds no PRODUCT.md or root DESIGN.md here and proceeds from the code; don't run its `init` or `document`, which would add a second spec beside `handoff/DESIGN.md`.
 - This file and the spec sources above (DESIGN.md owner decisions, the Figma kit) override the skills' defaults where they differ.
 
 ## Architecture
