@@ -21,6 +21,7 @@ struct EconomicEventsSection: View {
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .padding(.top, 16)
                 .padding(.bottom, 2)
+                .accessibilityAddTraits(.isHeader)
 
             ForEach(displayedEvents) { event in
                 eventRow(event)

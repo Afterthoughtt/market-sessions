@@ -20,20 +20,11 @@ struct SessionsPopover: View {
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .padding(.vertical, 16)
             } else {
-                sectionHeader(.open)
-                if openSessions.isEmpty {
-                    Text("No markets open")
-                        .font(.body)
-                        .foregroundStyle(palette.sec)
-                        .frame(maxWidth: .infinity, minHeight: 24, alignment: .leading)
-                }
-                sessionRows(openSessions)
-
                 ForEach(
-                    [SessionStatus.preMarket, .postMarket, .holiday, .closed],
+                    [SessionStatus.open, .preMarket, .postMarket, .holiday, .closed],
                     id: \.self
                 ) { status in
-                    let sessions = inactiveSessions(status)
+                    let sessions = sessions(status)
                     if !sessions.isEmpty {
                         sectionHeader(status)
                         sessionRows(sessions)
@@ -125,6 +116,7 @@ struct SessionsPopover: View {
                     "UTC daily close in "
                         + MarketDurationFormatting.spoken(minutes: model.utcDayRemainingMinutes)
                 )
+                .help("Time left until the daily close at midnight UTC")
             }
         }
     }
@@ -140,8 +132,11 @@ struct SessionsPopover: View {
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .padding(.top, 16)
                 .padding(.bottom, 2)
+                .accessibilityAddTraits(.isHeader)
 
-            ForEach(model.upcomingClosures.closures.prefix(Self.closureRowCap)) { closure in
+            // Every closure in the week, uncapped (owner decision 2026-10-30): Christmas week
+            // with all six markets runs to nine rows rather than hiding Christmas Day.
+            ForEach(model.upcomingClosures.closures) { closure in
                 let label = closureLabel(closure)
                 let day = closureDay(closure)
                 HStack(spacing: 10) {
@@ -165,9 +160,6 @@ struct SessionsPopover: View {
             }
         }
     }
-
-    /// Like Upcoming Events: the nearest four, so Christmas week stays a short list.
-    static let closureRowCap = 4
 
     private func closureLabel(_ closure: MarketClosure) -> String {
         switch closure.exception.kind {
@@ -195,7 +187,15 @@ struct SessionsPopover: View {
             return "\(closure.session.name) closed\(name), \(closureDay(closure))"
         case .earlyClose:
             let when = MarketDateFormatting.dateTime(closure.date, dateStyle: .full, timeZone: model.displayTimeZone)
-            return "\(closure.session.name) closes early, \(when)"
+            // A half day shown in the display zone can land on another date (Hong Kong's
+            // Christmas Eve noon is 11 PM the day before in New York), so add the market's own time.
+            let marketZone = closure.session.canonicalTimeZone
+            guard marketZone.secondsFromGMT(for: closure.date) != model.displayTimeZone.secondsFromGMT(for: closure.date) else {
+                return "\(closure.session.name) closes early, \(when)"
+            }
+            let local = MarketDateFormatting.dateTime(closure.date, dateStyle: .medium, timeZone: marketZone)
+            let city = marketZone.identifier.split(separator: "/").last.map { $0.replacingOccurrences(of: "_", with: " ") } ?? marketZone.identifier
+            return "\(closure.session.name) closes early, \(when) (\(local) in \(city))"
         }
     }
 
@@ -206,6 +206,7 @@ struct SessionsPopover: View {
             .frame(maxWidth: .infinity, alignment: .leading)
         .padding(.top, 16)
         .padding(.bottom, 2)
+        .accessibilityAddTraits(.isHeader)
     }
 
     /// Rows sit together like menu items; section headers and spacing do the grouping.
@@ -222,13 +223,7 @@ struct SessionsPopover: View {
         }
     }
 
-    private var openSessions: [ResolvedSession] {
-        model.orderedSessions
-            .filter { $0.status.isActive }
-            .sorted(by: transitionComesFirst)
-    }
-
-    private func inactiveSessions(_ status: SessionStatus) -> [ResolvedSession] {
+    private func sessions(_ status: SessionStatus) -> [ResolvedSession] {
         model.orderedSessions
             .filter { $0.status == status }
             .sorted(by: transitionComesFirst)
@@ -284,18 +279,30 @@ struct SessionsPopover: View {
 /// Hover state): 24pt row, 8pt continuous corner radius, highlight extending 7pt
 /// past the text inset on both sides, accent fill with a white label (the kit draws
 /// the default accent; this follows the user's). Padded to the 32pt footer row.
+/// The highlight also shows while pressed and under keyboard focus, as a menu item's does.
 private struct PopoverRowButtonStyle: ButtonStyle {
     let palette: MarketPalette
-    @State private var isHovering = false
 
     func makeBody(configuration: Configuration) -> some View {
+        PopoverRow(configuration: configuration, palette: palette)
+    }
+}
+
+private struct PopoverRow: View {
+    let configuration: ButtonStyleConfiguration
+    let palette: MarketPalette
+    @Environment(\.isFocused) private var isFocused
+    @State private var isHovering = false
+
+    var body: some View {
+        let isHighlighted = isHovering || isFocused || configuration.isPressed
         configuration.label
-            .foregroundStyle(isHovering ? Color.white : palette.text)
+            .foregroundStyle(isHighlighted ? Color.white : palette.text)
             .frame(maxWidth: .infinity, minHeight: 24, alignment: .leading)
             .padding(.horizontal, 7)
             .background(
                 RoundedRectangle(cornerRadius: 8, style: .continuous)
-                    .fill(isHovering ? Color.accentColor : .clear)
+                    .fill(isHighlighted ? Color.accentColor : .clear)
             )
             .padding(.horizontal, -7)
             .padding(.vertical, 4)
