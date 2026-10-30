@@ -194,16 +194,12 @@ final class MarketSessionsModel {
         } ?? false
 
         // A close already on a row ("Closes Thu 1:00 PM, early") is not repeated below.
-        let shownCloses = Set(orderedSessions.filter(\.closesEarly).compactMap { resolved in
-            resolved.transition.map { "\(resolved.id.rawValue)-\($0.date.timeIntervalSinceReferenceDate)" }
-        })
+        let shownCloses = Set(orderedSessions.compactMap(\.earlyClose))
         let closures = UpcomingClosureResolver().resolve(
             marketExceptions, sessions: visibleCatalog, at: snapshot, displayTimeZone: timeZone
         )
         upcomingClosures = UpcomingClosures(
-            closures: closures.closures.filter {
-                !shownCloses.contains("\($0.session.id.rawValue)-\($0.date.timeIntervalSinceReferenceDate)")
-            },
+            closures: closures.closures.filter { !shownCloses.contains($0.exception) },
             passesCoverage: closures.passesCoverage
         )
         upcomingEvents = upcomingEventResolver.resolve(
@@ -343,9 +339,9 @@ final class MarketSessionsModel {
     /// Weekly while on (daily while a source fails), in the background; the merged
     /// dates replace the bundled ones for the popover, Settings and notifications.
     private func updateLiveEventsIfDue(at now: Date) {
-        guard preferences.refreshesEventDates, let liveEvents, liveEventUpdate == nil,
-              (liveEventCache ?? LiveEventCache()).isDue(at: now) else { return }
         let previous = liveEventCache ?? LiveEventCache()
+        guard preferences.refreshesEventDates, let liveEvents, liveEventUpdate == nil,
+              previous.isDue(at: now) else { return }
         let bundled = bundledEvents
         liveEventUpdate = Task { @MainActor [weak self] in
             let cache = await liveEvents.run(at: now, previous: previous, bundled: bundled)

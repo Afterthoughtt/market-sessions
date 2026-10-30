@@ -34,15 +34,20 @@ enum LiveEventSource: String, CaseIterable, Codable, Sendable {
         }
     }
 
-    /// Fewer parsed dates than this means the page changed, not the schedule.
+    /// Fewer parsed dates than this means the page changed, not the schedule. Monthly
+    /// pages have no minimum: a month without minutes lists none.
     var minimumCount: Int {
         switch self {
         case .fedMeetings: 8
-        case .fedMinutes: 1
+        case .fedMinutes: 0
         case .beaPersonalIncome, .censusRetail: 6
         case .ecb, .boj: 4
         }
     }
+
+    /// One page per month (Fed minutes): a month not yet published is a 404, and a
+    /// page covers its whole month rather than the dates it lists.
+    var readsMonthlyPages: Bool { self == .fedMinutes }
 
     /// The pages to read at `now`. Fed minutes dates appear only on monthly calendar
     /// pages, which exist about two months ahead; a page not yet published is a 404.
@@ -74,12 +79,11 @@ enum LiveEventSource: String, CaseIterable, Codable, Sendable {
     }
 
     func parse(_ data: Data) -> [BundledEvent] {
-        if self == .beaPersonalIncome { return LiveEventParser.personalIncome(data) }
         let page = String(decoding: data, as: UTF8.self)
         switch self {
         case .fedMeetings: return LiveEventParser.fomcMeetings(page)
         case .fedMinutes: return LiveEventParser.fomcMinutes(page)
-        case .beaPersonalIncome: return []
+        case .beaPersonalIncome: return LiveEventParser.personalIncome(data)
         case .censusRetail: return LiveEventParser.retailSales(page)
         case .ecb: return LiveEventParser.ecb(page)
         case .boj: return LiveEventParser.boj(page)
@@ -210,7 +214,7 @@ enum LiveEventParser {
 private extension BundledEvent {
     init(kind: EconomicEventKind, suffix: String, year: Int, month: Int, day: Int,
          time: String, durationMinutes: Int, timeZone: String) {
-        let date = String(format: "%04d-%02d-%02d", year, month, day)
+        let date = MarketExceptionIndex.key(year: year, month: month, day: day)
         self.init(id: "\(date)-\(suffix)", kind: kind, title: nil, date: date, time: time,
                   durationMinutes: durationMinutes, timeZone: timeZone)
     }
@@ -226,7 +230,6 @@ struct LiveSourceResult: Codable, Equatable, Sendable {
     }
 
     let source: LiveEventSource
-    let fetchedAt: Date
     let events: [BundledEvent]
     let ranges: [DayRange]
 }
@@ -329,11 +332,11 @@ struct LiveEventRefresher: Sendable {
         for url in source.urls(at: now) {
             guard let response = try? await fetcher.fetch(url) else { return nil }
             let (data, status) = response
-            if source == .fedMinutes, status == 404 { continue }
+            if source.readsMonthlyPages, status == 404 { continue }
             guard status == 200 else { return nil }
             let rows = source.parse(data)
             let range: LiveSourceResult.DayRange
-            if source == .fedMinutes {
+            if source.readsMonthlyPages {
                 guard let month = rows.first.map({ String($0.date.prefix(7)) }) else { continue }
                 range = .init(first: "\(month)-01", last: "\(month)-31")
             } else {
@@ -345,8 +348,8 @@ struct LiveEventRefresher: Sendable {
             ranges.append(range)
             events += rows
         }
-        guard source != .fedMinutes || !events.isEmpty else { return nil }
-        return LiveSourceResult(source: source, fetchedAt: now, events: events, ranges: ranges)
+        guard !source.readsMonthlyPages || !events.isEmpty else { return nil }
+        return LiveSourceResult(source: source, events: events, ranges: ranges)
     }
 
     /// Inside its range a page replaces the bundled dates, so each bundled date needs a

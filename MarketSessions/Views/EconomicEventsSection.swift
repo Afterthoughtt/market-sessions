@@ -102,11 +102,7 @@ struct EconomicEventsSection: View {
             return "\(day) \(MarketDateFormatting.time(event.start, timeZone: displayTimeZone))"
         }
 
-        let formatter = DateFormatter()
-        formatter.locale = .autoupdatingCurrent
-        formatter.timeZone = displayTimeZone
-        formatter.dateFormat = "EEE, MMM d"
-        return formatter.string(from: event.start)
+        return MarketDateFormatting.day(event.start, timeZone: displayTimeZone)
     }
 
     private func eventDetails(_ event: EconomicEvent) -> String {

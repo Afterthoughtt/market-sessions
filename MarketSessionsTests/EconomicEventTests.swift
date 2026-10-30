@@ -436,7 +436,7 @@ final class LiveEventTests: XCTestCase {
         let moved = BundledEvent(id: "2026-12-18-ecb", kind: .ecb, title: nil, date: "2026-12-18",
                                  time: "14:15", durationMinutes: 90, timeZone: "Europe/Berlin")
         let cache = LiveEventCache(attemptedAt: Date(), results: [LiveSourceResult(
-            source: .ecb, fetchedAt: Date(), events: [moved],
+            source: .ecb, events: [moved],
             ranges: [.init(first: "2026-12-01", last: "2026-12-31")]
         )])
         let merged = cache.merged(into: bundled).filter { $0.kind == .ecb }.map(\.id)
@@ -453,7 +453,7 @@ final class LiveEventTests: XCTestCase {
             cacheURL: directory.appendingPathComponent("live-events.json")
         )
         let now = try XCTUnwrap(ISO8601DateFormatter().date(from: "2026-10-29T16:00:00Z"))
-        let old = LiveSourceResult(source: .ecb, fetchedAt: now.addingTimeInterval(-8 * 86_400), events: [], ranges: [])
+        let old = LiveSourceResult(source: .ecb, events: [], ranges: [])
         let bundled = try EconomicEventCatalog.loadAll(bundle: Bundle(for: Self.self))
         let cache = await refresher.run(at: now, previous: LiveEventCache(results: [old]), bundled: bundled)
 
@@ -505,7 +505,7 @@ extension LiveEventTests {
         let pce = BundledEvent(id: "2027-06-25-pce", kind: .pce, title: nil, date: "2027-06-25",
                                time: "08:30", durationMinutes: 1, timeZone: "America/New_York")
         let cache = LiveEventCache(attemptedAt: now, results: [LiveSourceResult(
-            source: .beaPersonalIncome, fetchedAt: now, events: [pce],
+            source: .beaPersonalIncome, events: [pce],
             ranges: [.init(first: "2027-06-25", last: "2027-06-25")]
         )])
         try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)

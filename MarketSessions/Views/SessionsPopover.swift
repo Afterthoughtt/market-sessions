@@ -26,7 +26,7 @@ struct SessionsPopover: View {
                 ) { status in
                     let sessions = sessions(status)
                     if !sessions.isEmpty {
-                        sectionHeader(status)
+                        sectionHeader(status.label, color: palette.stateColor(status))
                         sessionRows(sessions)
                     }
                 }
@@ -126,19 +126,14 @@ struct SessionsPopover: View {
     /// shown in the display zone like every other time.
     private var closuresSection: some View {
         VStack(alignment: .leading, spacing: 0) {
-            Text("Closures")
-                .font(.subheadline.weight(.semibold))
-                .foregroundStyle(palette.sec)
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .padding(.top, 16)
-                .padding(.bottom, 2)
-                .accessibilityAddTraits(.isHeader)
+            sectionHeader("Closures", color: palette.sec)
 
             // Every closure in the week, uncapped (owner decision 2026-10-30): Christmas week
             // with all six markets runs to nine rows rather than hiding Christmas Day.
             ForEach(model.upcomingClosures.closures) { closure in
                 let label = closureLabel(closure)
-                let day = closureDay(closure)
+                let day = MarketDateFormatting.day(closure.date, timeZone: closure.dayTimeZone)
+                let details = closureDetails(closure, day: day)
                 HStack(spacing: 10) {
                     Text(label)
                         .font(.body)
@@ -155,8 +150,8 @@ struct SessionsPopover: View {
                 }
                 .frame(height: 24)
                 .accessibilityElement(children: .ignore)
-                .accessibilityLabel(closureDetails(closure))
-                .help(closureDetails(closure))
+                .accessibilityLabel(details)
+                .help(details)
             }
         }
     }
@@ -170,21 +165,11 @@ struct SessionsPopover: View {
         }
     }
 
-    private func closureDay(_ closure: MarketClosure) -> String {
-        let formatter = DateFormatter()
-        formatter.locale = .autoupdatingCurrent
-        formatter.timeZone = closure.exception.kind == .holiday
-            ? closure.session.canonicalTimeZone
-            : model.displayTimeZone
-        formatter.dateFormat = "EEE, MMM d"
-        return formatter.string(from: closure.date)
-    }
-
-    private func closureDetails(_ closure: MarketClosure) -> String {
+    private func closureDetails(_ closure: MarketClosure, day: String) -> String {
         switch closure.exception.kind {
         case .holiday:
             let name = closure.exception.name.map { " for \($0)" } ?? ""
-            return "\(closure.session.name) closed\(name), \(closureDay(closure))"
+            return "\(closure.session.name) closed\(name), \(day)"
         case .earlyClose:
             let when = MarketDateFormatting.dateTime(closure.date, dateStyle: .full, timeZone: model.displayTimeZone)
             // A half day shown in the display zone can land on another date (Hong Kong's
@@ -199,10 +184,10 @@ struct SessionsPopover: View {
         }
     }
 
-    private func sectionHeader(_ status: SessionStatus) -> some View {
-        Text(status.label)
+    private func sectionHeader(_ title: String, color: Color) -> some View {
+        Text(title)
             .font(.subheadline.weight(.semibold))
-            .foregroundStyle(palette.stateColor(status))
+            .foregroundStyle(color)
             .frame(maxWidth: .infinity, alignment: .leading)
         .padding(.top, 16)
         .padding(.bottom, 2)

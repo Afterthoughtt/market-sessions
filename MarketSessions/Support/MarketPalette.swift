@@ -7,9 +7,6 @@ import SwiftUI
 struct MarketPalette {
     let text: Color
     let sec: Color
-    let openText: Color
-    let preMarketText: Color
-    let afterHoursText: Color
     let separator: Color
     /// Progress bar track; the fill is `sec`.
     let track: Color
@@ -17,9 +14,6 @@ struct MarketPalette {
     static let light = MarketPalette(
         text: Color(nsColor: .labelColor),
         sec: Color(nsColor: .secondaryLabelColor),
-        openText: Color("OpenText"),
-        preMarketText: Color("PreMarketText"),
-        afterHoursText: Color("AfterHoursText"),
         separator: Color(nsColor: .separatorColor),
         track: Color.black.opacity(0.08)
     )
@@ -27,9 +21,6 @@ struct MarketPalette {
     static let dark = MarketPalette(
         text: Color(nsColor: .labelColor),
         sec: Color(nsColor: .secondaryLabelColor),
-        openText: Color("OpenText"),
-        preMarketText: Color("PreMarketText"),
-        afterHoursText: Color("AfterHoursText"),
         separator: Color(nsColor: .separatorColor),
         track: Color.white.opacity(0.08)
     )
@@ -44,9 +35,9 @@ struct MarketPalette {
     /// the popover and 7:1 with Increase Contrast; values are in DESIGN.md › Colour.
     func stateColor(_ status: SessionStatus) -> Color {
         switch status {
-        case .open: openText
-        case .preMarket: preMarketText
-        case .postMarket: afterHoursText
+        case .open: Color("OpenText")
+        case .preMarket: Color("PreMarketText")
+        case .postMarket: Color("AfterHoursText")
         case .holiday, .closed: sec
         }
     }

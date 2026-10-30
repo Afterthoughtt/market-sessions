@@ -9,6 +9,19 @@ enum MarketDateFormatting {
         dateTime(date, dateStyle: .none, timeZone: timeZone, locale: locale)
     }
 
+    /// Weekday and date, `Fri, Sep 4`, as the popover's event and closure rows show it.
+    static func day(
+        _ date: Date,
+        timeZone: TimeZone,
+        locale: Locale = .autoupdatingCurrent
+    ) -> String {
+        let formatter = DateFormatter()
+        formatter.locale = locale
+        formatter.timeZone = timeZone
+        formatter.dateFormat = "EEE, MMM d"
+        return formatter.string(from: date)
+    }
+
     /// Date plus short time, `Mar 17, 2027 at 11:00 PM`.
     static func dateTime(
         _ date: Date,

@@ -101,6 +101,9 @@ struct MarketClosure: Identifiable, Hashable, Sendable {
     let exception: MarketException
     /// Holiday: the start of its canonical-zone day. Early close: the close instant.
     let date: Date
+    /// The zone its day is shown and sorted in: the market's own for a holiday, the
+    /// display zone for an early close.
+    let dayTimeZone: TimeZone
 
     var id: String { "\(session.id.rawValue)-\(exception.dateKey)" }
 }
@@ -149,7 +152,10 @@ struct UpcomingClosureResolver: Sendable {
                 } else if day == today {
                     continue
                 }
-                closures.append((shownDay, MarketClosure(session: session, exception: exception, date: date)))
+                let dayTimeZone = exception.kind == .earlyClose ? displayTimeZone : session.canonicalTimeZone
+                closures.append((shownDay, MarketClosure(
+                    session: session, exception: exception, date: date, dayTimeZone: dayTimeZone
+                )))
             }
         }
         closures.sort { lhs, rhs in
