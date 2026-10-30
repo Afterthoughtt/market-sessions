@@ -6,12 +6,12 @@ Out of scope (owner decision 2026-09-29, personal use only): distribution signin
 
 ## Next up
 
-1. **Real-screen checks**, for a local session on the Mini with Computer use (SSH sessions there have no screen access), or owner screenshots:
+1. **Real-screen checks**, by the owner. Computer use can click the menu bar icon but cannot grant this menu-bar-only app, so it cannot click inside the popover or type into it, and its screenshots hide the popover (`screencapture -x` shows it):
    - ⌘, opens Settings while the popover is open.
    - The Settings… highlight shows under keyboard focus (System Settings › Keyboard › Keyboard navigation), and whether the system focus ring also draws.
    - VoiceOver moves between section headings.
    - The Christmas-week popover (856pt with all six markets, measured from a render) fits a 13-inch screen; if not, cap the height and scroll the middle.
-   - The three-candle menu bar glyph: in the dark bar it is about as tall as its neighbours but looks slightly lighter. Still to see: the light bar, the highlighted state, and beside Wi‑Fi and Battery on a MacBook.
+   - The three-candle menu bar glyph: with white menu bar icons, unhighlighted and highlighted, it is about as tall as its neighbours, sits centred in the highlight, and looks slightly lighter. Still to see: a bar with dark icons, and beside Wi‑Fi and Battery on a MacBook.
    - Increase Contrast state colours (`Assets.xcassets`): the compiled catalog holds the high-contrast versions, but a command-line check cannot switch appearance. Check the popover in light and dark with System Settings › Accessibility › Display › Increase Contrast on.
 2. **Low priority:** the progress track's fixed 8% black/white (`MarketPalette.track`) ignores Increase Contrast. AppKit's `secondarySystemFill` is black or white at 7.8%; switching to it would let the system handle Increase Contrast, but a command-line check can't confirm it changes there, and the kit cache (`.build/reference/`) is missing, so the kit's token name is unchecked. `MarketDateFormatting.day`, `dateTime` and `transitionTime` (`Support/DateFormatting.swift`) still build a `DateFormatter` per call from view bodies; `day`'s fixed "EEE, MMM d" pattern has no exact format-style equivalent in every locale.
 
