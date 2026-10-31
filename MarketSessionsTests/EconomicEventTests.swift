@@ -33,23 +33,23 @@ final class EconomicEventTests: XCTestCase {
     func testBundledCatalogContainsTheTierOneKinds() throws {
         let events = try EconomicEventCatalog.loadAll(bundle: Bundle(for: Self.self))
 
-        XCTAssertEqual(events.count, 97)
+        XCTAssertEqual(events.count, 161)
         XCTAssertEqual(Set(events.map(\.kind)), Set(EconomicEventKind.allCases))
         XCTAssertEqual(events.filter { $0.kind == .fomc }.count, 16)
-        XCTAssertEqual(events.filter { $0.kind == .cpi }.count, 12)
-        XCTAssertEqual(events.filter { $0.kind == .employment }.count, 12)
-        XCTAssertEqual(events.filter { $0.kind == .pce }.count, 13)
-        XCTAssertEqual(events.filter { $0.kind == .retailSales }.count, 13)
+        XCTAssertEqual(events.filter { $0.kind == .cpi }.count, 24)
+        XCTAssertEqual(events.filter { $0.kind == .employment }.count, 24)
+        XCTAssertEqual(events.filter { $0.kind == .pce }.count, 25)
+        XCTAssertEqual(events.filter { $0.kind == .retailSales }.count, 25)
         XCTAssertEqual(events.filter { $0.kind == .fedSpeech }.count, 1)
         XCTAssertEqual(events.filter { $0.kind == .fomcMinutes }.count, 3)
-        XCTAssertEqual(events.filter { $0.kind == .gdp }.count, 1)
+        XCTAssertEqual(events.filter { $0.kind == .gdp }.count, 5)
         XCTAssertEqual(events.filter { $0.kind == .ecb }.count, 11)
         XCTAssertEqual(events.filter { $0.kind == .boj }.count, 11)
-        XCTAssertEqual(events.filter { $0.kind == .ppi }.count, 4)
+        XCTAssertEqual(events.filter { $0.kind == .ppi }.count, 16)
         XCTAssertEqual(Set(events.map(\.id)).count, events.count)
     }
 
-    func testBundled2027CentralBankDecisionsAreCompleteAndOnWeekdays() throws {
+    func testBundled2027SchedulesAreCompleteAndOnWeekdays() throws {
         let events = try EconomicEventCatalog.loadAll(bundle: Bundle(for: Self.self))
         var calendar = Calendar(identifier: .gregorian)
         calendar.timeZone = try XCTUnwrap(TimeZone(identifier: "UTC"))
@@ -58,7 +58,11 @@ final class EconomicEventTests: XCTestCase {
         XCTAssertEqual(next.filter { $0.kind == .fomc }.count, 8)
         XCTAssertEqual(next.filter { $0.kind == .ecb }.count, 8)
         XCTAssertEqual(next.filter { $0.kind == .boj }.count, 8)
-        XCTAssertEqual(next.count, 24, "Only published central-bank calendars exist for 2027")
+        for kind in [EconomicEventKind.cpi, .employment, .ppi, .pce, .retailSales] {
+            XCTAssertEqual(next.filter { $0.kind == kind }.count, 12, "\(kind)")
+        }
+        XCTAssertEqual(next.filter { $0.kind == .gdp }.count, 4)
+        XCTAssertEqual(next.count, 88, "No FOMC minutes or Fed Chair dates are posted for 2027 yet")
         for event in next {
             let weekday = calendar.component(.weekday, from: event.start)
             XCTAssertTrue((2...6).contains(weekday), "\(event.id) falls on a weekend")
@@ -102,7 +106,7 @@ final class EconomicEventTests: XCTestCase {
         )
         let resolver = UpcomingEconomicEventResolver()
 
-        // Mid-December 2027: U.S. releases ran out earlier; only central banks remain.
+        // Mid-December 2027: fewer than four U.S. releases are left in the last bundled year.
         // Coverage runs through the last bundled year, not the last bundled release.
         let late = try makeDate(year: 2027, month: 12, day: 15, hour: 12, minute: 0, timeZone: newYork)
         let lateGap = try XCTUnwrap(resolver.resolve(events, at: late).coverageGap(shownCount: 4))
@@ -522,19 +526,19 @@ final class LiveEventTests: XCTestCase {
 }
 
 extension LiveEventTests {
-    /// Fetched PCE dates run into 2027, but CPI, jobs and PPI are bundled only through
-    /// 2026, so Settings must not claim U.S. release dates run through 2027.
+    /// Fetched PCE dates run into 2028, but CPI, jobs and PPI are bundled only through
+    /// 2027, so Settings must not claim U.S. release dates run through 2028.
     @MainActor
     func testCoverageFollowsTheKindThatEndsFirst() throws {
         let directory = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
         defer { try? FileManager.default.removeItem(at: directory) }
         let cacheURL = directory.appendingPathComponent("live.json")
         let now = try XCTUnwrap(ISO8601DateFormatter().date(from: "2026-10-29T16:00:00Z"))
-        let pce = BundledEvent(id: "2027-06-25-pce", kind: .pce, title: nil, date: "2027-06-25",
+        let pce = BundledEvent(id: "2028-06-27-pce", kind: .pce, title: nil, date: "2028-06-27",
                                time: "08:30", durationMinutes: 1, timeZone: "America/New_York")
         let cache = LiveEventCache(attemptedAt: now, results: [LiveSourceResult(
             source: .beaPersonalIncome, events: [pce],
-            ranges: [.init(first: "2027-06-25", last: "2027-06-25")]
+            ranges: [.init(first: "2028-06-27", last: "2028-06-27")]
         )])
         try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
         try JSONEncoder().encode(cache).write(to: cacheURL)
@@ -546,7 +550,7 @@ extension LiveEventTests {
         )
         XCTAssertNil(model.liveEventUpdate, "A fresh cache is not refetched")
         let usEnd = try XCTUnwrap(model.eventScheduleEnd(for: .usRelease))
-        XCTAssertLessThan(usEnd, try XCTUnwrap(ISO8601DateFormatter().date(from: "2027-01-01T00:00:00Z")))
+        XCTAssertLessThan(usEnd, try XCTUnwrap(ISO8601DateFormatter().date(from: "2028-01-01T00:00:00Z")))
     }
 }
 

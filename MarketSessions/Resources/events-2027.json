@@ -1,15 +1,52 @@
 {
   "year": 2027,
-  "updated": "2026-09-05",
-  "note": "Central-bank decisions only. FOMC minutes, Fed Chair appearances, and U.S. statistical releases are added once their publishers post 2027 schedules (late 2026).",
+  "updated": "2026-10-31",
+  "note": "FOMC minutes and Fed Chair appearances are added once the Fed posts them.",
   "sources": [
     "https://www.federalreserve.gov/monetarypolicy/fomccalendars.htm",
     "https://www.ecb.europa.eu/press/calendars/mgcgc/html/index.en.html",
     "https://www.ecb.europa.eu/press/govcdec/mopo/html/index.en.html",
     "https://www.boj.or.jp/en/mopo/mpmsche_minu/index.htm",
-    "https://www.boj.or.jp/en/mopo/mpmsche_minu/m_ref/mref260731a.pdf"
+    "https://www.boj.or.jp/en/mopo/mpmsche_minu/m_ref/mref260731a.pdf",
+    "https://www.bls.gov/schedule/news_release/cpi.htm",
+    "https://www.bls.gov/schedule/news_release/empsit.htm",
+    "https://www.bls.gov/schedule/news_release/ppi.htm",
+    "https://www.bea.gov/news/schedule/next-year",
+    "https://www.census.gov/economic-indicators/calendar-listview.html"
   ],
   "events": [
+    {
+      "id": "2027-01-08-employment",
+      "kind": "employment",
+      "date": "2027-01-08",
+      "time": "08:30",
+      "durationMinutes": 1,
+      "timeZone": "America/New_York"
+    },
+    {
+      "id": "2027-01-13-cpi",
+      "kind": "cpi",
+      "date": "2027-01-13",
+      "time": "08:30",
+      "durationMinutes": 1,
+      "timeZone": "America/New_York"
+    },
+    {
+      "id": "2027-01-14-ppi",
+      "kind": "ppi",
+      "date": "2027-01-14",
+      "time": "08:30",
+      "durationMinutes": 1,
+      "timeZone": "America/New_York"
+    },
+    {
+      "id": "2027-01-15-retail-sales",
+      "kind": "retailSales",
+      "date": "2027-01-15",
+      "time": "08:30",
+      "durationMinutes": 1,
+      "timeZone": "America/New_York"
+    },
     {
       "id": "2027-01-22-boj",
       "kind": "boj",
@@ -27,12 +64,100 @@
       "timeZone": "America/New_York"
     },
     {
+      "id": "2027-01-28-pce",
+      "kind": "pce",
+      "date": "2027-01-28",
+      "time": "08:30",
+      "durationMinutes": 1,
+      "timeZone": "America/New_York"
+    },
+    {
+      "id": "2027-01-28-gdp-advance",
+      "kind": "gdp",
+      "date": "2027-01-28",
+      "time": "08:30",
+      "durationMinutes": 1,
+      "timeZone": "America/New_York"
+    },
+    {
       "id": "2027-02-04-ecb",
       "kind": "ecb",
       "date": "2027-02-04",
       "time": "14:15",
       "durationMinutes": 90,
       "timeZone": "Europe/Berlin"
+    },
+    {
+      "id": "2027-02-05-employment",
+      "kind": "employment",
+      "date": "2027-02-05",
+      "time": "08:30",
+      "durationMinutes": 1,
+      "timeZone": "America/New_York"
+    },
+    {
+      "id": "2027-02-11-cpi",
+      "kind": "cpi",
+      "date": "2027-02-11",
+      "time": "08:30",
+      "durationMinutes": 1,
+      "timeZone": "America/New_York"
+    },
+    {
+      "id": "2027-02-12-ppi",
+      "kind": "ppi",
+      "date": "2027-02-12",
+      "time": "08:30",
+      "durationMinutes": 1,
+      "timeZone": "America/New_York"
+    },
+    {
+      "id": "2027-02-17-retail-sales",
+      "kind": "retailSales",
+      "date": "2027-02-17",
+      "time": "08:30",
+      "durationMinutes": 1,
+      "timeZone": "America/New_York"
+    },
+    {
+      "id": "2027-02-25-pce",
+      "kind": "pce",
+      "date": "2027-02-25",
+      "time": "08:30",
+      "durationMinutes": 1,
+      "timeZone": "America/New_York"
+    },
+    {
+      "id": "2027-03-05-employment",
+      "kind": "employment",
+      "date": "2027-03-05",
+      "time": "08:30",
+      "durationMinutes": 1,
+      "timeZone": "America/New_York"
+    },
+    {
+      "id": "2027-03-10-cpi",
+      "kind": "cpi",
+      "date": "2027-03-10",
+      "time": "08:30",
+      "durationMinutes": 1,
+      "timeZone": "America/New_York"
+    },
+    {
+      "id": "2027-03-12-ppi",
+      "kind": "ppi",
+      "date": "2027-03-12",
+      "time": "08:30",
+      "durationMinutes": 1,
+      "timeZone": "America/New_York"
+    },
+    {
+      "id": "2027-03-16-retail-sales",
+      "kind": "retailSales",
+      "date": "2027-03-16",
+      "time": "08:30",
+      "durationMinutes": 1,
+      "timeZone": "America/New_York"
     },
     {
       "id": "2027-03-17-fomc",
@@ -43,14 +168,6 @@
       "timeZone": "America/New_York"
     },
     {
-      "id": "2027-03-18-boj",
-      "kind": "boj",
-      "date": "2027-03-18",
-      "time": "12:00",
-      "durationMinutes": 60,
-      "timeZone": "Asia/Tokyo"
-    },
-    {
       "id": "2027-03-18-ecb",
       "kind": "ecb",
       "date": "2027-03-18",
@@ -59,12 +176,52 @@
       "timeZone": "Europe/Berlin"
     },
     {
-      "id": "2027-04-28-boj",
+      "id": "2027-03-18-boj",
       "kind": "boj",
-      "date": "2027-04-28",
+      "date": "2027-03-18",
       "time": "12:00",
       "durationMinutes": 60,
       "timeZone": "Asia/Tokyo"
+    },
+    {
+      "id": "2027-03-31-pce",
+      "kind": "pce",
+      "date": "2027-03-31",
+      "time": "08:30",
+      "durationMinutes": 1,
+      "timeZone": "America/New_York"
+    },
+    {
+      "id": "2027-04-02-employment",
+      "kind": "employment",
+      "date": "2027-04-02",
+      "time": "08:30",
+      "durationMinutes": 1,
+      "timeZone": "America/New_York"
+    },
+    {
+      "id": "2027-04-13-cpi",
+      "kind": "cpi",
+      "date": "2027-04-13",
+      "time": "08:30",
+      "durationMinutes": 1,
+      "timeZone": "America/New_York"
+    },
+    {
+      "id": "2027-04-14-ppi",
+      "kind": "ppi",
+      "date": "2027-04-14",
+      "time": "08:30",
+      "durationMinutes": 1,
+      "timeZone": "America/New_York"
+    },
+    {
+      "id": "2027-04-16-retail-sales",
+      "kind": "retailSales",
+      "date": "2027-04-16",
+      "time": "08:30",
+      "durationMinutes": 1,
+      "timeZone": "America/New_York"
     },
     {
       "id": "2027-04-28-fomc",
@@ -75,12 +232,84 @@
       "timeZone": "America/New_York"
     },
     {
+      "id": "2027-04-28-boj",
+      "kind": "boj",
+      "date": "2027-04-28",
+      "time": "12:00",
+      "durationMinutes": 60,
+      "timeZone": "Asia/Tokyo"
+    },
+    {
       "id": "2027-04-29-ecb",
       "kind": "ecb",
       "date": "2027-04-29",
       "time": "14:15",
       "durationMinutes": 90,
       "timeZone": "Europe/Berlin"
+    },
+    {
+      "id": "2027-04-29-pce",
+      "kind": "pce",
+      "date": "2027-04-29",
+      "time": "08:30",
+      "durationMinutes": 1,
+      "timeZone": "America/New_York"
+    },
+    {
+      "id": "2027-04-29-gdp-advance",
+      "kind": "gdp",
+      "date": "2027-04-29",
+      "time": "08:30",
+      "durationMinutes": 1,
+      "timeZone": "America/New_York"
+    },
+    {
+      "id": "2027-05-07-employment",
+      "kind": "employment",
+      "date": "2027-05-07",
+      "time": "08:30",
+      "durationMinutes": 1,
+      "timeZone": "America/New_York"
+    },
+    {
+      "id": "2027-05-12-cpi",
+      "kind": "cpi",
+      "date": "2027-05-12",
+      "time": "08:30",
+      "durationMinutes": 1,
+      "timeZone": "America/New_York"
+    },
+    {
+      "id": "2027-05-13-ppi",
+      "kind": "ppi",
+      "date": "2027-05-13",
+      "time": "08:30",
+      "durationMinutes": 1,
+      "timeZone": "America/New_York"
+    },
+    {
+      "id": "2027-05-14-retail-sales",
+      "kind": "retailSales",
+      "date": "2027-05-14",
+      "time": "08:30",
+      "durationMinutes": 1,
+      "timeZone": "America/New_York"
+    },
+    {
+      "id": "2027-05-27-pce",
+      "kind": "pce",
+      "date": "2027-05-27",
+      "time": "08:30",
+      "durationMinutes": 1,
+      "timeZone": "America/New_York"
+    },
+    {
+      "id": "2027-06-04-employment",
+      "kind": "employment",
+      "date": "2027-06-04",
+      "time": "08:30",
+      "durationMinutes": 1,
+      "timeZone": "America/New_York"
     },
     {
       "id": "2027-06-09-fomc",
@@ -99,6 +328,14 @@
       "timeZone": "Europe/Berlin"
     },
     {
+      "id": "2027-06-10-cpi",
+      "kind": "cpi",
+      "date": "2027-06-10",
+      "time": "08:30",
+      "durationMinutes": 1,
+      "timeZone": "America/New_York"
+    },
+    {
       "id": "2027-06-11-boj",
       "kind": "boj",
       "date": "2027-06-11",
@@ -107,12 +344,60 @@
       "timeZone": "Asia/Tokyo"
     },
     {
-      "id": "2027-07-22-boj",
-      "kind": "boj",
-      "date": "2027-07-22",
-      "time": "12:00",
-      "durationMinutes": 60,
-      "timeZone": "Asia/Tokyo"
+      "id": "2027-06-11-ppi",
+      "kind": "ppi",
+      "date": "2027-06-11",
+      "time": "08:30",
+      "durationMinutes": 1,
+      "timeZone": "America/New_York"
+    },
+    {
+      "id": "2027-06-16-retail-sales",
+      "kind": "retailSales",
+      "date": "2027-06-16",
+      "time": "08:30",
+      "durationMinutes": 1,
+      "timeZone": "America/New_York"
+    },
+    {
+      "id": "2027-06-25-pce",
+      "kind": "pce",
+      "date": "2027-06-25",
+      "time": "08:30",
+      "durationMinutes": 1,
+      "timeZone": "America/New_York"
+    },
+    {
+      "id": "2027-07-02-employment",
+      "kind": "employment",
+      "date": "2027-07-02",
+      "time": "08:30",
+      "durationMinutes": 1,
+      "timeZone": "America/New_York"
+    },
+    {
+      "id": "2027-07-14-cpi",
+      "kind": "cpi",
+      "date": "2027-07-14",
+      "time": "08:30",
+      "durationMinutes": 1,
+      "timeZone": "America/New_York"
+    },
+    {
+      "id": "2027-07-15-ppi",
+      "kind": "ppi",
+      "date": "2027-07-15",
+      "time": "08:30",
+      "durationMinutes": 1,
+      "timeZone": "America/New_York"
+    },
+    {
+      "id": "2027-07-16-retail-sales",
+      "kind": "retailSales",
+      "date": "2027-07-16",
+      "time": "08:30",
+      "durationMinutes": 1,
+      "timeZone": "America/New_York"
     },
     {
       "id": "2027-07-22-ecb",
@@ -123,11 +408,83 @@
       "timeZone": "Europe/Berlin"
     },
     {
+      "id": "2027-07-22-boj",
+      "kind": "boj",
+      "date": "2027-07-22",
+      "time": "12:00",
+      "durationMinutes": 60,
+      "timeZone": "Asia/Tokyo"
+    },
+    {
       "id": "2027-07-28-fomc",
       "kind": "fomc",
       "date": "2027-07-28",
       "time": "14:00",
       "durationMinutes": 90,
+      "timeZone": "America/New_York"
+    },
+    {
+      "id": "2027-07-29-pce",
+      "kind": "pce",
+      "date": "2027-07-29",
+      "time": "08:30",
+      "durationMinutes": 1,
+      "timeZone": "America/New_York"
+    },
+    {
+      "id": "2027-07-29-gdp-advance",
+      "kind": "gdp",
+      "date": "2027-07-29",
+      "time": "08:30",
+      "durationMinutes": 1,
+      "timeZone": "America/New_York"
+    },
+    {
+      "id": "2027-08-06-employment",
+      "kind": "employment",
+      "date": "2027-08-06",
+      "time": "08:30",
+      "durationMinutes": 1,
+      "timeZone": "America/New_York"
+    },
+    {
+      "id": "2027-08-10-ppi",
+      "kind": "ppi",
+      "date": "2027-08-10",
+      "time": "08:30",
+      "durationMinutes": 1,
+      "timeZone": "America/New_York"
+    },
+    {
+      "id": "2027-08-11-cpi",
+      "kind": "cpi",
+      "date": "2027-08-11",
+      "time": "08:30",
+      "durationMinutes": 1,
+      "timeZone": "America/New_York"
+    },
+    {
+      "id": "2027-08-16-retail-sales",
+      "kind": "retailSales",
+      "date": "2027-08-16",
+      "time": "08:30",
+      "durationMinutes": 1,
+      "timeZone": "America/New_York"
+    },
+    {
+      "id": "2027-08-25-pce",
+      "kind": "pce",
+      "date": "2027-08-25",
+      "time": "08:30",
+      "durationMinutes": 1,
+      "timeZone": "America/New_York"
+    },
+    {
+      "id": "2027-09-03-employment",
+      "kind": "employment",
+      "date": "2027-09-03",
+      "time": "08:30",
+      "durationMinutes": 1,
       "timeZone": "America/New_York"
     },
     {
@@ -139,11 +496,35 @@
       "timeZone": "Europe/Berlin"
     },
     {
+      "id": "2027-09-10-ppi",
+      "kind": "ppi",
+      "date": "2027-09-10",
+      "time": "08:30",
+      "durationMinutes": 1,
+      "timeZone": "America/New_York"
+    },
+    {
+      "id": "2027-09-14-cpi",
+      "kind": "cpi",
+      "date": "2027-09-14",
+      "time": "08:30",
+      "durationMinutes": 1,
+      "timeZone": "America/New_York"
+    },
+    {
       "id": "2027-09-15-fomc",
       "kind": "fomc",
       "date": "2027-09-15",
       "time": "14:00",
       "durationMinutes": 90,
+      "timeZone": "America/New_York"
+    },
+    {
+      "id": "2027-09-16-retail-sales",
+      "kind": "retailSales",
+      "date": "2027-09-16",
+      "time": "08:30",
+      "durationMinutes": 1,
       "timeZone": "America/New_York"
     },
     {
@@ -153,6 +534,46 @@
       "time": "12:00",
       "durationMinutes": 60,
       "timeZone": "Asia/Tokyo"
+    },
+    {
+      "id": "2027-09-30-pce",
+      "kind": "pce",
+      "date": "2027-09-30",
+      "time": "08:30",
+      "durationMinutes": 1,
+      "timeZone": "America/New_York"
+    },
+    {
+      "id": "2027-10-08-employment",
+      "kind": "employment",
+      "date": "2027-10-08",
+      "time": "08:30",
+      "durationMinutes": 1,
+      "timeZone": "America/New_York"
+    },
+    {
+      "id": "2027-10-14-cpi",
+      "kind": "cpi",
+      "date": "2027-10-14",
+      "time": "08:30",
+      "durationMinutes": 1,
+      "timeZone": "America/New_York"
+    },
+    {
+      "id": "2027-10-15-ppi",
+      "kind": "ppi",
+      "date": "2027-10-15",
+      "time": "08:30",
+      "durationMinutes": 1,
+      "timeZone": "America/New_York"
+    },
+    {
+      "id": "2027-10-15-retail-sales",
+      "kind": "retailSales",
+      "date": "2027-10-15",
+      "time": "08:30",
+      "durationMinutes": 1,
+      "timeZone": "America/New_York"
     },
     {
       "id": "2027-10-27-fomc",
@@ -171,6 +592,22 @@
       "timeZone": "Europe/Berlin"
     },
     {
+      "id": "2027-10-28-pce",
+      "kind": "pce",
+      "date": "2027-10-28",
+      "time": "08:30",
+      "durationMinutes": 1,
+      "timeZone": "America/New_York"
+    },
+    {
+      "id": "2027-10-28-gdp-advance",
+      "kind": "gdp",
+      "date": "2027-10-28",
+      "time": "08:30",
+      "durationMinutes": 1,
+      "timeZone": "America/New_York"
+    },
+    {
       "id": "2027-10-29-boj",
       "kind": "boj",
       "date": "2027-10-29",
@@ -179,11 +616,83 @@
       "timeZone": "Asia/Tokyo"
     },
     {
+      "id": "2027-11-05-employment",
+      "kind": "employment",
+      "date": "2027-11-05",
+      "time": "08:30",
+      "durationMinutes": 1,
+      "timeZone": "America/New_York"
+    },
+    {
+      "id": "2027-11-10-cpi",
+      "kind": "cpi",
+      "date": "2027-11-10",
+      "time": "08:30",
+      "durationMinutes": 1,
+      "timeZone": "America/New_York"
+    },
+    {
+      "id": "2027-11-12-ppi",
+      "kind": "ppi",
+      "date": "2027-11-12",
+      "time": "08:30",
+      "durationMinutes": 1,
+      "timeZone": "America/New_York"
+    },
+    {
+      "id": "2027-11-16-retail-sales",
+      "kind": "retailSales",
+      "date": "2027-11-16",
+      "time": "08:30",
+      "durationMinutes": 1,
+      "timeZone": "America/New_York"
+    },
+    {
+      "id": "2027-11-24-pce",
+      "kind": "pce",
+      "date": "2027-11-24",
+      "time": "08:30",
+      "durationMinutes": 1,
+      "timeZone": "America/New_York"
+    },
+    {
+      "id": "2027-12-03-employment",
+      "kind": "employment",
+      "date": "2027-12-03",
+      "time": "08:30",
+      "durationMinutes": 1,
+      "timeZone": "America/New_York"
+    },
+    {
       "id": "2027-12-08-fomc",
       "kind": "fomc",
       "date": "2027-12-08",
       "time": "14:00",
       "durationMinutes": 90,
+      "timeZone": "America/New_York"
+    },
+    {
+      "id": "2027-12-10-cpi",
+      "kind": "cpi",
+      "date": "2027-12-10",
+      "time": "08:30",
+      "durationMinutes": 1,
+      "timeZone": "America/New_York"
+    },
+    {
+      "id": "2027-12-15-ppi",
+      "kind": "ppi",
+      "date": "2027-12-15",
+      "time": "08:30",
+      "durationMinutes": 1,
+      "timeZone": "America/New_York"
+    },
+    {
+      "id": "2027-12-15-retail-sales",
+      "kind": "retailSales",
+      "date": "2027-12-15",
+      "time": "08:30",
+      "durationMinutes": 1,
       "timeZone": "America/New_York"
     },
     {
@@ -201,6 +710,14 @@
       "time": "12:00",
       "durationMinutes": 60,
       "timeZone": "Asia/Tokyo"
+    },
+    {
+      "id": "2027-12-22-pce",
+      "kind": "pce",
+      "date": "2027-12-22",
+      "time": "08:30",
+      "durationMinutes": 1,
+      "timeZone": "America/New_York"
     }
   ]
 }

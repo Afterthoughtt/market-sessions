@@ -20,7 +20,7 @@ Out of scope (owner decision 2026-09-29, personal use only): distribution signin
 
 ## Data refresh (December 2026)
 
-Per `MarketSessions/Resources/README.md`: bundle `market-exceptions-2027.json` for all six markets (whole year only) and the 2027 BLS (CPI, jobs, PPI) and BEA GDP advance dates, which the weekly update cannot read. FOMC, minutes, PCE, retail sales, ECB and BOJ dates already arrive weekly, but bundle their 2027 rows too as the fallback. Until then, market notifications stop at 2026-12-31 and the popover warns once a shown time or the Closures week passes that date.
+Per `MarketSessions/Resources/README.md`: bundle `market-exceptions-2027.json` for all six markets (whole year only). The SSE calendar waits on China's State Council holiday notice, usually published in November. Until then, market notifications stop at 2026-12-31 and the popover warns once a shown time or the Closures week passes that date. 2027 FOMC minutes are not bundled; the Fed posts them on its monthly calendar pages about two months ahead, and the weekly update reads those.
 
 ## Housekeeping
 
