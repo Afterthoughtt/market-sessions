@@ -74,7 +74,7 @@ struct SettingsView: View {
                     SettingsRowLabel("Update Dates Weekly", subtitle: liveEventStatus)
                 }
             } footer: {
-                Text("Reads FOMC, minutes, PCE, retail sales, ECB and BOJ dates from the Federal Reserve, BEA, Census Bureau, ECB and Bank of Japan websites. CPI, jobs, PPI, GDP and Fed Chair dates and market holidays stay bundled. This product uses the Bureau of Economic Analysis (BEA) Data API but is not endorsed or certified by BEA.")
+                Text("Reads FOMC, minutes, PCE, GDP, retail sales, ECB and BOJ dates from the Federal Reserve, BEA, Census Bureau, ECB and Bank of Japan websites. CPI, jobs, PPI and Fed Chair dates and market holidays stay bundled. This product uses the Bureau of Economic Analysis (BEA) Data API but is not endorsed or certified by BEA.")
             }
 
             Section {

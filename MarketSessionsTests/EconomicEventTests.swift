@@ -345,6 +345,36 @@ final class LiveEventTests: XCTestCase {
         XCTAssertEqual(rows.map(\.time), ["10:00", "08:30"])
     }
 
+    func testGDPReadsOnlyAdvanceEstimatesInTheHeaderYear() {
+        let page = """
+        <th id="view-field-scheduled-release-date-1-table-column" aria-sort="ascending" scope="col">Year 2027</th>
+        \(BEAFetcher.row("January 28", "GDP (Advance Estimate), 4th Quarter and Year 2026"))
+        \(BEAFetcher.row("January 28", "Personal Income and Outlays, December 2026"))
+        \(BEAFetcher.row("February 25", "GDP (Second Estimate), 4th Quarter and Year 2026"))
+        \(BEAFetcher.row("April 29", "GDP (Advance Estimate), 1st Quarter 2027", time: "10:00 AM"))
+        """
+        let rows = LiveEventParser.gdpAdvance(page)
+        XCTAssertEqual(rows.map(\.id), ["2027-01-28-gdp-advance", "2027-04-29-gdp-advance"])
+        XCTAssertEqual(rows.map(\.time), ["08:30", "10:00"])
+    }
+
+    /// BEA's next-year page fills in during the year; until it lists every advance
+    /// estimate it covers nothing, and the current-year page still counts.
+    func testAnUnpostedNextYearGDPPageIsNotAFailure() async throws {
+        let directory = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+        defer { try? FileManager.default.removeItem(at: directory) }
+        let bundled = try EconomicEventCatalog.loadAll(bundle: Bundle(for: Self.self))
+        let now = try XCTUnwrap(ISO8601DateFormatter().date(from: "2026-10-29T16:00:00Z"))
+        for nextYear in [nil, BEAFetcher.page(year: 2027, ["January 28"])] {
+            let cache = await LiveEventRefresher(fetcher: BEAFetcher(nextYear: nextYear),
+                                                 cacheURL: directory.appendingPathComponent("live-events.json"))
+                .run(at: now, previous: LiveEventCache(), bundled: bundled)
+            XCTAssertFalse(cache.failures.contains(.beaGDP))
+            let result = try XCTUnwrap(cache.results.first { $0.source == .beaGDP })
+            XCTAssertEqual(result.events.map(\.date), ["2026-02-20", "2026-04-30", "2026-07-30", "2026-10-29"])
+        }
+    }
+
     func testRetailSalesReadOnlyTheAdvanceTable() {
         let page = """
         <td style="text-align:center"><strong>Release Date at 8:30 am</strong></td>
@@ -489,7 +519,7 @@ final class LiveEventTests: XCTestCase {
         let bundled = try EconomicEventCatalog.loadAll(bundle: Bundle(for: Self.self))
         let cache = await refresher.run(at: now, previous: LiveEventCache(results: [old]), bundled: bundled)
 
-        XCTAssertEqual(Set(cache.failures), [.ecb, .boj, .censusRetail, .beaPersonalIncome])
+        XCTAssertEqual(Set(cache.failures), [.ecb, .boj, .censusRetail, .beaPersonalIncome, .beaGDP])
         XCTAssertEqual(cache.results.first { $0.source == .ecb }, old, "The 403 keeps the earlier result")
         XCTAssertEqual(cache.results.first { $0.source == .fedMinutes }?.events.map(\.id), ["2026-11-19-fomc-minutes"],
                        "Not-yet-published months (404) are skipped, not failures")
@@ -590,6 +620,37 @@ private struct StubFetcher: EventFetching {
             return (Data((repeatsPanel ? panel + panel : panel).utf8), 200)
         case let path where path.contains("ecb.europa.eu"):
             return (Data("Access Denied".utf8), 403)
+        default:
+            throw URLError(.cannotConnectToHost)
+        }
+    }
+}
+
+/// BEA's 2026 schedule page; the next-year page is a 404 when `nextYear` is nil.
+private struct BEAFetcher: EventFetching {
+    var nextYear: String?
+
+    static func row(_ date: String, _ title: String, time: String = "8:30 AM") -> String {
+        """
+        <tr class="scheduled-releases-type-press">
+            <td class="scheduled-date no-wrap"><div class="release-date">\(date)</div>
+        <small class="text-muted">\(time)</small>        </td>
+            <td class="release-title views-field">\(title)        </td>
+        </tr>
+        """
+    }
+
+    static func page(year: Int, _ dates: [String]) -> String {
+        "<th aria-sort=\"ascending\" scope=\"col\">Year \(year)</th>"
+            + dates.map { row($0, "GDP (Advance Estimate), a quarter") }.joined()
+    }
+
+    func fetch(_ url: URL) async throws -> (Data, Int) {
+        switch url.absoluteString {
+        case "https://www.bea.gov/news/schedule/full":
+            return (Data(Self.page(year: 2026, ["February 20", "April 30", "July 30", "October 29"]).utf8), 200)
+        case "https://www.bea.gov/news/schedule/next-year":
+            return nextYear.map { (Data($0.utf8), 200) } ?? (Data(), 404)
         default:
             throw URLError(.cannotConnectToHost)
         }

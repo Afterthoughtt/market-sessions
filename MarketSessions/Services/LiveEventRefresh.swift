@@ -8,6 +8,7 @@ enum LiveEventSource: String, CaseIterable, Codable, Sendable {
     case fedMeetings
     case fedMinutes
     case beaPersonalIncome
+    case beaGDP
     case censusRetail
     case ecb
     case boj
@@ -17,6 +18,7 @@ enum LiveEventSource: String, CaseIterable, Codable, Sendable {
         case .fedMeetings: .fomc
         case .fedMinutes: .fomcMinutes
         case .beaPersonalIncome: .pce
+        case .beaGDP: .gdp
         case .censusRetail: .retailSales
         case .ecb: .ecb
         case .boj: .boj
@@ -27,7 +29,7 @@ enum LiveEventSource: String, CaseIterable, Codable, Sendable {
     var host: String {
         switch self {
         case .fedMeetings, .fedMinutes: "federalreserve.gov"
-        case .beaPersonalIncome: "bea.gov"
+        case .beaPersonalIncome, .beaGDP: "bea.gov"
         case .censusRetail: "census.gov"
         case .ecb: "ecb.europa.eu"
         case .boj: "boj.or.jp"
@@ -41,13 +43,20 @@ enum LiveEventSource: String, CaseIterable, Codable, Sendable {
         case .fedMeetings: 8
         case .fedMinutes: 0
         case .beaPersonalIncome, .censusRetail: 6
-        case .ecb, .boj: 4
+        case .ecb, .boj, .beaGDP: 4
         }
     }
 
     /// One page per month (Fed minutes): a month not yet published is a 404, and a
     /// page covers its whole month rather than the dates it lists.
     var readsMonthlyPages: Bool { self == .fedMinutes }
+
+    /// Pages that may not be posted yet: a Fed minutes month, or BEA's next-year
+    /// schedule, which fills in during the year. A 404, or a next-year page listing
+    /// fewer than every advance estimate, covers nothing and keeps the bundled dates.
+    func mayBeUnposted(pageAt index: Int) -> Bool {
+        readsMonthlyPages || (self == .beaGDP && index > 0)
+    }
 
     /// The pages to read at `now`. Fed minutes dates appear only on monthly calendar
     /// pages, which exist about two months ahead; a page not yet published is a 404.
@@ -69,6 +78,9 @@ enum LiveEventSource: String, CaseIterable, Codable, Sendable {
             }
         case .beaPersonalIncome:
             return [URL(string: "https://apps.bea.gov/API/signup/release_dates.json")!]
+        case .beaGDP:
+            return [URL(string: "https://www.bea.gov/news/schedule/full")!,
+                    URL(string: "https://www.bea.gov/news/schedule/next-year")!]
         case .censusRetail:
             return [URL(string: "https://www.census.gov/retail/release_schedule.html")!]
         case .ecb:
@@ -84,6 +96,7 @@ enum LiveEventSource: String, CaseIterable, Codable, Sendable {
         case .fedMeetings: return LiveEventParser.fomcMeetings(page)
         case .fedMinutes: return LiveEventParser.fomcMinutes(page)
         case .beaPersonalIncome: return LiveEventParser.personalIncome(data)
+        case .beaGDP: return LiveEventParser.gdpAdvance(page)
         case .censusRetail: return LiveEventParser.retailSales(page)
         case .ecb: return LiveEventParser.ecb(page)
         case .boj: return LiveEventParser.boj(page)
@@ -145,6 +158,23 @@ enum LiveEventParser {
             let parts = calendar.dateComponents([.year, .month, .day, .hour, .minute], from: date)
             return .init(kind: .pce, suffix: "pce", year: parts.year!, month: parts.month!, day: parts.day!,
                          time: String(format: "%02d:%02d", parts.hour!, parts.minute!),
+                         durationMinutes: 1, timeZone: "America/New_York")
+        }
+    }
+
+    /// BEA's schedule pages: rows titled "GDP (Advance Estimate)" (second and third
+    /// estimates are other rows), dated in the table's "Year 2027" header year, at
+    /// the row's own time.
+    static func gdpAdvance(_ page: String) -> [BundledEvent] {
+        guard let header = page.firstMatch(of: #/scope="col">Year (\d{4})</th>/#),
+              let year = Int(header.output.1) else { return [] }
+        return page.split(separator: "<tr").compactMap { row in
+            guard let match = row.firstMatch(of: #/release-date">([A-Z][a-z]+) (\d{1,2})</div>\s*<small[^>]*>(\d{1,2}):(\d{2}) ([AP]M)</small>[\s\S]*?release-title[^>]*>\s*GDP \(Advance Estimate\)/#),
+                  let month = month(match.output.1), let day = Int(match.output.2),
+                  let hour = Int(match.output.3) else { return nil }
+            let hour24 = hour % 12 + (match.output.5 == "PM" ? 12 : 0)
+            return .init(kind: .gdp, suffix: "gdp-advance", year: year, month: month, day: day,
+                         time: "\(String(format: "%02d", hour24)):\(match.output.4)",
                          durationMinutes: 1, timeZone: "America/New_York")
         }
     }
@@ -357,7 +387,8 @@ struct LiveEventRefresher: Sendable {
                 return .failed
             }
             let (data, status) = response
-            if source.readsMonthlyPages, status == 404 { continue }
+            let mayBeUnposted = source.mayBeUnposted(pageAt: index)
+            if mayBeUnposted, status == 404 { continue }
             guard status == 200 else { return .failed }
             let rows = source.parse(data)
             let range: LiveSourceResult.DayRange
@@ -365,6 +396,7 @@ struct LiveEventRefresher: Sendable {
                 guard let month = rows.first.map({ String($0.date.prefix(7)) }) else { continue }
                 range = .init(first: "\(month)-01", last: "\(month)-31")
             } else {
+                if mayBeUnposted, rows.count < source.minimumCount { continue }
                 guard rows.count >= source.minimumCount,
                       let first = rows.map(\.date).min(), let last = rows.map(\.date).max() else { return .failed }
                 range = .init(first: first, last: last)
