@@ -334,6 +334,46 @@ final class LiveEventTests: XCTestCase {
         XCTAssertEqual(LiveEventParser.fomcMinutes(page).map(\.id), ["2026-11-18-fomc-minutes"])
     }
 
+    func testFedChairReadsReportTestimonyAndJacksonHoleOnly() {
+        func entry(_ time: String, _ speaker: String, _ name: String, _ venue: String, _ day: Int) -> String {
+            """
+                                    <div class="col-xs-2">
+                                        <p>\(time)</p>
+                                    </div>
+                                    <div class="col-xs-7">
+                                        <p>\(speaker)</p>
+
+                                        <p><a class='watchLive' href="https://financialservices.house.gov/" title="Watch Live" aria-hidden="true"><span class='icon-video icon icon__sm'></span><span class="icon-label">Watch Live</span></a></p>
+
+                                        <p class='calendar__title'><em>\(name)</em></p>
+                                        <p>\(venue)</p>
+                                    </div>
+                                    <div class="col-xs-3">
+                                        <p>\(day)</p>
+                                    </div>
+            """
+        }
+        let july = "<title>Federal Reserve Board - Calendar: July 2026 </title>" + [
+            entry("9:00 a.m.", "Discussion - Chairman Kevin Warsh", "Policy Panel Discussion",
+                  "At the European Central Bank (ECB) Forum on Central Banking 2026, Sintra, Portugal", 1),
+            entry("12:15 p.m.", "Speech - Vice Chair Philip N. Jefferson", "Navigating Economic Shocks", "At the Brookings Institution", 9),
+            entry("10:00 a.m.", "Testimony - Chairman Kevin Warsh", "Semiannual Monetary Policy Report to Congress",
+                  "Before the U.S. House Financial Services Committee", 14),
+            entry("10:00 a.m.", "Testimony - Chairman Kevin Warsh", "Semiannual Monetary Policy Report to Congress",
+                  "Before the U.S. Senate Committee on Banking, Housing, and Urban Affairs", 15),
+        ].joined()
+        let rows = LiveEventParser.fedChair(july)
+        XCTAssertEqual(rows.map(\.id), ["2026-07-14-fedspeech-house-testimony", "2026-07-15-fedspeech-senate-testimony"])
+        XCTAssertEqual(rows.map(\.title), ["House Testimony", "Senate Testimony"])
+        XCTAssertEqual(rows.first?.time, "10:00")
+
+        let august = "<title>Federal Reserve Board - Calendar: August 2026 </title>"
+            + entry("10:00 a.m.", "Speech - Chairman Kevin Warsh", "Keynote Remarks",
+                    "At the 2026 Jackson Hole Economic Policy Symposium, Moran, Wyo.", 28)
+        XCTAssertEqual(LiveEventParser.fedChair(august).map(\.id), ["2026-08-28-fedspeech-jackson-hole"],
+                       "Matches the bundled ID, so the fetched row replaces it")
+    }
+
     func testPersonalIncomeKeepsBEAsOwnTimesInNewYork() throws {
         let data = Data("""
         {"Gross Domestic Product": {"release_dates": ["2026-10-29T12:30:00+00:00"]},

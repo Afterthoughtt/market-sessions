@@ -5,13 +5,14 @@ import SwiftUI
 struct TimeZonePicker: View {
     let model: MarketSessionsModel
 
-    /// West to east. Places with their own DST rules (Vancouver, Arizona, Mexico City)
+    /// West to east. Places with their own DST rules (Vancouver, Alberta, Arizona, Mexico City)
     /// get their own entries so the tz database, not the label, decides their offset.
     static let zones: [(identifier: String, name: String)] = [
         ("Pacific/Honolulu", "Hawaii Time"),
         ("America/Anchorage", "Alaska Time"),
         ("America/Los_Angeles", "Pacific Time"),
         ("America/Vancouver", "Vancouver"),
+        ("America/Edmonton", "Alberta"),
         ("America/Phoenix", "Arizona"),
         ("America/Denver", "Mountain Time"),
         ("America/Chicago", "Central Time"),

@@ -7,6 +7,7 @@ import Foundation
 enum LiveEventSource: String, CaseIterable, Codable, Sendable {
     case fedMeetings
     case fedMinutes
+    case fedChair
     case beaPersonalIncome
     case beaGDP
     case censusRetail
@@ -17,6 +18,7 @@ enum LiveEventSource: String, CaseIterable, Codable, Sendable {
         switch self {
         case .fedMeetings: .fomc
         case .fedMinutes: .fomcMinutes
+        case .fedChair: .fedSpeech
         case .beaPersonalIncome: .pce
         case .beaGDP: .gdp
         case .censusRetail: .retailSales
@@ -28,7 +30,7 @@ enum LiveEventSource: String, CaseIterable, Codable, Sendable {
     /// Named in Settings when the source fails.
     var host: String {
         switch self {
-        case .fedMeetings, .fedMinutes: "federalreserve.gov"
+        case .fedMeetings, .fedMinutes, .fedChair: "federalreserve.gov"
         case .beaPersonalIncome, .beaGDP: "bea.gov"
         case .censusRetail: "census.gov"
         case .ecb: "ecb.europa.eu"
@@ -41,15 +43,15 @@ enum LiveEventSource: String, CaseIterable, Codable, Sendable {
     var minimumCount: Int {
         switch self {
         case .fedMeetings: 8
-        case .fedMinutes: 0
+        case .fedMinutes, .fedChair: 0
         case .beaPersonalIncome, .censusRetail: 6
         case .ecb, .boj, .beaGDP: 4
         }
     }
 
-    /// One page per month (Fed minutes): a month not yet published is a 404, and a
-    /// page covers its whole month rather than the dates it lists.
-    var readsMonthlyPages: Bool { self == .fedMinutes }
+    /// One page per month (Fed minutes and Chair appearances): a month not yet
+    /// published is a 404, and a page covers its whole month rather than the dates it lists.
+    var readsMonthlyPages: Bool { self == .fedMinutes || self == .fedChair }
 
     /// Pages that may not be posted yet: a Fed minutes month, or BEA's next-year
     /// schedule, which fills in during the year. A 404, or a next-year page listing
@@ -64,7 +66,7 @@ enum LiveEventSource: String, CaseIterable, Codable, Sendable {
         switch self {
         case .fedMeetings:
             return [URL(string: "https://www.federalreserve.gov/monetarypolicy/fomccalendars.htm")!]
-        case .fedMinutes:
+        case .fedMinutes, .fedChair:
             var calendar = Calendar(identifier: .gregorian)
             calendar.timeZone = TimeZone(identifier: "America/New_York")!
             let formatter = DateFormatter()
@@ -95,6 +97,7 @@ enum LiveEventSource: String, CaseIterable, Codable, Sendable {
         switch self {
         case .fedMeetings: return LiveEventParser.fomcMeetings(page)
         case .fedMinutes: return LiveEventParser.fomcMinutes(page)
+        case .fedChair: return LiveEventParser.fedChair(page)
         case .beaPersonalIncome: return LiveEventParser.personalIncome(data)
         case .beaGDP: return LiveEventParser.gdpAdvance(page)
         case .censusRetail: return LiveEventParser.retailSales(page)
@@ -143,6 +146,35 @@ enum LiveEventParser {
                 .init(kind: .fomcMinutes, suffix: "fomc-minutes", year: year, month: month, day: $0,
                       time: "14:00", durationMinutes: 30, timeZone: "America/New_York")
             }
+    }
+
+    /// Chair testimony on the semiannual Monetary Policy Report and the Jackson Hole
+    /// keynote from one monthly calendar page, at the page's Eastern times. Other Chair
+    /// appearances and other speakers ("Vice Chair …") are skipped.
+    static func fedChair(_ page: String) -> [BundledEvent] {
+        guard let title = page.firstMatch(of: #/<title>[^<]*?([A-Z][a-z]+) (\d{4})[^<]*</title>/#),
+              let month = month(title.output.1), let year = Int(title.output.2) else { return [] }
+        let entry = #/<p>(\d{1,2}):(\d{2}) ([ap])\.m\.</p>\s*</div>\s*<div class="col-xs-7">\s*<p>(Speech|Testimony) - Chair(?:man|woman)? [^<]*</p>[\s\S]{0,600}?<p class='calendar__title'><em>([^<]*)</em></p>\s*<p>([^<]*)</p>\s*</div>\s*<div class="col-xs-3">\s*<p>(\d{1,2})</p>/#
+        return page.matches(of: entry).compactMap { match in
+            let (_, hourText, minute, half, type, name, venue, dayText) = match.output
+            let label: String
+            if type == "Speech", venue.contains("Jackson Hole") {
+                label = "Jackson Hole Keynote"
+            } else if type == "Testimony", name.contains("Monetary Policy Report"), venue.contains("Senate") {
+                label = "Senate Testimony"
+            } else if type == "Testimony", name.contains("Monetary Policy Report"), venue.contains("House") {
+                label = "House Testimony"
+            } else {
+                return nil
+            }
+            guard let hour = Int(hourText), let day = Int(dayText) else { return nil }
+            let date = MarketExceptionIndex.key(year: year, month: month, day: day)
+            let slug = label == "Jackson Hole Keynote" ? "jackson-hole" : label.lowercased().replacing(" ", with: "-")
+            return BundledEvent(id: "\(date)-fedspeech-\(slug)", kind: .fedSpeech, title: label, date: date,
+                                time: "\(String(format: "%02d", hour % 12 + (half == "p" ? 12 : 0))):\(minute)",
+                                durationMinutes: label == "Jackson Hole Keynote" ? 60 : 120,
+                                timeZone: "America/New_York")
+        }
     }
 
     /// BEA's release-dates file: "Personal Income and Outlays" timestamps in UTC,
@@ -405,7 +437,9 @@ struct LiveEventRefresher: Sendable {
             ranges.append(range)
             events += rows
         }
-        guard !source.readsMonthlyPages || !events.isEmpty,
+        // Minutes come every few weeks, so three months without any means the page changed;
+        // months without a Chair appearance are common.
+        guard source != .fedMinutes || !events.isEmpty,
               Set(events.map(\.id)).count == events.count else { return .failed }
         return .read(LiveSourceResult(source: source, events: events, ranges: ranges))
     }
