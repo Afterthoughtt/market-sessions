@@ -8,7 +8,9 @@ BUNDLE_ID="com.afterthoughtt.MarketSessions"
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 DERIVED_DATA="$ROOT_DIR/.build/DerivedData"
 TEMP_DIR="$ROOT_DIR/.build/tmp"
-APP_BUNDLE="$DERIVED_DATA/Build/Products/Debug/$APP_NAME.app"
+BUILT_BUNDLE="$DERIVED_DATA/Build/Products/Debug/$APP_NAME.app"
+# The one copy that login, Spotlight and the Dock open; replaced on every build.
+APP_BUNDLE="$HOME/Applications/$APP_NAME.app"
 APP_BINARY="$APP_BUNDLE/Contents/MacOS/$APP_NAME"
 
 mkdir -p "$DERIVED_DATA" "$TEMP_DIR"
@@ -23,6 +25,13 @@ TMPDIR="$TEMP_DIR" xcodebuild \
   CODE_SIGN_IDENTITY=- \
   DEVELOPMENT_TEAM= \
   build
+
+mkdir -p "$HOME/Applications"
+rm -rf "$APP_BUNDLE"
+/usr/bin/ditto "$BUILT_BUNDLE" "$APP_BUNDLE"
+# xcodebuild registers the build folder's copy; drop it so only the installed one opens.
+/System/Library/Frameworks/CoreServices.framework/Versions/Current/Frameworks/LaunchServices.framework/Versions/Current/Support/lsregister \
+  -u "$BUILT_BUNDLE" >/dev/null 2>&1 || true
 
 open_app() {
   /usr/bin/open -n "$APP_BUNDLE"
